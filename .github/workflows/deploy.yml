@@ -55,6 +55,11 @@ jobs:
         with:
           node-version: "lts/*"
           cache: ${{ steps.detect-package-manager.outputs.manager }}
+      
+      - name: Set up .npmrc
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
+          echo "@yatongzhao:registry=https://npm.pkg.github.com" >> ~/.npmrc
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
