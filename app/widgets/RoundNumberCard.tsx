@@ -6,5 +6,5 @@ export const RoundNumberCard = () => {
     const game = useGame();
     const roundNumber = useValue(game.roundNumber);
 
-    return <NumberCardA c="orange.5" label="回合" value={roundNumber} />
+    return <NumberCardA c="orange.5" label="Round" value={roundNumber} />
 }

@@ -51,7 +51,7 @@ export const ConsumableCardWidget = ({ card, onBuy, onUse, onSell, onDrag, activ
       {hovered && onUse && (
         <Box pos="absolute" top="100%" left="50%" style={{ transform: 'translateX(-50%)' }}>
           <PanelButton disabled={disable} buttonColor="green.5" onClick={() => onUse?.(card)}>
-            <Box p={2} fz={10}>使用</Box>
+            <Box p={2} fz={10}>use</Box>
           </PanelButton>
         </Box>
       )}

@@ -18,8 +18,8 @@ const BlindTab = ({ active, title, disableSkip }: { active: boolean; title: stri
   return <Stack align="center" w={60}>
     {title}
     {active && <>
-      <PanelButton w={50} h={20} fz={10} buttonColor="red.5" onClick={handleSelect}>选择</PanelButton>
-      {!disableSkip && <PanelButton w={50} h={20} fz={10} buttonColor="red.5" onClick={handleSkipBlind}>跳过盲注</PanelButton>}
+      <PanelButton w={50} h={20} fz={10} buttonColor="red.5" onClick={handleSelect}>Select</PanelButton>
+      {!disableSkip && <PanelButton w={50} h={20} fz={10} buttonColor="red.5" onClick={handleSkipBlind}>Skip Blind</PanelButton>}
     </>}
   </Stack>
 }
@@ -30,8 +30,8 @@ export const ChoosingBlindPanel = () => {
 
   return <Card withBorder w="fit-content">
     <Group align="flex-start">
-      <BlindTab active={blindNumber === 0} title="小盲注" />
-      <BlindTab active={blindNumber === 1} title="大盲注" />
+      <BlindTab active={blindNumber === 0} title="Small Blind" />
+      <BlindTab active={blindNumber === 1} title="Big Blind" />
       <BlindTab active={blindNumber === 2} disableSkip title="BOSS" />
     </Group>
   </Card>

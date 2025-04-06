@@ -18,7 +18,7 @@ export const MoneyCard = () => {
     c="white"
     px={3}
   >
-    <Box pos="relative" top={-4}>{money}</Box>
-    <Box fz={22} pos="relative" top={31}>$</Box>
+    <Box pos="relative">{money}</Box>
+    <Box fz={22} pos="relative" top={15}>$</Box>
   </Flex>
 }

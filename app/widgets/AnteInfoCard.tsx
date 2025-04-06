@@ -23,8 +23,8 @@ export const AnteInfoCard = () => {
     <Box fz={30} lh={1} c="red.6">{round.blind.description}</Box>
     <Box fz={12} lh={1} c="white">Ante {anteNumber}/8</Box>
     <Box fz={12} lh={1} c="white">Round {roundNumber}</Box>
-    <Box fz={12} lh={1} c="white">至少得分</Box>
+    <Box fz={12} lh={1} c="white">At Least</Box>
     <Box fz={30} lh={1} c="red.6">{round.targetScore}</Box>
-    <Group gap={0} fz={12} lh={1} c="white">奖励：<Text lh={1} c="orange.3" component="span" fw="bold">{'$'.repeat(round.blind.reward)}</Text></Group>
+    <Group gap={0} fz={12} lh={1} c="white">Reward:<Text lh={1} c="orange.3" component="span" fw="bold">{'$'.repeat(round.blind.reward)}</Text></Group>
   </Stack>
 }
