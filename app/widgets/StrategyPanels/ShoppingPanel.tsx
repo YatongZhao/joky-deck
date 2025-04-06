@@ -45,8 +45,8 @@ export const ShoppingPanel = () => {
               buttonColor="red.5"
               onClick={handleNextRound}
             >
-              <Box fz={14}>下一个</Box>
-              <Box>回合</Box>
+              <Box fz={14}>Next</Box>
+              <Box>Round</Box>
             </PanelButton>
             <PanelButton
               w={80}
@@ -55,8 +55,8 @@ export const ShoppingPanel = () => {
               disabled={freeRerollNumber <= 0 && game.money.value < rerollPrice}
               onClick={() => game.rerollGoods()}
             >
-              <Box fz={14}>重掷</Box>
-              <Box>{freeRerollNumber > 0 ? '免费' : `$${rerollPrice}`}</Box>
+              <Box fz={14}>Reroll</Box>
+              <Box>{freeRerollNumber > 0 ? 'Free' : `$${rerollPrice}`}</Box>
             </PanelButton>
           </Stack>
         </Grid.Col>

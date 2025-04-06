@@ -1,4 +1,74 @@
 import { MantineColorsTuple, MantineTheme, createTheme, useMantineTheme } from "@mantine/core";
+import localFont from 'next/font/local';
+
+export const digitalNumbersFont = localFont({
+    src: './fonts/DigitalNumbers.ttf',
+});
+
+export const MaliFont = localFont({
+    src: [
+        {
+            path: './fonts/Mali/Mali-ExtraLight.ttf',
+            weight: '100',
+            style: 'normal',
+        },
+        {
+            path: './fonts/Mali/Mali-ExtraLightItalic.ttf',
+            weight: '100',
+            style: 'italic',
+        },
+        {
+            path: './fonts/Mali/Mali-Light.ttf',
+            weight: '300',
+            style: 'normal',
+        },
+        {
+            path: './fonts/Mali/Mali-LightItalic.ttf',
+            weight: '300',
+            style: 'italic',
+        },
+        {
+            path: './fonts/Mali/Mali-Regular.ttf',
+            weight: '400',
+            style: 'normal',
+        },
+        {
+            path: './fonts/Mali/Mali-Italic.ttf',
+            weight: '400',
+            style: 'italic',
+        },
+        {
+            path: './fonts/Mali/Mali-Medium.ttf',
+            weight: '500',
+            style: 'normal',
+        },
+        {
+            path: './fonts/Mali/Mali-MediumItalic.ttf',
+            weight: '500',
+            style: 'italic',
+        },
+        {
+            path: './fonts/Mali/Mali-SemiBold.ttf',
+            weight: '700',
+            style: 'normal',
+        },
+        {
+            path: './fonts/Mali/Mali-SemiBoldItalic.ttf',
+            weight: '700',
+            style: 'italic',
+        },
+        {
+            path: './fonts/Mali/Mali-Bold.ttf',
+            weight: '900',
+            style: 'normal',
+        },
+        {
+            path: './fonts/Mali/Mali-BoldItalic.ttf',
+            weight: '900',
+            style: 'italic',
+        },
+    ],
+});
 
 // const gameMain: MantineColorsTuple = [
 //     '#ecf4ff',
@@ -80,7 +150,8 @@ const themeConf: ReturnType<typeof createTheme> = {
     scale: 2,
     colors: {
         gameMain: gameMains[2],
-    }
+    },
+    fontFamily: MaliFont.style.fontFamily,
 } as const;
 export const theme = createTheme(themeConf);
 

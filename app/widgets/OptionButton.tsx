@@ -7,7 +7,7 @@ export const OptionButton: React.FC<{ h?: MantineStyleProps['h'] }> = ({ h }) =>
       h={h}
       buttonColor="orange.5"
     >
-      <Box fz={14}>选项</Box>
+      <Box fz={14}>Options</Box>
     </PanelButton>
   );
 }

@@ -13,8 +13,8 @@ export const RunInfoButton: React.FC<{ h?: MantineStyleProps['h']; onClick?: () 
     buttonColor="red.5"
     onClick={onClick}
   >
-    <Box>比赛</Box>
-    <Box fz={14}>信息</Box>
+    <Box>Run</Box>
+    <Box fz={14}>Info</Box>
   </PanelButton>
 }
 
