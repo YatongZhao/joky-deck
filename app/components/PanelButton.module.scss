@@ -1,0 +1,12 @@
+.button {
+  position: relative;
+  // box-shadow: calc(2px * var(--mantine-scale)) calc(2px * var(--mantine-scale)) black;
+  // left: calc(-2px * var(--mantine-scale));
+  // top: calc(-2px * var(--mantine-scale)); 
+  &:not(.disabled):active {
+    box-shadow: none;
+    top: 0;
+    left: 0;
+  }
+  user-select: none;
+}

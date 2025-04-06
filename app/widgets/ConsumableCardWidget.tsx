@@ -1,0 +1,61 @@
+import { Box, Stack, Text } from "@mantine/core"
+import { Consumable } from "@yatongzhao/joky-deck-core"
+import { PositionedCardContainer } from "../components/PositionedCardContainer"
+import { BehaviorSubject } from "rxjs";
+import { PanelButton } from "../components/PanelButton";
+import { useHover } from "@mantine/hooks";
+import { useValue } from "../hooks/useValue";
+import { PriceLabel } from "../components/PriceLabel";
+import { SellButton } from "../components/SellButton";
+import { BuyCardButton } from "../components/BuyCardButton";
+
+export const ConsumableCardWidget = ({ card, onBuy, onUse, onSell, onDrag, active, positionSignal, showPrice = false }: {
+  card: Consumable;
+  showPrice?: boolean;
+  onBuy?: (card: Consumable) => void;
+  onUse?: (card: Consumable) => void;
+  onSell?: (card: Consumable) => void;
+  onDrag?: (props: { active: boolean; movement: [number, number]; }) => void;
+  active?: boolean;
+  positionSignal: BehaviorSubject<{ x: number; y: number }>;
+}) => {
+  const { hovered, ref } = useHover();
+  const description = useValue(card.description);
+  const price = useValue(card.price);
+  const sellPrice = useValue(card.sellPrice);
+  const disable = useValue(card.disable);
+
+  return (
+    <PositionedCardContainer
+      ref={ref}
+      hoverToTop
+      effect={card.emitEffect}
+      onDrag={onDrag}
+      active={active}
+      positionSignal={positionSignal}
+      info={<>
+        {hovered && onSell && <SellButton price={sellPrice} onSell={() => onSell?.(card)} />}
+      </>}
+    >
+      <Stack gap={1} align="center">
+        <Text fz={5} fw={900}>{card.name}</Text>
+        {card.type === 'Tarot' && (
+          <Text fz={6}>Tarot</Text>
+        )}
+        {card.type === 'Planet' && (
+          <Text fz={6}>Planet</Text>
+        )}
+        <Text ta="center" fz={6} lh={1}>{description}</Text>
+      </Stack>
+      {hovered && onBuy && <BuyCardButton onBuy={() => onBuy?.(card)} />}
+      {hovered && onUse && (
+        <Box pos="absolute" top="100%" left="50%" style={{ transform: 'translateX(-50%)' }}>
+          <PanelButton disabled={disable} buttonColor="green.5" onClick={() => onUse?.(card)}>
+            <Box p={2} fz={10}>使用</Box>
+          </PanelButton>
+        </Box>
+      )}
+      {showPrice && <PriceLabel price={price} />}
+    </PositionedCardContainer>
+  );
+}
