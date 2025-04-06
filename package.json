@@ -33,6 +33,7 @@
     "@testing-library/jest-dom": "^6.5.0",
     "@testing-library/react": "^16.0.1",
     "@types/animejs": "^3",
+    "@types/aria-query": "^5.0.4",
     "@types/jest": "^29.5.13",
     "@types/node": "^20",
     "@types/ramda": "^0.30.2",
