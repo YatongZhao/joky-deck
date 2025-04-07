@@ -6354,9 +6354,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"joky-deck@workspace:.":
+"joky-deck-h5@workspace:.":
   version: 0.0.0-use.local
-  resolution: "joky-deck@workspace:."
+  resolution: "joky-deck-h5@workspace:."
   dependencies:
     "@mantine/core": "npm:^7.13.0"
     "@mantine/hooks": "npm:^7.13.0"
