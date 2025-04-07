@@ -4,8 +4,8 @@ import { ColorSchemeScript, MantineProvider } from "@mantine/core";
 import { theme } from "./theme";
 
 export const metadata: Metadata = {
-  title: "Joky Decks",
-  description: "Joky Decks",
+  title: "Joky Deck H5",
+  description: "Joky Deck H5",
 };
 
 export default function RootLayout({
