@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     output: 'export',
-    basePath: '/joky-deck',
+    basePath: '/joky-deck-h5',
     webpack(config) {
         config.module.rules.push({
             test: /\.svg$/i,
