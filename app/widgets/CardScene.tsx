@@ -6,6 +6,8 @@ import { useValue } from "../hooks/useValue";
 import { Enhancements } from "@yatongzhao/joky-deck-core";
 import { CardInfoContainer } from "../components/CardInfoContainer";
 import { useHover } from "@mantine/hooks";
+import { useEffect } from "react";
+import { wait } from "../utils/wait";
 
 const SuitIcon = ({ suit, ...styleProps }: { suit: Suits } & MantineStyleProps) => {
   return <Text {...styleProps}>
@@ -27,6 +29,21 @@ export const CardScene: React.FC<{
   const { hovered, ref } = useHover();
   const label = useValue(card.label);
   const suit = useValue(card.suit);
+
+  useEffect(() => {
+    const beforeFlushEffect = card.beforeFlushEffect.add(async () => {
+      positionSignal.next({ x: 1300, y: 100 });
+      await wait(50);
+    });
+    const afterFlushEffect = card.afterFlushEffect.add(async () => {
+      await wait(100);
+    });
+
+    return () => {
+      beforeFlushEffect.remove();
+      afterFlushEffect.remove();
+    }
+  }, [card, positionSignal]);
 
   return (
     <PositionedCardContainer

@@ -3048,14 +3048,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@yatongzhao/joky-deck-core@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@yatongzhao/joky-deck-core@npm:1.1.0::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40yatongzhao%2Fjoky-deck-core%2F1.1.0%2Ffd8bd39803500eb44daf691519e6025134b9e26f"
+"@yatongzhao/joky-deck-core@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@yatongzhao/joky-deck-core@npm:1.1.1::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40yatongzhao%2Fjoky-deck-core%2F1.1.1%2F4808beee6799b4fa82741a2c6f23f2b1bf8c0268"
   dependencies:
     ramda: "npm:^0.30.1"
     rxjs: "npm:^7.8.2"
     uuid: "npm:^11.1.0"
-  checksum: 10c0/cdfc453e8cd9bd0f6d7f6f562a87cd36568bcbceabf41145d91f8deb0a44a1d647448f57e8aa524ac1476f6461facd16567b0a845226ed3993f6cde6abc1593c
+  checksum: 10c0/c414bee5b6c2935ea80ccccf0bb096b10f055b1a0d47e3a24288c939024e87db5c94fd22e71a52c9371fe774ebf22f618c17c9dc36730bab61f6831e687d2002
   languageName: node
   linkType: hard
 
@@ -6374,7 +6374,7 @@ __metadata:
     "@types/react": "npm:^18"
     "@types/react-dom": "npm:^18"
     "@types/uuid": "npm:^10.0.0"
-    "@yatongzhao/joky-deck-core": "npm:^1.1.0"
+    "@yatongzhao/joky-deck-core": "npm:^1.1.1"
     animejs: "npm:^3.2.2"
     classnames: "npm:^2.5.1"
     eslint: "npm:^8"
