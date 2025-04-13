@@ -1,0 +1,100 @@
+Book, A flat-style closed blue book with a bookmark peeking out. Pure white background.
+Laptop, A flat-style silver laptop with a dark screen and minimal keyboard. Pure white background.
+Smartphone, A flat-style black smartphone with a single home button. Pure white background.
+Clock, A flat-style wall clock with black hands and a light gray face. Pure white background.
+Mailbox, A flat-style red mailbox with the flag raised. Pure white background.
+Battery, A flat-style battery icon showing three green bars. Pure white background.
+Trash, can A flat-style gray trash bin with a closed lid. Pure white background.
+Folder, A flat-style yellow folder slightly open at the top. Pure white background.
+Note, A flat-style sticky note in light yellow with a dog-eared corner. Pure white background.
+Paperclip, A flat-style silver paperclip with a simple bend. Pure white background.
+Speaker, A flat-style speaker icon with three curved sound waves. Pure white background.
+Printer, A flat-style gray printer with a paper coming out. Pure white background.
+Calculator, A flat-style black calculator with colored buttons. Pure white background.
+TV, A flat-style television with short legs and a retro screen. Pure white background.
+Keyboard, A flat-style keyboard with white keys and black outlines. Pure white background.
+Mouse, A flat-style computer mouse with a scroll wheel. Pure white background.
+Monitor, A flat-style monitor with a thin frame and blue screen. Pure white background.
+Router, A flat-style router with two antennas and three green lights. Pure white background.
+USB, drive A flat-style USB stick with a red cap. Pure white background.
+SD, card A flat-style SD card with gold contact points. Pure white background.
+Fan, A flat-style desk fan with three visible blades. Pure white background.
+Microwave, A flat-style microwave with a single button and window. Pure white background.
+Fridge, A flat-style two-door refrigerator with a silver body. Pure white background.
+Toaster, A flat-style toaster with two slices of bread popping out. Pure white background.
+Stove, A flat-style stove top with four burners. Pure white background.
+Washing, machine A flat-style washing machine with a circular window. Pure white background.
+Vacuum, A flat-style upright vacuum with a red body. Pure white background.
+Iron, A flat-style steam iron with a green handle. Pure white background.
+Blender, A flat-style blender with a transparent pitcher. Pure white background.
+Kettle, A flat-style electric kettle with a black handle. Pure white background.
+Cupcake, A flat-style pink cupcake with white frosting and a cherry. Pure white background.
+Donut, A flat-style chocolate donut with sprinkles. Pure white background.
+Pizza, slice A flat-style pizza slice with pepperoni and melted cheese. Pure white background.
+Burger, A flat-style cheeseburger with lettuce and tomato. Pure white background.
+Hotdog, A flat-style hotdog in a bun with mustard. Pure white background.
+Sushi, A flat-style sushi roll with seaweed and salmon. Pure white background.
+Sandwich, A flat-style sandwich with layered fillings. Pure white background.
+Fries, A flat-style red carton of fries with golden sticks. Pure white background.
+Pineapple, A flat-style whole pineapple with a spiky green top. Pure white background.
+Apple, A flat-style red apple with a green leaf. Pure white background.
+Carrot, A flat-style orange carrot with a green leafy top. Pure white background.
+Avocado, A flat-style sliced avocado showing the seed. Pure white background.
+Broccoli, A flat-style broccoli head with chunky florets. Pure white background.
+Eggplant, A flat-style purple eggplant with a green stem. Pure white background.
+Mushroom, A flat-style white mushroom with a round cap. Pure white background.
+Bottle, A flat-style plastic water bottle with a blue cap. Pure white background.
+Soda, can A flat-style red soda can with bubbles. Pure white background.
+Milk, carton A flat-style milk carton with a blue stripe. Pure white background.
+Coffee, mug A flat-style coffee mug with steam lines above it. Pure white background.
+Teacup, A flat-style teacup with a teabag tag hanging out. Pure white background.
+Sun, A flat-style sun with simple orange rays. Pure white background.
+Moon, A flat-style crescent moon in pale yellow. Pure white background.
+Cloud, A flat-style fluffy cloud in light gray. Pure white background.
+Rain, A flat-style cloud with three blue raindrops. Pure white background.
+Snowflake, A flat-style symmetrical snowflake in icy blue. Pure white background.
+Lightning, A flat-style yellow lightning bolt with a jagged shape. Pure white background.
+Rainbow, A flat-style rainbow with five curved color bands. Pure white background.
+Tree, stump A flat-style brown tree stump with a few rings. Pure white background.
+Leaf, A flat-style green leaf with a central vein. Pure white background.
+Mountain, A flat-style gray mountain peak with a white snowy tip. Pure white background.
+Tent, A flat-style orange camping tent with a simple A-frame. Pure white background.
+Campfire, A flat-style campfire with orange flames and brown logs. Pure white background.
+Flashlight, A flat-style flashlight with a yellow beam. Pure white background.
+Map, A flat-style folded map with a dotted path. Pure white background.
+Compass, rose A flat-style compass rose with red north pointer. Pure white background.
+Binoculars, A flat-style pair of binoculars in dark gray. Pure white background.
+Backpack, A flat-style hiking backpack with two straps. Pure white background.
+Boots, A flat-style pair of brown hiking boots. Pure white background.
+Water, bottle A flat-style reusable bottle with a blue cap. Pure white background.
+First,-aid kit A flat-style red box with a white cross. Pure white background.
+Paw, print A flat-style animal paw print in dark gray. Pure white background.
+Dog, A flat-style brown dog sitting with its tongue out. Pure white background.
+Cat, A flat-style orange cat with a curved tail. Pure white background.
+Bird, A flat-style bluebird flying with wings out. Pure white background.
+Fish, A flat-style yellow fish with a simple fin. Pure white background.
+Horse, A flat-style brown horse in profile with a black mane. Pure white background.
+Elephant, A flat-style gray elephant with big ears and a small tail. Pure white background.
+Tiger, A flat-style orange tiger with black stripes and round ears. Pure white background.
+Frog, A flat-style green frog sitting with big eyes. Pure white background.
+Penguin, A flat-style black and white penguin with an orange beak. Pure white background.
+Rocket, A flat-style red rocket with a white window and orange flame. Pure white background.
+Satellite, A flat-style satellite with blue solar panels and a gray body. Pure white background.
+Planet, A flat-style planet with rings, similar to Saturn. Pure white background.
+Alien, A flat-style green alien with two antennae and big eyes. Pure white background.
+Astronaut, A flat-style astronaut helmet with a blue-tinted visor. Pure white background.
+Telescope, A flat-style telescope on a tripod. Pure white background.
+Spaceship, A flat-style flying saucer with blinking lights. Pure white background.
+Moon, flag A flat-style flag planted in a cratered moon surface. Pure white background.
+Galaxy, A flat-style spiral galaxy in soft purple. Pure white background.
+Star, A flat-style five-point yellow star. Pure white background.
+Medal, A flat-style gold medal with a red ribbon. Pure white background.
+Trophy, A flat-style golden trophy cup with two handles. Pure white background.
+Flag, A flat-style waving red flag on a pole. Pure white background.
+Dice, A flat-style six-sided white die showing the number five. Pure white background.
+Playing, card A flat-style ace of spades with a black symbol. Pure white background.
+Chess, piece A flat-style black knight chess piece. Pure white background.
+Joystick, A flat-style classic arcade joystick with a red ball top. Pure white background.
+Game, controller A flat-style modern controller with colorful buttons. Pure white background.
+Joker, card A flat-style playing card with a jester icon. Pure white background.
+Puzzle, piece A flat-style blue puzzle piece with one protruding tab. Pure white background.

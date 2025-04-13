@@ -1,9 +1,11 @@
 import { useState } from "react"
 import { GameContext } from "../GameContext"
-import { Game } from "@yatongzhao/joky-deck-core"
+import { Game, assets } from "@yatongzhao/joky-deck-core"
 import { StrategyScene } from "./StrategyScene";
 import { HomeScene } from "./HomeScene";
 import { Flex } from "@mantine/core";
+
+console.log(assets);
 
 export const GameScene = () => {
   const [state, setState] = useState(0);

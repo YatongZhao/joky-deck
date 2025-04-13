@@ -9,6 +9,7 @@ export const AnteInfoCard = () => {
   const roundNumber = useValue(game.roundNumber);
   const anteNumber = useValue(game.anteNumber);
   const theme = useTheme();
+  const blindDescription = useValue(round.blind.description);
 
   return <Stack
     gap={6}
@@ -22,7 +23,7 @@ export const AnteInfoCard = () => {
     ta="center"
   >
     <Box fz={30} lh={1} c="red.6">{round.blind.name}</Box>
-    <Box fz={12} lh={1} c="red.6" my={6}>{round.blind.description}</Box>
+    <Box fz={12} lh={1} c="red.6" my={6}>{blindDescription}</Box>
     <Box fz={14} lh={1} c="white">Ante {anteNumber + 1}/8</Box>
     <Box fz={14} lh={1} c="white">Round {roundNumber}</Box>
     <Box fz={14} lh={1} c="white">At Least</Box>

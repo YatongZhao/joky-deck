@@ -11,7 +11,7 @@ const BlindTab = ({ active, blind, disableSkip }: { active: boolean; blind: Blin
   const theme = useTheme();
   const anteNumber = useValue(game.anteNumber);
   const targetScore = useMemo(() => getBlindTargetScore(blind, anteNumber), [blind, anteNumber]);
-  
+  const blindDescription = useValue(blind.description);
   const handleSelect = () => {
     game.round.value.stage.setValue(RoundStage.strategy);
   }
@@ -24,7 +24,7 @@ const BlindTab = ({ active, blind, disableSkip }: { active: boolean; blind: Blin
     <Stack align="center" justify="space-between" h="100%">
       <Stack w="100%" align="center" justify="center" gap={10}>
         <Box c={active ? "red.6" : theme.colors.gameMain[8]} fz={14} fw={900}>{blind.name}</Box>
-        <Box fz={10} ta="center" c={active ? "white" : theme.colors.gameMain[8]}>{blind.description}</Box>
+        <Box fz={10} ta="center" c={active ? "white" : theme.colors.gameMain[8]}>{blindDescription}</Box>
       </Stack>
       <Stack w="100%" align="center">
         <Stack gap={2} w="100%" align="center">
