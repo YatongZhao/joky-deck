@@ -93,7 +93,7 @@ export const JokerCardWidget: React.FC<{
         <Stack gap={0} h={70} w={58} justify="space-between" align="center"
           style={{
             backgroundImage: `url(${image})`,
-            backgroundSize: '144px 144px',
+            backgroundSize: '144px auto',
             backgroundPosition: 'center bottom',
             backgroundRepeat: 'no-repeat',
             borderTopLeftRadius: 6,
