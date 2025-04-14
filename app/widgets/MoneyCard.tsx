@@ -1,10 +1,9 @@
 import { Box, Flex } from "@mantine/core"
-import { useContext } from "react";
-import { GameContext } from "../GameContext";
+import { useGame } from "../GameContext";
 import { useValue } from "../hooks/useValue";
 
 export const MoneyCard = () => {
-  const game = useContext(GameContext);
+  const game = useGame();
   const money = useValue(game.money);
 
   return <Flex
