@@ -6,7 +6,7 @@ import { useTheme } from "../../theme";
 import { useDraggableCards } from "../DraggableCardList";
 import { useValue } from "../../hooks/useValue";
 import { useGame } from "../../GameContext";
-import { JokerCard } from "@yatongzhao/joky-deck-core";
+import { Consumable, JokerCard } from "@yatongzhao/joky-deck-core";
 import { ConsumableCardWidget } from "../ConsumableCardWidget";
 import { BoosterPackWidget } from "../BoosterPackWidget";
 import { UniqType } from "@yatongzhao/joky-deck-core";
@@ -70,11 +70,11 @@ export const ShoppingPanel = () => {
             bg={rgba(theme.colors.gameMain[4], 0.8)}
           >
             {goods.map((card, i) => {
-              if (card instanceof JokerCard) {
+              if (card.uniqueType === UniqType.Joker) {
                 return (
                   <JokerCardWidget
                     key={card.id}
-                    joker={card}
+                    joker={card as JokerCard}
                     onBuy={(joker) => game.buyCard(joker)}
                     onDrag={(props) => handleDrag(i, props)}
                     positionSignal={positionSignalMap[card.id]}
@@ -85,7 +85,7 @@ export const ShoppingPanel = () => {
                 return (
                   <ConsumableCardWidget
                     key={card.id}
-                    card={card}
+                    card={card as Consumable}
                     onBuy={(card) => game.buyCard(card)}
                     onDrag={(props) => handleDrag(i, props)}
                     positionSignal={positionSignalMap[card.id]}

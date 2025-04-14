@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@mantine/core": "^7.13.0",
+    "@mantine/form": "^7.17.4",
     "@mantine/hooks": "^7.13.0",
     "@react-spring/web": "^9.7.4",
     "@reactivex/rxjs": "^6.6.7",
