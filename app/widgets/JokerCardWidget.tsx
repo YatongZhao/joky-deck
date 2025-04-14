@@ -1,5 +1,5 @@
 import { JokerCard, JokerCategory, JokerCategoryNames, Editions } from "@yatongzhao/joky-deck-core";
-import { Box, Image, Stack } from "@mantine/core";
+import { Box, Stack } from "@mantine/core";
 import { PositionedCardContainer } from "../components/PositionedCardContainer";
 import { useHover } from "@mantine/hooks";
 import { BehaviorSubject } from "rxjs";
@@ -89,11 +89,9 @@ export const JokerCardWidget: React.FC<{
         {hovered && onSell && <SellButton price={sellPrice} onSell={() => onSell?.(joker)} />}
       </>}
     >
-      <Box pos="relative" style={{ zIndex: 1000 }}>
-        <Stack gap={4} h="100%" justify="space-between">
-          <Box fz={6} fw="bold" ta="center">{joker.name}</Box>
-          <Image src={image} alt={joker.name} w={50} />
-          {/* <Box fz={5} fw="normal" ta="center">{description}</Box> */}
+      <Box pos="absolute" left={0} top={0} style={{ zIndex: 1000 }}>
+        <Stack gap={0} h={70} w={58} justify="space-between" align="center" style={{ backgroundImage: `url(${image})`, backgroundSize: '144px 144px', backgroundPosition: 'center bottom', backgroundRepeat: 'no-repeat' }}>
+          <Box fz={6} fw="bold" ta="center" c="orange.9" pos="relative" top={-1} style={{ textShadow: ' 1px 1px 0 #fff, -1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff' }}>{joker.name}</Box>
         </Stack>
       </Box>
       {edition !== Editions.None && <EditionLabel edition={edition} />}
