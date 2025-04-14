@@ -6,7 +6,7 @@ import { Config, ConfigMap } from "@yatongzhao/joky-deck-core";
 import { PanelButton } from "../components/PanelButton";
 import { DevJokers } from "./DevJokers";
 
-const defaultConfigUrl = 'http://localhost:5173/joky-deck-dataset-balatro/src/config/index.ts';
+const defaultConfigUrl = 'https://yatongzhao.github.io/joky-deck-dataset-balatro/js/config.js';
 export const HomeScene: React.FC<{ onStart?: (config: Config) => void }> = ({ onStart }) => {
   const [configs, setConfigs] = useState<{ name: string, config: Config }[]>([]);
   const [value, setValue] = useState<string>('');
