@@ -1,5 +1,5 @@
 import { JokerCard, JokerCategory, JokerCategoryNames, Editions } from "@yatongzhao/joky-deck-core";
-import { Box, Stack } from "@mantine/core";
+import { Box, Image, Stack } from "@mantine/core";
 import { PositionedCardContainer } from "../components/PositionedCardContainer";
 import { useHover } from "@mantine/hooks";
 import { BehaviorSubject } from "rxjs";
@@ -57,6 +57,7 @@ export const JokerCardWidget: React.FC<{
   const price = useValue(joker.price);
   const sellPrice = useValue(joker.sellPrice);
   const edition = useValue(joker.edition);
+  const image = useValue(joker.image);
 
   return (
     <PositionedCardContainer
@@ -89,9 +90,10 @@ export const JokerCardWidget: React.FC<{
       </>}
     >
       <Box pos="relative" style={{ zIndex: 1000 }}>
-        <Stack gap={2}>
+        <Stack gap={4} h="100%" justify="space-between">
           <Box fz={6} fw="bold" ta="center">{joker.name}</Box>
-          <Box fz={5} fw="normal" ta="center">{description}</Box>
+          <Image src={image} alt={joker.name} w={50} />
+          {/* <Box fz={5} fw="normal" ta="center">{description}</Box> */}
         </Stack>
       </Box>
       {edition !== Editions.None && <EditionLabel edition={edition} />}
