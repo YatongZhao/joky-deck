@@ -1,11 +1,12 @@
 import { Accordion, Box, Button, Group, SegmentedControl, Stack, TextInput } from "@mantine/core"
 import { useForm } from '@mantine/form';
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { loadConfigMap } from "../utils/loadConfigMap";
 import { Config, ConfigMap } from "@yatongzhao/joky-deck-core";
 import { PanelButton } from "../components/PanelButton";
+import { DevJokers } from "./DevJokers";
 
-const defaultConfigUrl = 'https://yatongzhao.github.io/joky-deck-dataset-balatro/js/config.js';
+const defaultConfigUrl = 'http://localhost:5173/joky-deck-dataset-balatro/src/config/index.ts';
 export const HomeScene: React.FC<{ onStart?: (config: Config) => void }> = ({ onStart }) => {
   const [configs, setConfigs] = useState<{ name: string, config: Config }[]>([]);
   const [value, setValue] = useState<string>('');
@@ -44,6 +45,10 @@ export const HomeScene: React.FC<{ onStart?: (config: Config) => void }> = ({ on
     await loadGameConfig(values.configUrl);
   }
 
+  const config = useMemo(() => {
+    return configs.find(config => config.name === value)?.config;
+  }, [configs, value]);
+
   const handleStart = () => {
     const config = configs.find(config => config.name === value);
     if (onStart && config) {
@@ -78,5 +83,8 @@ export const HomeScene: React.FC<{ onStart?: (config: Config) => void }> = ({ on
         </Accordion.Panel>
       </Accordion.Item>
     </Accordion>
+    {config && <Box pb={1000}>
+      <DevJokers config={config} />
+    </Box>}
   </Stack>
 }

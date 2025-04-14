@@ -90,7 +90,16 @@ export const JokerCardWidget: React.FC<{
       </>}
     >
       <Box pos="absolute" left={0} top={0} style={{ zIndex: 1000 }}>
-        <Stack gap={0} h={70} w={58} justify="space-between" align="center" style={{ backgroundImage: `url(${image})`, backgroundSize: '144px 144px', backgroundPosition: 'center bottom', backgroundRepeat: 'no-repeat' }}>
+        <Stack gap={0} h={70} w={58} justify="space-between" align="center"
+          style={{
+            backgroundImage: `url(${image})`,
+            backgroundSize: '144px 144px',
+            backgroundPosition: 'center bottom',
+            backgroundRepeat: 'no-repeat',
+            borderTopLeftRadius: 6,
+            borderTopRightRadius: 6,
+          }}
+        >
           <Box fz={6} fw="bold" ta="center" c="orange.9" pos="relative" top={-1} style={{ textShadow: ' 1px 1px 0 #fff, -1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff' }}>{joker.name}</Box>
         </Stack>
       </Box>
