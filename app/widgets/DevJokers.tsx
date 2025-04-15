@@ -18,7 +18,7 @@ export const DevJokers = ({ config }: { config: Config }) => {
     gap: 120,
   });
 
-  return <Box pos="relative" left={-100}>
+  return <Box pos="relative" left={-300}>
     {jokers$.value.map((joker, i) => (
       <JokerCardWidget key={joker.id} joker={joker} positionSignal={positionSignalMap[joker.id]} onDrag={(props) => handleDrag(i, props)} />
     ))}
