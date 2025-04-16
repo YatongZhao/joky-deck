@@ -6,7 +6,7 @@ export const CardInfoContainer: React.FC<{
   w?: MantineStyleProps['w'];
 }> = ({ children, w }) => {
   return <Stack
-    w={w || 50}
+    w={w || 100}
     align="center"
     py={2}
     px={5}

@@ -51,7 +51,8 @@ export const JokerCardWidget: React.FC<{
   onDrag?: (props: { active: boolean; movement: [number, number]; }) => void;
   active?: boolean;
   positionSignal: BehaviorSubject<{ x: number; y: number }>;
-}> = ({ joker, onBuy, onSell, onClick, onDrag, active, positionSignal, showPrice = false }) => {
+  randomRotate?: boolean;
+}> = ({ joker, onBuy, onSell, onClick, onDrag, active, positionSignal, showPrice = false, randomRotate = false }) => {
   const { hovered, ref } = useHover();
   const description = useValue(joker.description);
   const price = useValue(joker.price);
@@ -68,6 +69,7 @@ export const JokerCardWidget: React.FC<{
       onDrag={onDrag}
       active={active}
       positionSignal={positionSignal}
+      randomRotate={randomRotate}
       info={<>
         {hovered && <Box
           pos="absolute"

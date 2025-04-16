@@ -18,8 +18,9 @@ export const PositionedCardContainer = forwardRef<
     children?: ReactNode;
     info?: ReactNode;
     hoverToTop?: boolean;
+    randomRotate?: boolean;
   }
->(function PositionedCardContainer({ onClick, active, onDrag, children, positionSignal, effect, info, hoverToTop = false }, ref) {
+>(function PositionedCardContainer({ onClick, active, onDrag, children, positionSignal, effect, info, hoverToTop = false, randomRotate = true }, ref) {
   const [spring, api] = useSpring(() => ({ x: 800, y: 0 }));
   const targetPosition = useRef({ x: 0, y: 0 });
   const currentPosition = useRef({ x: 0, y: 0 });
@@ -37,12 +38,12 @@ export const PositionedCardContainer = forwardRef<
       return Promise.all(emitEffectApi.start({
         from: { scale: 0.8, rotate: -10 },
         to: [
-          { scale: 1, rotate: Math.random() * 8 - 4, config: { tension: 800, mass: 1, friction: 19, velocity: .01 } },
+          { scale: 1, rotate: randomRotate ? Math.random() * 8 - 4 : 0, config: { tension: 800, mass: 1, friction: 19, velocity: .01 } },
         ],
       }));
     });
     return () => handle?.remove();
-  }, [effect, emitEffectApi]);
+  }, [effect, emitEffectApi, randomRotate]);
 
   const moveToTargetPosition = useCallback(async () => {
     if (!(spring.x.get() === targetPosition.current.x && spring.y.get() === targetPosition.current.y)) {

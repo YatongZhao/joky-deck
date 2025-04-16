@@ -1,10 +1,14 @@
-import { Box, Stack } from "@mantine/core";
+import { Box } from "@mantine/core";
 import { JokerCardWidget } from "./JokerCardWidget";
 import { Config, Game, JokerCard, Value } from "@yatongzhao/joky-deck-core";
 import { useMemo } from "react";
 import { useDraggableCards } from "./DraggableCardList";
-import { splitEvery } from "ramda";
+import { useTheme } from "../theme";
 
+const columns = 10;
+const gapX = 125;
+const gapY = 180;
+const cardWidth = 120;
 export const JokerRow = ({ jokers }: { jokers: JokerCard[] }) => {
   const jokers$ = useMemo(() => {
     return new Value(jokers);
@@ -12,30 +16,30 @@ export const JokerRow = ({ jokers }: { jokers: JokerCard[] }) => {
 
   const { handleDrag, positionSignalMap } = useDraggableCards({
     cards$: jokers$,
-    gap: 120,
+    gap: gapX,
+    gapY,
+    wrap: true,
+    columns,
   });
 
   return <Box>
-    {jokers.map((joker, i) => (
-      <JokerCardWidget key={joker.id} joker={joker} positionSignal={positionSignalMap[joker.id]} onDrag={(props) => handleDrag(i, props)} />
+    {jokers$.value.map((joker, i) => (
+      <JokerCardWidget key={joker.id} randomRotate={false} joker={joker} positionSignal={positionSignalMap[joker.id]} onDrag={(props) => handleDrag(i, props)} />
     ))}
   </Box>
 }
 
 export const DevJokers = ({ config }: { config: Config }) => {
-  const jokerRows = useMemo(() => {
+  const theme = useTheme();
+  const jokers = useMemo(() => {
     const game = new Game(config);
     const jokers = config.jokers.map(joker => {
       return joker.creator(game);
     });
-    return splitEvery(10, jokers);
+    return jokers.sort(() => Math.random() - 0.5);
   }, [config]);
 
-  return <Stack pos="relative" left={-295}>
-    {jokerRows.map((jokerRow, i) => (
-      <Box key={i} h={80}>
-        <JokerRow jokers={jokerRow} />
-      </Box>
-    ))}
-  </Stack>
+  return <Box px={`${(gapX - cardWidth) / 2 / theme.scale}px`} pos="relative" w={`${gapX / theme.scale * columns}px`} h={`${gapY / theme.scale * ~~(jokers.length / columns)}px`}>
+        <JokerRow jokers={jokers} />
+  </Box>
 }

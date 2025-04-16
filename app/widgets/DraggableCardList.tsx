@@ -6,14 +6,16 @@ import { BehaviorSubject } from "rxjs";
 
 export const useDraggableCards = <C extends {
   id: string;
-},>({ cards$, gap = 120 }: {
+},>({ cards$, gap = 120, gapY = 120, wrap = false, columns = 3 }: {
   cards$: Value<C[]>;
   gap?: number;
+  gapY?: number;
+  wrap?: boolean;
+  columns?: number;
 }) => {
   const cards = useValue(cards$);
 
   const positionSignalMapRef = useRef<Record<string, BehaviorSubject<{ x: number; y: number; }>>>({});
-
   const positionSignalMap = useMemo(() => {
     const map: Record<string, BehaviorSubject<{ x: number; y: number; }>> = {};
 
@@ -34,14 +36,22 @@ export const useDraggableCards = <C extends {
     return map;
   }, [cards]);
 
+  const getX = useCallback((i: number) => {
+    return wrap ? (i % columns) * gap : i * gap;
+  }, [gap, wrap, columns]);
+
+  const getY = useCallback((i: number) => {
+    return wrap ? ~~(i / columns) * gapY : 0;
+  }, [gapY, wrap, columns]);
+
   useEffect(() => {
     cards.forEach((card, i) => {
       positionSignalMap[card.id].next({
-        x: i * gap,
-        y: 0,
+        x: getX(i),
+        y: getY(i),
       });
     });
-  }, [cards, positionSignalMap, gap]);
+  }, [cards, positionSignalMap, getX, getY]);
 
   const getTargetI = useCallback((i: number, diffI: number) => {
     let targetI = i + diffI;
@@ -53,8 +63,10 @@ export const useDraggableCards = <C extends {
 
   const handleDrag = useCallback((index: number, props: { active: boolean; movement: [number, number]; }) => {
     const active = props.active;
-    const [x] = props.movement;
-    const diffI = ~~(x / gap);
+    const [x, y] = props.movement;
+    const diffY = ~~(y / gapY);
+    const diffX = ~~(x / gap);
+    const diffI = diffY * columns + diffX;
 
     cards$.value.forEach((card, i) => {
       const targetDiffI = i - index;
@@ -65,8 +77,8 @@ export const useDraggableCards = <C extends {
       }
 
       positionSignalMap[card.id].next({
-        x: newIndex * gap,
-        y: positionSignalMap[card.id].value.y,
+        x: getX(newIndex),
+        y: getY(newIndex),
       });
     });
 
@@ -75,7 +87,7 @@ export const useDraggableCards = <C extends {
 
       cards$.setValue(move(index, getTargetI(index, diffI), cards$.value));
     }
-  }, [cards$, gap, getTargetI, positionSignalMap]);
+  }, [cards$, gap, getTargetI, positionSignalMap, getX, getY, columns, gapY]);
 
   return { handleDrag, positionSignalMap };
 }
