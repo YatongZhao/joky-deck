@@ -1,4 +1,4 @@
-import { CardLabels, ConfigMap, GetConfigParam, JokerCard, JokerCategory, ValueType } from "@yatongzhao/joky-deck-core";
+import { CardLabels, ConfigMap, Enhancements, GetConfigParam, JokerCard, JokerCategory, Suits, Value, ValueType } from "@yatongzhao/joky-deck-core";
 import { dynamicImport } from "./dynamicImport";
 
 export const loadConfigMap = async (configUrl: string): Promise<ConfigMap> => {
@@ -10,7 +10,10 @@ export const loadConfigMap = async (configUrl: string): Promise<ConfigMap> => {
     jokerCategory: JokerCategory,
     cardLabels: CardLabels,
     valueType: ValueType,
+    Value: Value,
+    suits: Suits,
     style: 'joker',
+    enhancements: Enhancements,
   });
   for (const key in configMap) {
     const config = configMap[key];
