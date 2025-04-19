@@ -8,16 +8,16 @@ import { CardInfoContainer } from "../components/CardInfoContainer";
 import { useHover } from "@mantine/hooks";
 import { useEffect } from "react";
 import { wait } from "../utils/wait";
-import { useTheme } from "../theme";
+import { pokerFont, useTheme } from "../theme";
 
 const SuitIcon = ({ suit, ...styleProps }: { suit: Suits } & MantineStyleProps) => {
   const theme = useTheme();
 
   return <Text {...styleProps}>
-    {suit === 'diamond' && <Box component="span" c={theme.colors.red[7]} className="icon-diamond" />}
-    {suit === 'club' && <Box component="span" c={theme.colors.gameMain[8]} className="icon-club" />}
-    {suit === 'spade' && <Box component="span" c={theme.colors.gameMain[8]} className="icon-spade" />}
-    {suit === 'heart' && <Box component="span" c={theme.colors.red[7]} className="icon-heart" />}
+    {suit === 'diamond' && <Box component="span" c={theme.colors.red[7]} className={pokerFont.className}>♦</Box>}
+    {suit === 'club' && <Box component="span" c={theme.colors.gameMain[8]} className={pokerFont.className}>♣</Box>}
+    {suit === 'spade' && <Box component="span" c={theme.colors.gameMain[8]} className={pokerFont.className}>♠</Box>}
+    {suit === 'heart' && <Box component="span" c={theme.colors.red[7]} className={pokerFont.className}>♥</Box>}
   </Text>
 }
 

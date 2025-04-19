@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import '@mantine/core/styles.css';
-import './icons/style.css';
 import { ColorSchemeScript, MantineProvider } from "@mantine/core";
 import { theme } from "./theme";
 

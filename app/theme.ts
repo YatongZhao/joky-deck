@@ -5,6 +5,10 @@ export const digitalNumbersFont = localFont({
     src: './fonts/DigitalNumbers.ttf',
 });
 
+export const pokerFont = localFont({
+    src: './fonts/poker/icomoon.ttf',
+});
+
 export const MaliFont = localFont({
     src: [
         {
