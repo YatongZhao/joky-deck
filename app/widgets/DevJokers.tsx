@@ -39,7 +39,7 @@ export const DevJokers = ({ config }: { config: Config }) => {
     return jokers.sort(() => Math.random() - 0.5);
   }, [config]);
 
-  return <Box px={`${(gapX - cardWidth) / 2 / theme.scale}px`} pos="relative" w={`${gapX / theme.scale * columns}px`} h={`${gapY / theme.scale * ~~(jokers.length / columns)}px`}>
+  return <Box px={`${(gapX - cardWidth) / 2 / theme.scale}px`} pos="relative" w={`${gapX / theme.scale * columns}px`} h={`${gapY / theme.scale * ~~(jokers.length / columns + 1)}px`}>
         <JokerRow jokers={jokers} />
   </Box>
 }

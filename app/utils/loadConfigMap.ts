@@ -10,7 +10,7 @@ export const loadConfigMap = async (configUrl: string): Promise<ConfigMap> => {
     jokerCategory: JokerCategory,
     cardLabels: CardLabels,
     valueType: ValueType,
-    Value: Value,
+    Value,
     suits: Suits,
     style: 'joker',
     enhancements: Enhancements,
