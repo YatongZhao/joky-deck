@@ -9,6 +9,7 @@ import { useHover } from "@mantine/hooks";
 import { useEffect } from "react";
 import { wait } from "../utils/wait";
 import { pokerFont, useTheme } from "../theme";
+import { PlayingCard } from "./PlayingCard";
 
 const SuitIcon = ({ suit, ...styleProps }: { suit: Suits } & MantineStyleProps) => {
   const theme = useTheme();
@@ -89,11 +90,10 @@ export const CardScene: React.FC<{
         </Box>}
       </>}
     >
-        {label.label}
-        <SuitIcon suit={suit} fz={20} />
-        {enhancement !== Enhancements.None && <Box pos="absolute" bottom={0} left={0} right={0} p={2}>
-          <Badge size="xs" radius="sm" fullWidth opacity={0.5} color="blue">{enhancement}</Badge>
-        </Box>}
+      <PlayingCard label={label.label} suit={suit} />
+      {enhancement !== Enhancements.None && <Box pos="absolute" bottom={0} left={0} right={0} p={2}>
+        <Badge size="xs" radius="sm" fullWidth opacity={0.5} color="blue">{enhancement}</Badge>
+      </Box>}
     </PositionedCardContainer>
   )
 }

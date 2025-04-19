@@ -17,6 +17,7 @@ export const useDraggableCards = <C extends {
 
   const positionSignalMapRef = useRef<Record<string, BehaviorSubject<{ x: number; y: number; }>>>({});
   const positionSignalMap = useMemo(() => {
+    console.log('positionSignalMap');
     const map: Record<string, BehaviorSubject<{ x: number; y: number; }>> = {};
 
     cards.forEach((card) => {

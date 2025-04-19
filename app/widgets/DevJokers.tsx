@@ -1,7 +1,7 @@
 import { Box } from "@mantine/core";
 import { JokerCardWidget } from "./JokerCardWidget";
 import { Config, Game, JokerCard, Value } from "@yatongzhao/joky-deck-core";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useDraggableCards } from "./DraggableCardList";
 import { useTheme } from "../theme";
 
@@ -10,9 +10,12 @@ const gapX = 125;
 const gapY = 180;
 const cardWidth = 120;
 export const JokerRow = ({ jokers }: { jokers: JokerCard[] }) => {
-  const jokers$ = useMemo(() => {
-    return new Value(jokers);
+  const joker$Ref = useRef<Value<JokerCard[]>>(new Value([] as JokerCard[]));
+  useEffect(() => {
+    joker$Ref.current.setValue(jokers);
   }, [jokers]);
+
+  const jokers$ = joker$Ref.current;
 
   const { handleDrag, positionSignalMap } = useDraggableCards({
     cards$: jokers$,

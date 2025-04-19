@@ -2,9 +2,11 @@ import { Accordion, Box, Button, Group, SegmentedControl, Stack, TextInput } fro
 import { useForm } from '@mantine/form';
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { loadConfigMap } from "../utils/loadConfigMap";
-import { Config, ConfigMap } from "@yatongzhao/joky-deck-core";
+import { CardLabels, Config, ConfigMap, Suits } from "@yatongzhao/joky-deck-core";
 import { PanelButton } from "../components/PanelButton";
 import { DevJokers } from "./DevJokers";
+import { CardContainer } from "../components/CardContainer";
+import { PlayingCard } from "./PlayingCard";
 
 const defaultConfigUrl = 'https://yatongzhao.github.io/joky-deck-dataset-balatro/js/config.js';
 export const HomeScene: React.FC<{ onStart?: (config: Config) => void }> = ({ onStart }) => {
@@ -85,6 +87,17 @@ export const HomeScene: React.FC<{ onStart?: (config: Config) => void }> = ({ on
     </Accordion>
     {config && <Box pb={1000}>
       <DevJokers config={config} />
+      <Group gap={2} align="center" justify="center" ml={15}>
+        {Object.values(Suits).map(suit => {
+          return Object.values(CardLabels).map(label => {
+            return <Box ml={-15} style={{ zIndex: 1 }} key={`${suit}-${label}`}>
+              <CardContainer>
+                <PlayingCard suit={suit} label={label} />
+              </CardContainer>
+            </Box>
+          })
+        })}
+      </Group>
     </Box>}
   </Stack>
 }
