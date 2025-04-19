@@ -1,6 +1,6 @@
-import { Box, Group } from "@mantine/core";
+import { Box } from "@mantine/core";
 import { JokerCardWidget } from "./JokerCardWidget";
-import { CardLabels, Config, Game, JokerCard, Suits, Value, Card } from "@yatongzhao/joky-deck-core";
+import { Config, Game, JokerCard, Value, Card } from "@yatongzhao/joky-deck-core";
 import { useEffect, useMemo, useRef } from "react";
 import { useDraggableCards } from "./DraggableCardList";
 import { useTheme } from "../theme";

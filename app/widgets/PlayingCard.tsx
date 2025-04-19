@@ -1,6 +1,5 @@
-import { useTheme } from "../theme";
+import { useTheme, pokerFont } from "../theme";
 import { BoxProps, Group, Stack, StackProps } from "@mantine/core";
-import { pokerFont } from "../theme";
 
 import pokerJ from '../images/poker_J.png';
 import pokerQ from '../images/poker_Q.png';
