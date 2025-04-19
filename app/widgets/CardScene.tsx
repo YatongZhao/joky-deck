@@ -27,8 +27,9 @@ export const CardScene: React.FC<{
   onClick?: (card: Card) => void;
   onDrag?: (props: { active: boolean; movement: [number, number]; }) => void;
   active?: boolean;
+  randomRotate?: boolean;
   positionSignal: BehaviorSubject<{ x: number; y: number }>;
-}> = ({ card, onClick, active, onDrag, positionSignal }) => {
+}> = ({ card, onClick, active, onDrag, positionSignal, randomRotate = true }) => {
   const enhancement = useValue(card.enhancement);
   const { hovered, ref } = useHover();
   const label = useValue(card.label);
@@ -57,6 +58,7 @@ export const CardScene: React.FC<{
       onDrag={onDrag}
       active={active}
       positionSignal={positionSignal}
+      randomRotate={randomRotate}
       info={<>
         {hovered && <Box
           pos="absolute"

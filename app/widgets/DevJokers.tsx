@@ -1,9 +1,10 @@
-import { Box } from "@mantine/core";
+import { Box, Group } from "@mantine/core";
 import { JokerCardWidget } from "./JokerCardWidget";
-import { Config, Game, JokerCard, Value } from "@yatongzhao/joky-deck-core";
+import { CardLabels, Config, Game, JokerCard, Suits, Value, Card } from "@yatongzhao/joky-deck-core";
 import { useEffect, useMemo, useRef } from "react";
 import { useDraggableCards } from "./DraggableCardList";
 import { useTheme } from "../theme";
+import { CardScene } from "./CardScene";
 
 const columns = 10;
 const gapX = 125;
@@ -45,4 +46,50 @@ export const DevJokers = ({ config }: { config: Config }) => {
   return <Box px={`${(gapX - cardWidth) / 2 / theme.scale}px`} pos="relative" w={`${gapX / theme.scale * columns}px`} h={`${gapY / theme.scale * ~~(jokers.length / columns + 1)}px`}>
         <JokerRow jokers={jokers} />
   </Box>
+}
+
+const cardListConfig = {
+  gapX: 94,
+  gapY: 166,
+  cardWidth: 120,
+  columns: 13,
+}
+export const DevPlayingCards = ({ config }: { config: Config }) => {
+  const theme = useTheme();
+
+  const card$Ref = useRef<Value<Card[]>>(new Value([] as Card[]));
+  useEffect(() => {
+    const game = new Game(config);
+    card$Ref.current.setValue(game.cardPool.value);
+  }, [config]);
+
+  const cards$ = card$Ref.current;
+
+  const { handleDrag, positionSignalMap } = useDraggableCards({
+    cards$: cards$,
+    gap: cardListConfig.gapX,
+    gapY: cardListConfig.gapY,
+    wrap: true,
+    columns: cardListConfig.columns,
+  });
+
+  
+  return <>
+    <Box
+      px={`${(cardListConfig.gapX - cardListConfig.cardWidth) / 2 / theme.scale}px`}
+      pos="relative"
+      w={`${cardListConfig.gapX / theme.scale * cardListConfig.columns}px`}
+      h={`${cardListConfig.gapY / theme.scale * ~~(cards$.value.length / cardListConfig.columns + 1)}px`}
+    >
+      {cards$.value.map((card, i) => (
+        <CardScene
+          key={card.id}
+          card={card}
+          randomRotate={false}
+          positionSignal={positionSignalMap[card.id]}
+          onDrag={(props) => handleDrag(i, props)}
+        />
+      ))}
+    </Box>
+  </>
 }
