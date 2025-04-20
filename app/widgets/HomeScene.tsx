@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { loadConfigMap } from "../utils/loadConfigMap";
 import { Config, ConfigMap } from "@yatongzhao/joky-deck-core";
 import { PanelButton } from "../components/PanelButton";
-import { DevJokers, DevPlayingCards } from "./DevJokers";
+import { DevCards } from "./DevCards";
 
 const defaultConfigUrl = 'https://yatongzhao.github.io/joky-deck-dataset-balatro/js/config.js';
 export const HomeScene: React.FC<{ onStart?: (config: Config) => void }> = ({ onStart }) => {
@@ -84,8 +84,7 @@ export const HomeScene: React.FC<{ onStart?: (config: Config) => void }> = ({ on
       </Accordion.Item>
     </Accordion>
     {config && <Box pb={100}>
-      <DevJokers config={config} />
-      <DevPlayingCards config={config} />
+      <DevCards config={config} />
     </Box>}
   </Stack>
 }

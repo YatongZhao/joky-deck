@@ -9,7 +9,7 @@ import { PriceLabel } from "../components/PriceLabel";
 import { SellButton } from "../components/SellButton";
 import { BuyCardButton } from "../components/BuyCardButton";
 
-export const ConsumableCardWidget = ({ card, onBuy, onUse, onSell, onDrag, active, positionSignal, showPrice = false }: {
+export const ConsumableCardWidget = ({ card, onBuy, onUse, onSell, onDrag, active, positionSignal, showPrice = false, randomRotate = false }: {
   card: Consumable;
   showPrice?: boolean;
   onBuy?: (card: Consumable) => void;
@@ -17,6 +17,7 @@ export const ConsumableCardWidget = ({ card, onBuy, onUse, onSell, onDrag, activ
   onSell?: (card: Consumable) => void;
   onDrag?: (props: { active: boolean; movement: [number, number]; }) => void;
   active?: boolean;
+  randomRotate?: boolean;
   positionSignal: BehaviorSubject<{ x: number; y: number }>;
 }) => {
   const { hovered, ref } = useHover();
@@ -32,6 +33,7 @@ export const ConsumableCardWidget = ({ card, onBuy, onUse, onSell, onDrag, activ
       effect={card.emitEffect}
       onDrag={onDrag}
       active={active}
+      randomRotate={randomRotate}
       positionSignal={positionSignal}
       info={<>
         {hovered && onSell && <SellButton price={sellPrice} onSell={() => onSell?.(card)} />}
