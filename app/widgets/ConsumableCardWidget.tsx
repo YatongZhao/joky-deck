@@ -8,6 +8,8 @@ import { useValue } from "../hooks/useValue";
 import { PriceLabel } from "../components/PriceLabel";
 import { SellButton } from "../components/SellButton";
 import { BuyCardButton } from "../components/BuyCardButton";
+import { Gear } from "./Gear";
+import { useTheme } from "../theme";
 
 export const ConsumableCardWidget = ({ card, onBuy, onUse, onSell, onDrag, active, positionSignal, showPrice = false, randomRotate = false }: {
   card: Consumable;
@@ -25,6 +27,7 @@ export const ConsumableCardWidget = ({ card, onBuy, onUse, onSell, onDrag, activ
   const price = useValue(card.price);
   const sellPrice = useValue(card.sellPrice);
   const disable = useValue(card.disable);
+  const theme = useTheme();
 
   return (
     <PositionedCardContainer
@@ -39,7 +42,10 @@ export const ConsumableCardWidget = ({ card, onBuy, onUse, onSell, onDrag, activ
         {hovered && onSell && <SellButton price={sellPrice} onSell={() => onSell?.(card)} />}
       </>}
     >
-      <Stack gap={1} align="center">
+      <Box pos="absolute" top={0} left={0} right={0} bottom={0} style={{ overflow: 'hidden', zIndex: 0 }}>
+        <Gear width={200} colors={theme.colors.gameMain} />
+      </Box>
+      <Stack gap={1} align="center" pos="relative" style={{ zIndex: 1 }}>
         <Text fz={5} fw={900}>{card.name}</Text>
         {card.type === 'Tarot' && (
           <Text fz={6}>Tarot</Text>
