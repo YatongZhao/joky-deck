@@ -1,5 +1,5 @@
 import React from "react"
-import { generateGearPath, GEARS_10, calculateGearInfo } from "../utils/gear";
+import { generateGearPath, calculateGearInfo, GEARS_10 } from "../utils/gear";
 import { MantineColorsTuple } from "@mantine/core";
 import { memoizeWith } from "ramda";
 
@@ -23,13 +23,13 @@ const parentGearContext = React.createContext<{
   teeth: number;
   module: number;
   direction: 1 | -1;
+  initAngle: number;
 } | null>(null);
 
 const useParentGear = () => {
   return React.useContext(parentGearContext);
 };
 
-// TODO: 齿轮角度修正
 export const Gear: React.FC<{
   color: string;
   teeth: number;
@@ -42,12 +42,18 @@ export const Gear: React.FC<{
   const parentGear = useParentGear();
 
   const currentDirection = (parentGear ? -parentGear.direction : direction) as (1 | -1);
+  const currentInitAngle = parentGear
+    ? -parentGear.initAngle * parentGear.teeth / teeth + currentDirection * (180) % (360 / teeth) + 180 / teeth + positionAngle * (parentGear.teeth + teeth) / teeth
+    : 0;
+  
+  const duration = durationUnit * teeth;
+  const begin = -(currentInitAngle) / 360 * duration * currentDirection - duration;
 
   return <g transform={parentGear ? getGearTransform(positionAngle, (parentGear.teeth * parentGear.module + teeth * module) / 2) : ''}>
     <path d={memorizedGearPath(calculateGearInfo(teeth, module))} fill={color}>
-      <animateTransform attributeName="transform" type="rotate" begin="1s" from="0" to={`${360 * currentDirection}`} dur={`${durationUnit * teeth}s`} repeatCount="indefinite" />
+      <animateTransform attributeName="transform" type="rotate" begin={`${begin}s`} from="0" to={`${360 * currentDirection}`} dur={`${duration}s`} repeatCount="indefinite" />
     </path>
-    <parentGearContext.Provider value={{ teeth, module, direction: currentDirection }}>
+    <parentGearContext.Provider value={{ teeth, module, direction: currentDirection, initAngle: currentInitAngle }}>
       {children}
     </parentGearContext.Provider>
   </g>
@@ -56,19 +62,6 @@ export const Gear: React.FC<{
 export const GearGroup: React.FC<{ colors: MantineColorsTuple, width: number }> = ({ colors, width }) => {
   return (
     <GearGroupContainer width={width}>
-      {/* <g transform="translate(60, 160)">
-        <Gear color={colors[3]} teeth={6} module={10}>
-          <Gear color={colors[2]} teeth={6} module={10} positionAngle={90}>
-            <Gear color={colors[4]} teeth={12} module={10} positionAngle={30}>
-              <Gear color={colors[2]} teeth={18} module={10} positionAngle={-30}>
-                <Gear color={colors[1]} teeth={12} module={10} positionAngle={120}>
-                  <Gear color={colors[0]} teeth={12} module={10} positionAngle={90}></Gear>
-                </Gear>
-              </Gear>
-            </Gear>
-          </Gear>
-        </Gear>
-      </g> */}
       <g transform="translate(60, 160)">
         <path d={generateGearPath(GEARS_10[6])} fill={colors[3]}>
           <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="12s" repeatCount="indefinite" />

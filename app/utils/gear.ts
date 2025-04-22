@@ -45,18 +45,21 @@ export function generateGearPath({
   const rootRadius = pitchRadius - dedendum;
   const teethAngle = Math.PI / teeth;
 
+  const toothPath = involuteToothPath(
+    baseRadius,
+    outerRadius,
+    rootRadius,
+    pitchRadius,
+    resolution,
+    teethAngle,
+  );
+
+  const deltaAngle = (Math.atan2(toothPath.leftPoints[0][1], toothPath.leftPoints[0][0])- Math.atan2(toothPath.rightPoints[toothPath.rightPoints.length - 1][1], toothPath.rightPoints[toothPath.rightPoints.length - 1][0])) / 2;
+
   let path = ``;
   let startPoint: [number, number] = [0, 0];
   for (let i = teeth - 1; i >= 0; i--) {
-    const angle = (2 * Math.PI * i) / teeth;
-    const toothPath = involuteToothPath(
-      baseRadius,
-      outerRadius,
-      rootRadius,
-      pitchRadius,
-      resolution,
-      teethAngle,
-    );
+    const angle = (2 * Math.PI * i) / teeth + deltaAngle - Math.PI / 2;
 
     let startRootPoint: [number, number] = [0, 0];
     let endRootPoint: [number, number] = [0, 0];
