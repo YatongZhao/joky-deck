@@ -3,7 +3,7 @@ import { useTheme } from "@/app/theme";
 import { Gear, GearGroupContainer } from "@/app/widgets/Gear";
 import { Box, Center, MantineColorsTuple } from "@mantine/core";
 import { useEffect, useState } from "react";
-export const GearGroup: React.FC<{ colors: MantineColorsTuple }> = ({ colors }) => {
+const GearGroup: React.FC<{ colors: MantineColorsTuple }> = ({ colors }) => {
   const [width, setWidth] = useState(800);
   const [height, setHeight] = useState(800);
   useEffect(() => {
