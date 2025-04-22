@@ -49,7 +49,6 @@ export function generateGearPath({
     baseRadius,
     outerRadius,
     rootRadius,
-    pitchRadius,
     resolution,
     teethAngle,
   );
@@ -95,11 +94,9 @@ function involuteToothPath(
   baseRadius: number,
   outerRadius: number,
   rootRadius: number,
-  pitchRadius: number,
   steps: number,
   teethAngle: number,
 ): { leftPoints: [number, number][], rightPoints: [number, number][] } {
-  console.log(baseRadius, outerRadius, rootRadius, pitchRadius);
   const start = Math.max(rootRadius, baseRadius);
   const to1 = Math.sqrt((start ** 2) - (baseRadius ** 2)) / baseRadius;
   const to2 = Math.sqrt((outerRadius ** 2) - (baseRadius ** 2)) / baseRadius;
