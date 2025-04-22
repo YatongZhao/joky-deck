@@ -67,17 +67,21 @@ const useZoom = (viewBox: ViewBoxState, onViewBoxChange: (newViewBox: ViewBoxSta
     const mouseX = event.clientX - svgRect.left;
     const mouseY = event.clientY - svgRect.top;
     
+    // Calculate the mouse position in SVG coordinates
     const svgX = (mouseX / svgRect.width) * viewBox.width + viewBox.left;
-    const svgY = (mouseY / svgRect.width) * viewBox.height + viewBox.top;
+    const svgY = (mouseY / svgRect.height) * viewBox.height + viewBox.top;
     
+    // Calculate new total scale with limits
     const newTotalScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, totalScale + event.deltaY * ZOOM_SPEED));
     const scale = newTotalScale / totalScale;
     
+    // Calculate new viewBox dimensions
     const newWidth = viewBox.width * scale;
     const newHeight = viewBox.height * scale;
     
+    // Calculate new viewBox position to keep mouse point fixed
     const newLeft = svgX - (mouseX / svgRect.width) * newWidth;
-    const newTop = svgY - (mouseY / svgRect.width) * newHeight;
+    const newTop = svgY - (mouseY / svgRect.height) * newHeight;
     
     onViewBoxChange({
       left: newLeft,
@@ -107,9 +111,29 @@ export const GearGroupContainer: React.FC<{ children: React.ReactNode, width: nu
   const [viewBox, setViewBox] = useState<ViewBoxState>({
     left: 0,
     top: 0,
-    width: width,
-    height: height
+    width,
+    height
   });
+
+  // Update viewBox when width/height props change
+  useEffect(() => {
+    setViewBox(prev => {
+      // Calculate the scale factor for the new dimensions
+      const scaleX = width / prev.width;
+      const scaleY = height / prev.height;
+      
+      // Adjust the left and top to keep content fixed relative to top-left
+      const newLeft = prev.left * scaleX;
+      const newTop = prev.top * scaleY;
+      
+      return {
+        left: newLeft,
+        top: newTop,
+        width,
+        height
+      };
+    });
+  }, [width, height]);
 
   const { dragState, handleMouseDown, handleMouseMove, handleMouseUp } = useDrag(viewBox, setViewBox);
   const { handleWheel } = useZoom(viewBox, setViewBox);
