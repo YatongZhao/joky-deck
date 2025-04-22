@@ -43,7 +43,7 @@ export const ConsumableCardWidget = ({ card, onBuy, onUse, onSell, onDrag, activ
       </>}
     >
       <Box pos="absolute" top={0} left={0} right={0} bottom={0} style={{ overflow: 'hidden', zIndex: 0 }}>
-        <GearGroup width={200} colors={theme.colors.gameMain} />
+        <GearGroup width={116} height={156} colors={theme.colors.gameMain} />
       </Box>
       <Stack gap={1} align="center" pos="relative" style={{ zIndex: 1 }}>
         <Text fz={5} fw={900}>{card.name}</Text>

@@ -3,47 +3,91 @@ import { generateGearPath, calculateGearInfo, GEARS_10 } from "../utils/gear";
 import { MantineColorsTuple } from "@mantine/core";
 import { memoizeWith } from "ramda";
 
-export const GearGroupContainer: React.FC<{ children: React.ReactNode, width: number }> = ({ children, width }) => {
-  const [viewBoxLeft, setViewBoxLeft] = useState(0);
-  const [viewBoxTop, setViewBoxTop] = useState(0);
-  const [viewBoxWidth, setViewBoxWidth] = useState(500);
-  const [viewBoxHeight, setViewBoxHeight] = useState(600);
+interface ViewBoxState {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
+interface DragState {
+  isDragging: boolean;
+  startX: number;
+  startY: number;
+}
+
+const useDrag = (viewBox: ViewBoxState, onViewBoxChange: (newViewBox: ViewBoxState) => void) => {
+  const [dragState, setDragState] = useState<DragState>({ isDragging: false, startX: 0, startY: 0 });
+
+  const handleMouseDown = (event: React.MouseEvent<SVGSVGElement>) => {
+    if (event.button === 1) { // Middle mouse button
+      event.preventDefault();
+      setDragState({ isDragging: true, startX: event.clientX, startY: event.clientY });
+    }
+  };
+
+  const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
+    if (!dragState.isDragging) return;
+
+    const dx = event.clientX - dragState.startX;
+    const dy = event.clientY - dragState.startY;
+
+    onViewBoxChange({
+      ...viewBox,
+      left: viewBox.left - dx * (viewBox.width / event.currentTarget.clientWidth),
+      top: viewBox.top - dy * (viewBox.height / event.currentTarget.clientWidth)
+    });
+
+    setDragState({ ...dragState, startX: event.clientX, startY: event.clientY });
+  };
+
+  const handleMouseUp = () => {
+    setDragState({ ...dragState, isDragging: false });
+  };
+
+  return {
+    dragState,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp
+  };
+};
+
+const useZoom = (viewBox: ViewBoxState, onViewBoxChange: (newViewBox: ViewBoxState) => void) => {
   const [totalScale, setTotalScale] = useState(1);
 
   const MIN_SCALE = 0.5;
-  const MAX_SCALE = 3;
-  const ZOOM_SPEED = 0.001;
+  const MAX_SCALE = 30;
+  const ZOOM_SPEED = 0.005;
 
   const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
     if (!event.ctrlKey) return;
     
-    // Calculate the mouse position in SVG coordinates
     const svgRect = event.currentTarget.getBoundingClientRect();
     const mouseX = event.clientX - svgRect.left;
     const mouseY = event.clientY - svgRect.top;
     
-    // Convert mouse position to SVG viewBox coordinates
-    const svgX = (mouseX / width) * viewBoxWidth + viewBoxLeft;
-    const svgY = (mouseY / width) * viewBoxHeight + viewBoxTop;
+    const svgX = (mouseX / svgRect.width) * viewBox.width + viewBox.left;
+    const svgY = (mouseY / svgRect.width) * viewBox.height + viewBox.top;
     
-    // Calculate new total scale with limits
     const newTotalScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, totalScale + event.deltaY * ZOOM_SPEED));
     const scale = newTotalScale / totalScale;
     
-    // Calculate new viewBox dimensions
-    const newWidth = viewBoxWidth * scale;
-    const newHeight = viewBoxHeight * scale;
+    const newWidth = viewBox.width * scale;
+    const newHeight = viewBox.height * scale;
     
-    // Calculate new viewBox position to keep mouse point fixed
-    const newLeft = svgX - (mouseX / width) * newWidth;
-    const newTop = svgY - (mouseY / width) * newHeight;
+    const newLeft = svgX - (mouseX / svgRect.width) * newWidth;
+    const newTop = svgY - (mouseY / svgRect.width) * newHeight;
     
-    setViewBoxLeft(newLeft);
-    setViewBoxTop(newTop);
-    setViewBoxWidth(newWidth);
-    setViewBoxHeight(newHeight);
+    onViewBoxChange({
+      left: newLeft,
+      top: newTop,
+      width: newWidth,
+      height: newHeight
+    });
+    
     setTotalScale(newTotalScale);
-  }
+  };
 
   useEffect(() => {
     const handleWheel = (event: WheelEvent) => {
@@ -56,12 +100,32 @@ export const GearGroupContainer: React.FC<{ children: React.ReactNode, width: nu
     return () => window.removeEventListener('wheel', handleWheel);
   }, []);
 
+  return { handleWheel };
+};
+
+export const GearGroupContainer: React.FC<{ children: React.ReactNode, width: number, height: number }> = ({ children, width, height }) => {
+  const [viewBox, setViewBox] = useState<ViewBoxState>({
+    left: 0,
+    top: 0,
+    width: width,
+    height: height
+  });
+
+  const { dragState, handleMouseDown, handleMouseMove, handleMouseUp } = useDrag(viewBox, setViewBox);
+  const { handleWheel } = useZoom(viewBox, setViewBox);
+
   return (
     <svg 
       onWheel={handleWheel}
-      width={width} 
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      width={width}
+      height={height}
       xmlns="http://www.w3.org/2000/svg" 
-      viewBox={`${viewBoxLeft} ${viewBoxTop} ${viewBoxWidth} ${viewBoxHeight}`}
+      viewBox={`${viewBox.left} ${viewBox.top} ${viewBox.width} ${viewBox.height}`}
+      style={{ cursor: dragState.isDragging ? 'grabbing' : 'default' }}
     >
       {children}
     </svg>
@@ -123,9 +187,9 @@ export const Gear: React.FC<{
   </g>
 }
 
-export const GearGroup: React.FC<{ colors: MantineColorsTuple, width: number }> = ({ colors, width }) => {
+export const GearGroup: React.FC<{ colors: MantineColorsTuple, width: number, height: number }> = ({ colors, width, height }) => {
   return (
-    <GearGroupContainer width={width}>
+    <GearGroupContainer width={width} height={height}>
       <g transform="translate(60, 160)">
         <path d={generateGearPath(GEARS_10[6])} fill={colors[3]}>
           <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="12s" repeatCount="indefinite" />
