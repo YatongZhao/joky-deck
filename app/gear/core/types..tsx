@@ -63,3 +63,7 @@ export const mockGearProject: GearProjectData = {
     },
   ],
 }
+
+export const addGearToMockGearProject = (gear: GearData) => {
+  mockGearProject.gears = [...mockGearProject.gears, gear];
+}

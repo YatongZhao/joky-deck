@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { forwardRef, useState } from "react"
 import { calculateGearInfo, getGearTransform, memorizedGearPath } from "./core/gear";
 import { useTheme } from "@/app/theme";
 
@@ -13,7 +13,7 @@ const useParentGear = () => {
   return React.useContext(parentGearContext);
 };
 
-export const Gear: React.FC<{
+export const Gear = forwardRef<SVGPathElement, {
   teeth: number;
   children?: React.ReactNode;
   positionAngle?: number;
@@ -23,10 +23,11 @@ export const Gear: React.FC<{
 
   onClick?: () => void;
   active?: boolean;
-}> = ({ teeth, children, positionAngle = 0, direction = 1, module, durationUnit, onClick, active = false }) => {
+}>(function Gear({ teeth, children, positionAngle = 0, direction = 1, module, durationUnit, onClick, active = false }, ref) {
   const parentGear = useParentGear();
   const [hovered, setHovered] = useState(false);
   const theme = useTheme();
+
 
   const currentDirection = (parentGear ? -parentGear.direction : direction) as (1 | -1);
   const currentInitAngle = parentGear
@@ -38,6 +39,7 @@ export const Gear: React.FC<{
 
   return <g transform={parentGear ? getGearTransform(positionAngle, (parentGear.teeth * parentGear.module + teeth * module) / 2) : ''}>
     <path
+      ref={ref}
       d={memorizedGearPath(calculateGearInfo(teeth, module))}
       fill={active ? theme.colors.blue[4] : theme.colors.gray[4]}
       stroke={hovered ? 'black' : 'none'}
@@ -53,4 +55,4 @@ export const Gear: React.FC<{
       {children}
     </parentGearContext.Provider>
   </g>
-}
+});

@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState, useMemo } from "react";
-import { GearProjectData } from "./core/types.";
+import { GearData, GearProjectData } from "./core/types.";
 import { GearProjectProvider } from "./context";
 import { GearProjectItem } from "./GearProjectItem";
 
@@ -109,9 +109,10 @@ const useZoom = (
 
 type GearProjectProps = {
   gearProject: GearProjectData;
+  addGear: (gear: GearData) => void;
 };
 
-export const GearProject: React.FC<GearProjectProps> = ({ gearProject }) => {
+export const GearProject: React.FC<GearProjectProps> = ({ gearProject, addGear }) => {
   const [scale, setScale] = useState(1);
   const [baseViewBoxSize, setBaseViewBoxSize] = useState<{ width: number, height: number }>({
     width: window.innerWidth,
@@ -151,7 +152,7 @@ export const GearProject: React.FC<GearProjectProps> = ({ gearProject }) => {
   const { handleWheel } = useZoom(viewBox, setViewBoxPosition, scale, setScale);
 
   return (
-    <GearProjectProvider gearProject={gearProject}>
+    <GearProjectProvider gearProject={gearProject} addGear={addGear} scale={scale}>
       <svg 
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
