@@ -162,7 +162,13 @@ export const GearProject: React.FC<GearProjectProps> = ({ gearProject }) => {
         height='100vh'
         xmlns="http://www.w3.org/2000/svg" 
         viewBox={`${viewBox.left} ${viewBox.top} ${viewBox.width} ${viewBox.height}`}
-        style={{ cursor: dragState.isDragging ? 'grabbing' : 'default' }}
+        style={{
+          cursor: dragState.isDragging ? 'grabbing' : 'default',
+          overflow: 'hidden',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+        }}
       >
         <GearProjectItem gearId={gearProject.rootGear.id} isRoot />
       </svg>
