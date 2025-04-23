@@ -1,8 +1,9 @@
 "use client"
 import { useTheme } from "@/app/theme";
-import { Gear, GearGroupContainer } from "@/app/widgets/Gear";
+import { Gear, GearGroupContainer } from "@/app/gear/Gear";
 import { Box, MantineColorsTuple } from "@mantine/core";
 import { useEffect, useState } from "react";
+import { testGears } from "./core/types.";
 
 const GearGroup: React.FC<{ colors: MantineColorsTuple }> = ({ colors }) => {
   const [dimensions, setDimensions] = useState({
@@ -44,15 +45,23 @@ const GearGroup: React.FC<{ colors: MantineColorsTuple }> = ({ colors }) => {
         left: 0
       }}
     >
-      <GearGroupContainer width={dimensions.width} height={dimensions.height}>
+      <GearGroupContainer
+        width={dimensions.width}
+        height={dimensions.height}
+        durationUnit={1}
+        module={15}
+        color={colors[1]}
+        hoverColor={colors[4]}
+        gears={testGears}
+      >
         <g transform="translate(60, 160)">
-          <Gear color={colors[3]} hoverColor={colors[5]} teeth={6} module={10} positionAngle={0}>
-            <Gear color={colors[2]} hoverColor={colors[4]} teeth={6} module={10} positionAngle={10}>
-              <Gear color={colors[4]} hoverColor={colors[6]} teeth={3} module={10} positionAngle={80}>
-                <Gear color={colors[2]} hoverColor={colors[4]} teeth={4} module={10} positionAngle={30}>
-                  <Gear color={colors[1]} hoverColor={colors[3]} teeth={5} module={10} positionAngle={0}>
-                    <Gear color={colors[0]} hoverColor={colors[2]} teeth={12} module={10} positionAngle={0}>
-                      <Gear color={colors[2]} hoverColor={colors[4]} teeth={34} module={10} positionAngle={30}></Gear>
+          <Gear teeth={6} positionAngle={0}>
+            <Gear teeth={6} positionAngle={10}>
+              <Gear teeth={3} positionAngle={80}>
+                <Gear teeth={4} positionAngle={30}>
+                  <Gear teeth={5} positionAngle={0}>
+                    <Gear teeth={12} positionAngle={0}>
+                      <Gear teeth={34} positionAngle={30}></Gear>
                     </Gear>
                   </Gear>
                 </Gear>

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react"
-import { generateGearPath, calculateGearInfo, GEARS_10 } from "../utils/gear";
-import { MantineColorsTuple } from "@mantine/core";
+import { generateGearPath, calculateGearInfo } from "./core/gear";
 import { memoizeWith } from "ramda";
+import { GearGroupProvider, useGearGroup } from "./context";
+import { GearData } from "./core/types.";
 
 interface ViewBoxState {
   left: number;
@@ -107,7 +108,21 @@ const useZoom = (viewBox: ViewBoxState, onViewBoxChange: (newViewBox: ViewBoxSta
   return { handleWheel };
 };
 
-export const GearGroupContainer: React.FC<{ children: React.ReactNode, width: number, height: number }> = ({ children, width, height }) => {
+type GearGroupProps = {
+  durationUnit: number;
+  module: number;
+  color: string;
+  hoverColor: string;
+
+  children: React.ReactNode;
+
+  width: number;
+  height: number;
+
+  gears: GearData[];
+};
+
+export const GearGroupContainer: React.FC<GearGroupProps> = ({ children, width, height, durationUnit, module, color, hoverColor, gears }) => {
   const [viewBox, setViewBox] = useState<ViewBoxState>({
     left: 0,
     top: 0,
@@ -139,20 +154,22 @@ export const GearGroupContainer: React.FC<{ children: React.ReactNode, width: nu
   const { handleWheel } = useZoom(viewBox, setViewBox);
 
   return (
-    <svg 
-      onWheel={handleWheel}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-      width={width}
-      height={height}
-      xmlns="http://www.w3.org/2000/svg" 
-      viewBox={`${viewBox.left} ${viewBox.top} ${viewBox.width} ${viewBox.height}`}
-      style={{ cursor: dragState.isDragging ? 'grabbing' : 'default' }}
-    >
-      {children}
-    </svg>
+    <GearGroupProvider durationUnit={durationUnit} module={module} color={color} hoverColor={hoverColor} gears={gears}>
+      <svg 
+        onWheel={handleWheel}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        width={width}
+        height={height}
+        xmlns="http://www.w3.org/2000/svg" 
+        viewBox={`${viewBox.left} ${viewBox.top} ${viewBox.width} ${viewBox.height}`}
+        style={{ cursor: dragState.isDragging ? 'grabbing' : 'default' }}
+      >
+        {children}
+      </svg>
+    </GearGroupProvider>
   )
 }
 
@@ -176,17 +193,20 @@ const useParentGear = () => {
 };
 
 export const Gear: React.FC<{
-  color: string;
-  hoverColor: string;
   teeth: number;
-  module: number;
   children?: React.ReactNode;
-  durationUnit?: number;
   positionAngle?: number;
   direction?: 1 | -1;
-}> = ({ color, hoverColor, teeth, module, children, durationUnit = 1, positionAngle = 0, direction = 1 }) => {
+}> = ({ teeth, children, positionAngle = 0, direction = 1 }) => {
   const parentGear = useParentGear();
+  const {
+    durationUnit,
+    module,
+    color,
+    hoverColor,
+  } = useGearGroup();
   const [hovered, setHovered] = useState(false);
+  const [active, setActive] = useState(false);
 
   const currentDirection = (parentGear ? -parentGear.direction : direction) as (1 | -1);
   const currentInitAngle = parentGear
@@ -199,51 +219,18 @@ export const Gear: React.FC<{
   return <g transform={parentGear ? getGearTransform(positionAngle, (parentGear.teeth * parentGear.module + teeth * module) / 2) : ''}>
     <path
       d={memorizedGearPath(calculateGearInfo(teeth, module))}
-      fill={hovered ? hoverColor : color}
+      fill={active ? hoverColor : color}
+      stroke={hovered ? 'black' : 'none'}
+      strokeWidth={hovered ? 1 : 0}
+      style={{ cursor: 'pointer' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={() => setActive(!active)}
     >
       <animateTransform attributeName="transform" type="rotate" begin={`${begin}s`} from="0" to={`${360 * currentDirection}`} dur={`${duration}s`} repeatCount="indefinite" />
     </path>
-    <parentGearContext.Provider value={{ teeth, module, direction: currentDirection, initAngle: currentInitAngle }}>
+    <parentGearContext.Provider value={{ teeth, module: module, direction: currentDirection, initAngle: currentInitAngle }}>
       {children}
     </parentGearContext.Provider>
   </g>
-}
-
-export const GearGroup: React.FC<{ colors: MantineColorsTuple, width: number, height: number }> = ({ colors, width, height }) => {
-  return (
-    <GearGroupContainer width={width} height={height}>
-      <g transform="translate(60, 160)">
-        <path d={generateGearPath(GEARS_10[6])} fill={colors[3]}>
-          <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="12s" repeatCount="indefinite" />
-        </path>
-        <g transform="translate(60, 0)">
-          <path d={generateGearPath(GEARS_10[6])} fill={colors[2]}>
-            <animateTransform attributeName="transform" type="rotate" begin="-2s" from="0" to="-360" dur="12s" repeatCount="indefinite" />
-          </path>
-          <g transform="translate(0, 90)">
-            <path d={generateGearPath(GEARS_10[12])} fill={colors[4]}>
-              <animateTransform attributeName="transform" type="rotate" begin="-2s" from="0" to="360" dur="24s" repeatCount="indefinite" />
-            </path>
-            <g transform="translate(150, 0)">
-              <path d={generateGearPath(GEARS_10[18])} fill={colors[2]}>
-                <animateTransform attributeName="transform" type="rotate" begin="1s" from="0" to="-360" dur="36s" repeatCount="indefinite" />
-              </path>
-              <g transform="translate(0, -120)">
-                <path d={generateGearPath(GEARS_10[6])} fill={colors[3]}>
-                  <animateTransform attributeName="transform" type="rotate" begin="1s" from="0" to="360" dur="12s" repeatCount="indefinite" />
-                </path>
-              </g>
-              <g transform="translate(0, 210)">
-                <path d={generateGearPath(GEARS_10[24])} fill={colors[3]}>
-                  <animateTransform attributeName="transform" type="rotate" begin="1s" from="0" to="360" dur="48s" repeatCount="indefinite" />
-                </path>
-              </g>
-            </g>
-          </g>
-        </g>
-      </g>
-    </GearGroupContainer>
-  )
 }
