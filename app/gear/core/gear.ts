@@ -1,3 +1,5 @@
+import { memoizeWith } from "ramda";
+
 type GearInfo = {
   teeth: number;
   module: number;
@@ -144,3 +146,11 @@ export const GEARS_10 = {
   [18]: calculateGearInfo(18, 10),
   [24]: calculateGearInfo(24, 10),
 }
+
+export const memorizedGearPath = memoizeWith((gearParams: GearParams) => `${gearParams.teeth}-${gearParams.module}-${gearParams.pressureAngleDeg}-${gearParams.resolution}`, generateGearPath);
+
+export const getGearTransform = (positionAngle: number, toothPitch: number) => {
+  const x = Math.cos(positionAngle / 180 * Math.PI) * toothPitch;
+  const y = Math.sin(positionAngle / 180 * Math.PI) * toothPitch;
+  return `translate(${x}, ${y})`;
+};

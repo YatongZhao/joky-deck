@@ -1,50 +1,34 @@
 import { createContext, useContext, useState } from "react";
-import { GearData } from "./core/types.";
+import { GearProjectData, mockGearProject } from "./core/types.";
 
-export const GearGroupContext = createContext<{
+export const GearProjectContext = createContext<{
   activeGearId: string | null;
   setActiveGearId: (id: string | null) => void;
-  durationUnit: number;
-  module: number;
-  color: string;
-  hoverColor: string;
-  gears: GearData[];
+  gearProject: GearProjectData;
 }>({
   activeGearId: null,
   setActiveGearId: () => {},
-  durationUnit: 1,
-  module: 5,
-  color: 'black',
-  hoverColor: 'black',
-  gears: [],
+  gearProject: mockGearProject,
 });
 
-export const GearGroupProvider = ({ durationUnit, module, color, hoverColor, gears, children }: {
-  durationUnit: number,
-  module: number,
-  color: string,
-  hoverColor: string,
-  gears: GearData[],
+export const GearProjectProvider = ({ gearProject, children }: {
+  gearProject: GearProjectData,
   children: React.ReactNode,
 }) => {
   const [activeGearId, setActiveGearId] = useState<string | null>(null);
 
   return (
-    <GearGroupContext.Provider
+    <GearProjectContext.Provider
       value={{
         activeGearId,
         setActiveGearId,
-        durationUnit,
-        module,
-        color,
-        hoverColor,
-        gears,
+        gearProject,
       }}>
       {children}
-    </GearGroupContext.Provider>
+    </GearProjectContext.Provider>
   );
 };
 
-export const useGearGroup = () => {
-  return useContext(GearGroupContext);
+export const useGearProject = () => {
+  return useContext(GearProjectContext);
 };

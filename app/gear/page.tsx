@@ -1,11 +1,10 @@
 "use client"
-import { useTheme } from "@/app/theme";
-import { Gear, GearGroupContainer } from "@/app/gear/Gear";
-import { Box, MantineColorsTuple } from "@mantine/core";
+import { GearProject } from "@/app/gear/GearProject";
+import { Box } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { testGears } from "./core/types.";
+import { mockGearProject } from "./core/types.";
 
-const GearGroup: React.FC<{ colors: MantineColorsTuple }> = ({ colors }) => {
+const GearGroup: React.FC = () => {
   const [dimensions, setDimensions] = useState({
     width: 0,
     height: 0
@@ -45,36 +44,15 @@ const GearGroup: React.FC<{ colors: MantineColorsTuple }> = ({ colors }) => {
         left: 0
       }}
     >
-      <GearGroupContainer
+      <GearProject
         width={dimensions.width}
         height={dimensions.height}
-        durationUnit={1}
-        module={15}
-        color={colors[1]}
-        hoverColor={colors[4]}
-        gears={testGears}
-      >
-        <g transform="translate(60, 160)">
-          <Gear teeth={6} positionAngle={0}>
-            <Gear teeth={6} positionAngle={10}>
-              <Gear teeth={3} positionAngle={80}>
-                <Gear teeth={4} positionAngle={30}>
-                  <Gear teeth={5} positionAngle={0}>
-                    <Gear teeth={12} positionAngle={0}>
-                      <Gear teeth={34} positionAngle={30}></Gear>
-                    </Gear>
-                  </Gear>
-                </Gear>
-              </Gear>
-            </Gear>
-          </Gear>
-        </g>
-      </GearGroupContainer>
+        gearProject={mockGearProject}
+      />
     </Box>
   )
 }
 
 export default function Home() {
-  const theme = useTheme();
-  return <GearGroup colors={theme.colors.gameMain} />;
+  return <GearGroup />;
 }
