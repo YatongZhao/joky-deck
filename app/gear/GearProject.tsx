@@ -58,7 +58,7 @@ const useZoom = (viewBox: ViewBoxState, onViewBoxChange: (newViewBox: ViewBoxSta
 
   const MAX_SCALE = 0.05; // This is actually the minimum zoom level (most zoomed out)
   const MIN_SCALE = 30;   // This is actually the maximum zoom level (most zoomed in)
-  const ZOOM_SPEED = 0.001;
+  const ZOOM_SPEED = 0.002;
 
   const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
     if (!event.ctrlKey) return;
@@ -72,7 +72,7 @@ const useZoom = (viewBox: ViewBoxState, onViewBoxChange: (newViewBox: ViewBoxSta
     const svgY = (mouseY / svgRect.height) * viewBox.height + viewBox.top;
     
     // Calculate new total scale with limits
-    const scaleFactor = 1 - event.deltaY * ZOOM_SPEED;
+    const scaleFactor = 1 + event.deltaY * ZOOM_SPEED;
     const newTotalScale = Math.max(MAX_SCALE, Math.min(MIN_SCALE, totalScale * scaleFactor));
     
     // Calculate the scale change
