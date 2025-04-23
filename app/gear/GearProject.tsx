@@ -56,9 +56,9 @@ const useDrag = (viewBox: ViewBoxState, onViewBoxChange: (newViewBox: ViewBoxSta
 const useZoom = (viewBox: ViewBoxState, onViewBoxChange: (newViewBox: ViewBoxState) => void) => {
   const [totalScale, setTotalScale] = useState(1);
 
-  const MIN_SCALE = 0.5;
-  const MAX_SCALE = 30;
-  const ZOOM_SPEED = 0.005;
+  const MAX_SCALE = 0.05; // This is actually the minimum zoom level (most zoomed out)
+  const MIN_SCALE = 30;   // This is actually the maximum zoom level (most zoomed in)
+  const ZOOM_SPEED = 0.001;
 
   const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
     if (!event.ctrlKey) return;
@@ -72,20 +72,23 @@ const useZoom = (viewBox: ViewBoxState, onViewBoxChange: (newViewBox: ViewBoxSta
     const svgY = (mouseY / svgRect.height) * viewBox.height + viewBox.top;
     
     // Calculate new total scale with limits
-    const newTotalScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, totalScale + event.deltaY * ZOOM_SPEED));
+    const scaleFactor = 1 - event.deltaY * ZOOM_SPEED;
+    const newTotalScale = Math.max(MAX_SCALE, Math.min(MIN_SCALE, totalScale * scaleFactor));
+    
+    // Calculate the scale change
     const scale = newTotalScale / totalScale;
     
     // Calculate new viewBox dimensions
     const newWidth = viewBox.width * scale;
     const newHeight = viewBox.height * scale;
     
-    // Calculate new viewBox position to keep mouse point fixed
-    const newLeft = svgX - (mouseX / svgRect.width) * newWidth;
-    const newTop = svgY - (mouseY / svgRect.height) * newHeight;
+    // Calculate the offset to keep the mouse point fixed
+    const offsetX = (svgX - viewBox.left) * (1 - scale);
+    const offsetY = (svgY - viewBox.top) * (1 - scale);
     
     onViewBoxChange({
-      left: newLeft,
-      top: newTop,
+      left: viewBox.left + offsetX,
+      top: viewBox.top + offsetY,
       width: newWidth,
       height: newHeight
     });
