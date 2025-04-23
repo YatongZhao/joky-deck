@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+"use client"
+import { useEffect, useState, useMemo } from "react";
 import { GearProjectData } from "./core/types.";
 import { GearProjectProvider } from "./context";
 import { GearProjectItem } from "./GearProjectItem";
@@ -16,7 +17,7 @@ interface DragState {
   startY: number;
 }
 
-const useDrag = (viewBox: ViewBoxState, onViewBoxChange: (newViewBox: ViewBoxState) => void) => {
+const useDrag = (viewBox: ViewBoxState, onViewBoxPositionChange: (newViewBoxPosition: { left: number; top: number }) => void) => {
   const [dragState, setDragState] = useState<DragState>({ isDragging: false, startX: 0, startY: 0 });
 
   const handleMouseDown = (event: React.MouseEvent<SVGSVGElement>) => {
@@ -32,8 +33,7 @@ const useDrag = (viewBox: ViewBoxState, onViewBoxChange: (newViewBox: ViewBoxSta
     const dx = event.clientX - dragState.startX;
     const dy = event.clientY - dragState.startY;
 
-    onViewBoxChange({
-      ...viewBox,
+    onViewBoxPositionChange({
       left: viewBox.left - dx * (viewBox.width / event.currentTarget.clientWidth),
       top: viewBox.top - dy * (viewBox.height / event.currentTarget.clientWidth)
     });
@@ -53,9 +53,12 @@ const useDrag = (viewBox: ViewBoxState, onViewBoxChange: (newViewBox: ViewBoxSta
   };
 };
 
-const useZoom = (viewBox: ViewBoxState, onViewBoxChange: (newViewBox: ViewBoxState) => void) => {
-  const [totalScale, setTotalScale] = useState(1);
-
+const useZoom = (
+  viewBox: ViewBoxState,
+  onViewBoxPositionChange: (newViewBoxPosition: { left: number; top: number }) => void,
+  scale: number,
+  setScale: (newScale: number) => void,
+) => {
   const MAX_SCALE = 0.05; // This is actually the minimum zoom level (most zoomed out)
   const MIN_SCALE = 30;   // This is actually the maximum zoom level (most zoomed in)
   const ZOOM_SPEED = 0.002;
@@ -73,27 +76,21 @@ const useZoom = (viewBox: ViewBoxState, onViewBoxChange: (newViewBox: ViewBoxSta
     
     // Calculate new total scale with limits
     const scaleFactor = 1 + event.deltaY * ZOOM_SPEED;
-    const newTotalScale = Math.max(MAX_SCALE, Math.min(MIN_SCALE, totalScale * scaleFactor));
+    const newTotalScale = Math.max(MAX_SCALE, Math.min(MIN_SCALE, scale * scaleFactor));
     
     // Calculate the scale change
-    const scale = newTotalScale / totalScale;
-    
-    // Calculate new viewBox dimensions
-    const newWidth = viewBox.width * scale;
-    const newHeight = viewBox.height * scale;
+    const newScale = newTotalScale / scale;
     
     // Calculate the offset to keep the mouse point fixed
-    const offsetX = (svgX - viewBox.left) * (1 - scale);
-    const offsetY = (svgY - viewBox.top) * (1 - scale);
+    const offsetX = (svgX - viewBox.left) * (1 - newScale);
+    const offsetY = (svgY - viewBox.top) * (1 - newScale);
     
-    onViewBoxChange({
+    onViewBoxPositionChange({
       left: viewBox.left + offsetX,
       top: viewBox.top + offsetY,
-      width: newWidth,
-      height: newHeight
     });
     
-    setTotalScale(newTotalScale);
+    setScale(newTotalScale);
   };
 
   useEffect(() => {
@@ -111,42 +108,47 @@ const useZoom = (viewBox: ViewBoxState, onViewBoxChange: (newViewBox: ViewBoxSta
 };
 
 type GearProjectProps = {
-  width: number;
-  height: number;
-
   gearProject: GearProjectData;
 };
 
-export const GearProject: React.FC<GearProjectProps> = ({ width, height, gearProject }) => {
-  const [viewBox, setViewBox] = useState<ViewBoxState>({
+export const GearProject: React.FC<GearProjectProps> = ({ gearProject }) => {
+  const [scale, setScale] = useState(1);
+  const [baseViewBoxSize, setBaseViewBoxSize] = useState<{ width: number, height: number }>({
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
+  const [viewBoxPosition, setViewBoxPosition] = useState<{ left: number; top: number }>({
     left: 0,
     top: 0,
-    width,
-    height
   });
+  const viewBox = useMemo(() => ({
+    left: viewBoxPosition.left,
+    top: viewBoxPosition.top,
+    width: baseViewBoxSize.width * scale,
+    height: baseViewBoxSize.height * scale
+  }), [viewBoxPosition, baseViewBoxSize, scale]);
 
-  // Update viewBox when width/height props change
+
   useEffect(() => {
-    setViewBox(prev => {
-      // Calculate the scale factor for the new dimensions
-      const scaleX = width / prev.width;
-      const scaleY = height / prev.height;
-      
-      // Adjust the left and top to keep content fixed relative to top-left
-      const newLeft = prev.left * scaleX;
-      const newTop = prev.top * scaleY;
-      
-      return {
-        left: newLeft,
-        top: newTop,
-        width,
-        height
-      };
-    });
-  }, [width, height]);
+    const updateDimensions = () => {
+      setBaseViewBoxSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
 
-  const { dragState, handleMouseDown, handleMouseMove, handleMouseUp } = useDrag(viewBox, setViewBox);
-  const { handleWheel } = useZoom(viewBox, setViewBox);
+    // Initial update
+    updateDimensions();
+
+    // Add resize listener
+    window.addEventListener('resize', updateDimensions);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
+
+  const { dragState, handleMouseDown, handleMouseMove, handleMouseUp } = useDrag(viewBox, setViewBoxPosition);
+  const { handleWheel } = useZoom(viewBox, setViewBoxPosition, scale, setScale);
 
   return (
     <GearProjectProvider gearProject={gearProject}>
@@ -156,8 +158,8 @@ export const GearProject: React.FC<GearProjectProps> = ({ width, height, gearPro
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        width={width}
-        height={height}
+        width='100vw'
+        height='100vh'
         xmlns="http://www.w3.org/2000/svg" 
         viewBox={`${viewBox.left} ${viewBox.top} ${viewBox.width} ${viewBox.height}`}
         style={{ cursor: dragState.isDragging ? 'grabbing' : 'default' }}
