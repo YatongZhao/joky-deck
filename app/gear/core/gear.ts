@@ -59,7 +59,8 @@ export function generateGearPath({
     teethAngle,
   );
 
-  const deltaAngle = (Math.atan2(toothPath.leftPoints[0][1], toothPath.leftPoints[0][0])- Math.atan2(toothPath.rightPoints[toothPath.rightPoints.length - 1][1], toothPath.rightPoints[toothPath.rightPoints.length - 1][0])) / 2;
+  // 齿轮的初始角度是从渐开线起始位置开始的，我们需要从一个齿的中心线位置开始
+  const deltaAngle = teethAngle / 2;
 
   let path = ``;
   let startPoint: [number, number] = [0, 0];
