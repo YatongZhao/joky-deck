@@ -145,13 +145,6 @@ function rotatePoint(point: [number, number], angleRad: number): [number, number
   return [point[0] * cosA - point[1] * sinA, point[0] * sinA + point[1] * cosA];
 }
 
-export const GEARS_10 = {
-  [6]: calculateGearInfo(6, 10),
-  [12]: calculateGearInfo(12, 10),
-  [18]: calculateGearInfo(18, 10),
-  [24]: calculateGearInfo(24, 10),
-}
-
 export const memorizedGearPath = memoizeWith((gearParams: GearParams) => `${gearParams.teeth}-${gearParams.module}-${gearParams.pressureAngleDeg}-${gearParams.resolution}`, generateGearPath);
 
 export const getGearTransform = (positionAngle: number, toothPitch: number) => {
@@ -159,3 +152,62 @@ export const getGearTransform = (positionAngle: number, toothPitch: number) => {
   const y = Math.sin(positionAngle / 180 * Math.PI) * toothPitch;
   return `translate(${x}, ${y})`;
 };
+
+export const generateGearHolePath = (teeth: number, module: number, spokeWidthBase: number) => {
+  const pitchRadius = teeth * module / 2;
+  const dedendum = 1.25 * module;
+  const rootRadius = pitchRadius - dedendum;
+  
+  const spokeWidth = spokeWidthBase * teeth * module;
+
+  const spokeRadius = rootRadius - spokeWidth * 2;
+
+  return `M ${0}, ${spokeRadius} A ${spokeRadius} ${spokeRadius} 0 0 1 ${0} ${-spokeRadius} A ${spokeRadius} ${spokeRadius} 0 0 1 ${0} ${spokeRadius} Z`;
+}
+
+export const generateGearSpokeHolePath = (teeth: number, module: number, spokeWidthBase: number, spokeCount: number) => {
+  const pitchRadius = teeth * module / 2;
+  const dedendum = 1.25 * module;
+  const rootRadius = pitchRadius - dedendum;
+  
+  const spokeWidth = spokeWidthBase * teeth * module;
+
+  const spokeRadius = rootRadius - spokeWidth * 2;
+  const spokeCenterRadius = spokeWidth * 3;
+  const spokeAngle = 2 * Math.PI / spokeCount;
+  const spokeWidthAngle = Math.asin(spokeWidth / 2 / spokeRadius);
+  const spokeCenterWidthAngle = Math.asin(spokeWidth / 2 / spokeCenterRadius);
+
+  let path = '';
+
+  for (let i = 0; i < spokeCount; i++) {
+    const angle = i * spokeAngle;
+    const startPoint = rotatePoint([0, spokeRadius], angle + spokeWidthAngle);
+    const endPoint = rotatePoint([0, spokeRadius], angle + spokeAngle - spokeWidthAngle);
+    // const cornerPoint = rotatePoint([-spokeWidth / 2, spokeWidth / 2 / Math.tan(spokeAngle / 2)], angle);
+    const centerStartPoint = rotatePoint([0, spokeCenterRadius], angle + spokeAngle - spokeCenterWidthAngle);
+    const centerEndPoint = rotatePoint([0, spokeCenterRadius], angle + spokeCenterWidthAngle);
+
+    path += `M ${startPoint.map((value) => `${value.toFixed(2)}`).join(",")} `;
+    path += `A ${spokeRadius} ${spokeRadius} 0 0 1 ${endPoint.map((value) => `${value.toFixed(2)}`).join(" ")} `;
+    path += `L ${centerStartPoint.map((value) => `${value.toFixed(2)}`).join(",")} `;
+    path += `A ${spokeCenterRadius} ${spokeCenterRadius} 0 0 0 ${centerEndPoint.map((value) => `${value.toFixed(2)}`).join(" ")} Z `;
+  }
+
+  return path;
+}
+
+export const memorizedGearHolePath = memoizeWith(
+  (teeth: number, module: number, spokeWidth: number) => `${teeth}-${module}-${spokeWidth}`,
+  generateGearHolePath
+);
+
+export const getSpokeCount = (teeth: number) => {
+  if (teeth < 10) {
+    return 3;
+  } else if (teeth < 20) {
+    return 5;
+  } else {
+    return 7;
+  }
+}

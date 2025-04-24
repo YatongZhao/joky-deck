@@ -70,6 +70,7 @@ export const GearProjectItem: React.FC<{ gearId: string; isRoot?: boolean }> = (
           });
           setActiveGearId(prev => prev === gearData.id ? null : gearData.id)
         }}
+        virtual
       />
     )}
   </Gear>

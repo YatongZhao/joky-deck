@@ -1,5 +1,5 @@
 import React, { forwardRef, useState } from "react"
-import { calculateGearInfo, getGearTransform, memorizedGearPath } from "./core/gear";
+import { calculateGearInfo, getGearTransform, memorizedGearHolePath, memorizedGearPath } from "./core/gear";
 import { useTheme } from "@/app/theme";
 
 const parentGearContext = React.createContext<{
@@ -23,7 +23,8 @@ export const Gear = forwardRef<SVGPathElement, {
 
   onClick?: () => void;
   active?: boolean;
-}>(function Gear({ teeth, children, positionAngle = 0, direction = 1, module, durationUnit, onClick, active = false }, ref) {
+  virtual?: boolean;
+}>(function Gear({ teeth, children, positionAngle = 0, direction = 1, module, durationUnit, onClick, active = false, virtual = false }, ref) {
   const parentGear = useParentGear();
   const [hovered, setHovered] = useState(false);
   const theme = useTheme();
@@ -38,19 +39,20 @@ export const Gear = forwardRef<SVGPathElement, {
   const begin = -(currentInitAngle) / 360 * duration * currentDirection - duration;
 
   return <g transform={parentGear ? getGearTransform(positionAngle, (parentGear.teeth * parentGear.module + teeth * module) / 2) : ''}>
-    <path
-      ref={ref}
-      d={memorizedGearPath(calculateGearInfo(teeth, module))}
-      fill={active ? theme.colors.blue[4] : theme.colors.gray[4]}
-      stroke={hovered ? 'black' : 'none'}
-      strokeWidth={hovered ? 1 : 0}
-      style={{ cursor: 'pointer' }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onClick={onClick}
-    >
-      <animateTransform attributeName="transform" type="rotate" begin={`${begin}s`} from="0" to={`${360 * currentDirection}`} dur={`${duration}s`} repeatCount="indefinite" />
-    </path>
+      <path
+        ref={ref}
+        d={`${memorizedGearPath(calculateGearInfo(teeth, module))} ${memorizedGearHolePath(teeth, module, 0.03)} ${virtual ? memorizedGearHolePath(teeth, module, 0.1) : ''}`}
+        fill={active ? theme.colors.blue[4] : theme.colors.gray[4]}
+        stroke={hovered ? 'black' : 'none'}
+        strokeWidth={hovered ? 1 : 0}
+        style={{ cursor: 'pointer' }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onClick={onClick}
+        fillRule="evenodd"
+      >
+        <animateTransform attributeName="transform" type="rotate" begin={`${begin}s`} from="0" to={`${360 * currentDirection}`} dur={`${duration}s`} repeatCount="indefinite" />
+      </path>
     <parentGearContext.Provider value={{ teeth, module: module, direction: currentDirection, initAngle: currentInitAngle }}>
       {children}
     </parentGearContext.Provider>
