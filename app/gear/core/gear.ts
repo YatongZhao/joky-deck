@@ -45,7 +45,11 @@ export function generateGearPath({
   const dedendum = 1.25 * module;
   const outerRadius = pitchRadius + addendum;
   const rootRadius = pitchRadius - dedendum;
-  const teethAngle = Math.PI / teeth;
+  // 从生成线起始位置，到分度圆的角度
+  const pitchArc = pitchRadius * Math.sin(alpha);
+  const deltaTeethAngle = pitchArc / (2 * Math.PI * baseRadius) * 2 * Math.PI - alpha;
+  const teethAngle = Math.PI / teeth + deltaTeethAngle * 2;
+
 
   const toothPath = involuteToothPath(
     baseRadius,
