@@ -13,6 +13,7 @@ export const useGearProjectStore = create(
   addGear: (gear: GearData) => void;
   setActiveGearId: Dispatch<SetStateAction<string | null>>;
   setGearProject: (gearProject: GearProjectData) => void;
+  setScale: Dispatch<SetStateAction<number>>;
 }>(
     {
       gearProject: mockGearProject,
@@ -32,6 +33,9 @@ export const useGearProjectStore = create(
     },
     setActiveGearId: (activeGearId) => {
       set((state) => ({ activeGearId: typeof activeGearId === 'function' ? activeGearId(state.activeGearId) : activeGearId }));
+    },
+    setScale: (scale) => {
+      set((state) => ({ scale: typeof scale === 'function' ? scale(state.scale) : scale }));
     },
   }))
 );

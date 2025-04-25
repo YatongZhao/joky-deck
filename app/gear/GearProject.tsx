@@ -110,7 +110,8 @@ const useZoom = (
 };
 
 export const GearProject: React.FC = () => {
-  const [scale, setScale] = useState(1);
+  const scale = useGearProjectStore((state) => state.scale);
+  const setScale = useGearProjectStore((state) => state.setScale);
   const [baseViewBoxSize, setBaseViewBoxSize] = useState<{ width: number, height: number }>({
     width: window.innerWidth,
     height: window.innerHeight
@@ -149,15 +150,12 @@ export const GearProject: React.FC = () => {
   const { handleWheel } = useZoom(viewBox, setViewBoxPosition, scale, setScale);
 
   const setGearProject = useGearProjectStore((state) => state.setGearProject);
-  const handleJsonLoad = (json: GearProjectData) => {
-    setGearProject(json);
-  }
 
   const gearProject = useGearProjectStore((state) => state.gearProject);
 
   return (
     <>
-      <DropZoneContainer<GearProjectData> onJsonLoad={handleJsonLoad} title="Drop a gear project here">
+      <DropZoneContainer<GearProjectData> onJsonLoad={setGearProject} title="Drop a gear project here">
         <svg 
           ref={svgRef}
           onWheel={handleWheel}

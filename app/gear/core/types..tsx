@@ -3,6 +3,7 @@ export type GearData = {
   parentId: string | null;
   teeth: number;
   positionAngle: number;
+  color?: string;
 }
 
 export type GearProjectData = {
