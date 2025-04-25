@@ -5,14 +5,14 @@ import { useEffect, useRef, useState } from "react";
 import { debounceTime, fromEvent } from "rxjs";
 import { useGearProjectStore } from "./store";
 
-export const GearProjectItem: React.FC<{ gearId: string; isRoot?: boolean }> = ({ gearId, isRoot = false }) => {
+export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
   const ref = useRef<SVGPathElement>(null);
   const gearProject = useGearProjectStore((state) => state.gearProject);
   const activeGearId = useGearProjectStore((state) => state.activeGearId);
   const setActiveGearId = useGearProjectStore((state) => state.setActiveGearId);
   const addGear = useGearProjectStore((state) => state.addGear);
   const scale = useGearProjectStore((state) => state.scale);
-  const gearData = isRoot ? gearProject.rootGear : gearProject.gears.find(gear => gear.id === gearId);
+  const gearData = gearProject.gears.find(gear => gear.id === gearId);
   const gearChildren = gearProject.gears.filter(gear => gear.parentId === gearId);
 
   const [virtualGearChild, setVirtualGearChild] = useState<GearData>({

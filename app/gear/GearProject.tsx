@@ -5,6 +5,7 @@ import { useGearProjectStore } from "./store";
 import { GearProjectItem } from "./GearProjectItem";
 import { ReactionPanel } from "./ReactionPanel";
 import { DropZoneContainer } from "./DropZoneContainer";
+import { GearSettingPanel } from "./GearSettingPanel";
 
 interface ViewBoxState {
   left: number;
@@ -175,10 +176,11 @@ export const GearProject: React.FC = () => {
             left: 0,
           }}
         >
-          <GearProjectItem gearId={gearProject.rootGear.id} isRoot />
+          <GearProjectItem gearId={gearProject.rootGearId} />
         </svg>
       </DropZoneContainer>
       <ReactionPanel svgRef={svgRef} />
+      <GearSettingPanel />
     </>
   )
 }

@@ -8,7 +8,7 @@ export type GearData = {
 
 export type GearProjectData = {
   version: string;
-  rootGear: GearData;
+  rootGearId: string;
   gears: GearData[];
   module: number;
   durationUnit: number;
@@ -16,16 +16,18 @@ export type GearProjectData = {
 
 export const mockGearProject: GearProjectData = {
   version: '1.0.0',
-  rootGear: {
-    id: '1',
-    parentId: null,
-    teeth: 6,
-    positionAngle: 0,
-  },
+  rootGearId: '1',
   module: 5,
   durationUnit: 1,
 
   gears: [
+    {
+      id: '1',
+      parentId: null,
+      teeth: 6,
+      positionAngle: 0,
+      color: 'red',
+    },
     {
       id: '2',
       parentId: '1',
