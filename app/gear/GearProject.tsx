@@ -1,8 +1,9 @@
 "use client"
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { GearData, GearProjectData } from "./core/types.";
 import { GearProjectProvider } from "./context";
 import { GearProjectItem } from "./GearProjectItem";
+import { ReactionPanel } from "./ReactionPanel";
 
 interface ViewBoxState {
   left: number;
@@ -128,7 +129,7 @@ export const GearProject: React.FC<GearProjectProps> = ({ gearProject, addGear }
     width: baseViewBoxSize.width * scale,
     height: baseViewBoxSize.height * scale
   }), [viewBoxPosition, baseViewBoxSize, scale]);
-
+  const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -154,6 +155,7 @@ export const GearProject: React.FC<GearProjectProps> = ({ gearProject, addGear }
   return (
     <GearProjectProvider gearProject={gearProject} addGear={addGear} scale={scale}>
       <svg 
+        ref={svgRef}
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -173,6 +175,7 @@ export const GearProject: React.FC<GearProjectProps> = ({ gearProject, addGear }
       >
         <GearProjectItem gearId={gearProject.rootGear.id} isRoot />
       </svg>
+      <ReactionPanel svgRef={svgRef} />
     </GearProjectProvider>
   )
 }
