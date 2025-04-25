@@ -1,9 +1,10 @@
 "use client"
 import { useEffect, useState, useMemo, useRef } from "react";
-import { GearData, GearProjectData } from "./core/types.";
-import { GearProjectProvider } from "./context";
+import { GearProjectData } from "./core/types.";
+import { useGearProjectStore } from "./store";
 import { GearProjectItem } from "./GearProjectItem";
 import { ReactionPanel } from "./ReactionPanel";
+import { DropZoneContainer } from "./DropZoneContainer";
 
 interface ViewBoxState {
   left: number;
@@ -108,12 +109,7 @@ const useZoom = (
   return { handleWheel };
 };
 
-type GearProjectProps = {
-  gearProject: GearProjectData;
-  addGear: (gear: GearData) => void;
-};
-
-export const GearProject: React.FC<GearProjectProps> = ({ gearProject, addGear }) => {
+export const GearProject: React.FC = () => {
   const [scale, setScale] = useState(1);
   const [baseViewBoxSize, setBaseViewBoxSize] = useState<{ width: number, height: number }>({
     width: window.innerWidth,
@@ -152,30 +148,39 @@ export const GearProject: React.FC<GearProjectProps> = ({ gearProject, addGear }
   const { dragState, handleMouseDown, handleMouseMove, handleMouseUp } = useDrag(viewBox, setViewBoxPosition);
   const { handleWheel } = useZoom(viewBox, setViewBoxPosition, scale, setScale);
 
+  const setGearProject = useGearProjectStore((state) => state.setGearProject);
+  const handleJsonLoad = (json: GearProjectData) => {
+    setGearProject(json);
+  }
+
+  const gearProject = useGearProjectStore((state) => state.gearProject);
+
   return (
-    <GearProjectProvider gearProject={gearProject} addGear={addGear} scale={scale}>
-      <svg 
-        ref={svgRef}
-        onWheel={handleWheel}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        width='100vw'
-        height='100vh'
-        xmlns="http://www.w3.org/2000/svg" 
-        viewBox={`${viewBox.left} ${viewBox.top} ${viewBox.width} ${viewBox.height}`}
-        style={{
-          cursor: dragState.isDragging ? 'grabbing' : 'default',
-          overflow: 'hidden',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-        }}
-      >
-        <GearProjectItem gearId={gearProject.rootGear.id} isRoot />
-      </svg>
+    <>
+      <DropZoneContainer<GearProjectData> onJsonLoad={handleJsonLoad} title="Drop a gear project here">
+        <svg 
+          ref={svgRef}
+          onWheel={handleWheel}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          width='100vw'
+          height='100vh'
+          xmlns="http://www.w3.org/2000/svg" 
+          viewBox={`${viewBox.left} ${viewBox.top} ${viewBox.width} ${viewBox.height}`}
+          style={{
+            cursor: dragState.isDragging ? 'grabbing' : 'default',
+            overflow: 'hidden',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+          }}
+        >
+          <GearProjectItem gearId={gearProject.rootGear.id} isRoot />
+        </svg>
+      </DropZoneContainer>
       <ReactionPanel svgRef={svgRef} />
-    </GearProjectProvider>
+    </>
   )
 }
