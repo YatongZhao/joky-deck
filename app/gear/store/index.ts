@@ -18,6 +18,7 @@ export const useGearProjectStore = create(
   setGearProject: (gearProject: GearProjectData) => void;
   setScale: Dispatch<SetStateAction<number>>;
   setGearPositionAngle: (gearId: string, positionAngle: number) => void;
+  setGearColor: (gearId: string, color: string) => void;
   setActiveGearPosition: (position: [number, number]) => void;
 
   // Mode related
@@ -52,6 +53,14 @@ export const useGearProjectStore = create(
         gearProject: {
           ...state.gearProject,
           gears: state.gearProject.gears.map((gear) => gear.id === gearId ? { ...gear, positionAngle } : gear),
+        },
+      }));
+    },
+    setGearColor: (gearId: string, color: string) => {
+      set((state) => ({
+        gearProject: {
+          ...state.gearProject,
+          gears: state.gearProject.gears.map((gear) => gear.id === gearId ? { ...gear, color } : gear),
         },
       }));
     },

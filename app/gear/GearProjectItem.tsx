@@ -62,6 +62,7 @@ export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
     key={`${gearData.id}-${gearData.teeth}-${gearData.positionAngle}`}
     teeth={gearData.teeth}
     positionAngle={gearData.positionAngle}
+    color={gearData.color}
     module={gearProject.module}
     durationUnit={gearProject.durationUnit}
     onClick={() => setActiveGearId(prev => prev === gearData.id ? null : gearData.id)}
@@ -70,7 +71,7 @@ export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
     {active && mode === Mode.Add && virtualGearChild.teeth > 1 && (
       <Gear
         id={virtualGearChild.id}
-        key={`${virtualGearChild.teeth}-${virtualGearChild.positionAngle}`}
+        key={`${virtualGearChild.teeth}-${virtualGearChild.positionAngle}-${virtualGearChild.color}`}
         teeth={virtualGearChild.teeth}
         positionAngle={virtualGearChild.positionAngle}
         module={gearProject.module}

@@ -1,4 +1,4 @@
-import React, { forwardRef, useState } from "react"
+import React, { forwardRef, useState, useMemo } from "react"
 import { calculateGearInfo, getGearTransform, memorizedGearHolePath, memorizedGearPath } from "./core/gear";
 import { useTheme } from "@/app/theme";
 
@@ -38,7 +38,13 @@ export const Gear = forwardRef<SVGPathElement, {
     : 0;
   
   const duration = durationUnit * teeth;
-  const begin = -(currentInitAngle) / 360 * duration * currentDirection - duration;
+  const begin = useMemo(() => {
+    let result = -(currentInitAngle) / 360 * duration * currentDirection - duration;
+    if (result > 0) {
+      result = result % duration - duration;
+    }
+    return result;
+  }, [currentInitAngle, currentDirection, duration]);
 
   return <g transform={parentGear ? getGearTransform(positionAngle, (parentGear.teeth * parentGear.module + teeth * module) / 2) : ''}>
       <path
