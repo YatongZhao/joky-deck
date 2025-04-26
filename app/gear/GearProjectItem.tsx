@@ -4,6 +4,7 @@ import { Gear } from "./Gear";
 import { useEffect, useRef, useState } from "react";
 import { debounceTime, fromEvent } from "rxjs";
 import { useGearProjectStore, useGear, useGearChildren } from "./store";
+import { useMode, Mode } from "./hooks/useMode";
 
 export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
   const ref = useRef<SVGPathElement>(null);
@@ -12,8 +13,10 @@ export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
   const setActiveGearId = useGearProjectStore((state) => state.setActiveGearId);
   const addGear = useGearProjectStore((state) => state.addGear);
   const scale = useGearProjectStore((state) => state.scale);
+  const setAddModeEnabled = useGearProjectStore((state) => state.setAddModeEnabled);
   const gearData = useGear(gearId);
   const gearChildren = useGearChildren(gearId);
+  const mode = useMode();
 
   const [virtualGearChild, setVirtualGearChild] = useState<GearData>({
     id: v4(),
@@ -22,28 +25,11 @@ export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
     positionAngle: 0,
   });
 
-  const [ctrlDown, setCtrlDown] = useState(false);
   const active = gearData?.id === activeGearId;
-  
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      setCtrlDown(event.ctrlKey);
-    }
-    const handleKeyUp = () => {
-      setCtrlDown(false);
-    }
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    }
-  }, []);
 
   useEffect(() => {
     const subscription = fromEvent<MouseEvent>(window, 'mousemove').pipe(debounceTime(5)).subscribe((event) => {
-      if (!active || !ctrlDown) return;
+      if (!active || mode !== Mode.Add) return;
       if (!ref.current) return;
 
       const { x, y, width, height } = ref.current.getBoundingClientRect();
@@ -60,7 +46,7 @@ export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, [gearData?.teeth, gearProject.module, active, scale, ctrlDown]);
+  }, [gearData?.teeth, gearProject.module, active, scale, mode]);
 
   if (!gearData) {
     return `Error: Gear(${gearId}) not found`;
@@ -77,7 +63,7 @@ export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
     onClick={() => setActiveGearId(prev => prev === gearData.id ? null : gearData.id)}
   >
     {gearChildren.map(child => <GearProjectItem key={child.id} gearId={child.id} />)}
-    {active && ctrlDown && virtualGearChild.teeth > 0 && (
+    {active && mode === Mode.Add && virtualGearChild.teeth > 0 && (
       <Gear
         key={`${virtualGearChild.teeth}-${virtualGearChild.positionAngle}`}
         teeth={virtualGearChild.teeth}
@@ -91,6 +77,7 @@ export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
             id: v4(),
           });
           setActiveGearId(prev => prev === gearData.id ? null : gearData.id)
+          setAddModeEnabled(false);
         }}
         virtual
       />

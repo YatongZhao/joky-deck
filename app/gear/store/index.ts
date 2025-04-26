@@ -8,17 +8,24 @@ export const useGearProjectStore = create(
   activeGearId: string | null;
   gearProject: GearProjectData;
   scale: number;
+
+  // Mode related
+  addModeEnabled: boolean;
 }, {
   addGear: (gear: GearData) => void;
   setActiveGearId: Dispatch<SetStateAction<string | null>>;
   setGearProject: (gearProject: GearProjectData) => void;
   setScale: Dispatch<SetStateAction<number>>;
-  setGearPositionAngle: (gearId: string, positionAngle: number) => void; 
+  setGearPositionAngle: (gearId: string, positionAngle: number) => void;
+
+  // Mode related
+  setAddModeEnabled: (addModeEnabled: boolean) => void;
 }>(
     {
       gearProject: mockGearProject,
       activeGearId: null,
       scale: 1,
+      addModeEnabled: false,
     }, (set) => ({
     setGearProject: (gearProject: GearProjectData) => {
       set({ gearProject });
@@ -44,6 +51,10 @@ export const useGearProjectStore = create(
           gears: state.gearProject.gears.map((gear) => gear.id === gearId ? { ...gear, positionAngle } : gear),
         },
       }));
+    },
+    // Mode related
+    setAddModeEnabled: (addModeEnabled: boolean) => {
+      set({ addModeEnabled });
     },
   }))
 );

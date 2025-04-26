@@ -6,6 +6,7 @@ import { GearProjectItem } from "./GearProjectItem";
 import { ReactionPanel } from "./ReactionPanel";
 import { DropZoneContainer } from "./DropZoneContainer";
 import { GearSettingPanel } from "./GearSettingPanel";
+import { useModeHotKeys } from "./hooks/useMode";
 
 interface ViewBoxState {
   left: number;
@@ -184,6 +185,8 @@ export const GearProject: React.FC = () => {
   const setGearProject = useGearProjectStore((state) => state.setGearProject);
 
   const gearProject = useGearProjectStore((state) => state.gearProject);
+
+  useModeHotKeys();
 
   return (
     <>
