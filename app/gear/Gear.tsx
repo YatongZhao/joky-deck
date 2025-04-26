@@ -25,9 +25,8 @@ export const Gear = forwardRef<SVGPathElement, {
   color?: string;
 
   onClick?: () => void;
-  active?: boolean;
   virtual?: boolean;
-}>(function Gear({ id, teeth, children, positionAngle = 0, direction = 1, module, durationUnit, onClick, active = false, virtual = false, color }, ref) {
+}>(function Gear({ id, teeth, children, positionAngle = 0, direction = 1, module, durationUnit, onClick, virtual = false, color }, ref) {
   const parentGear = useParentGear();
   const [hovered, setHovered] = useState(false);
   const theme = useTheme();
@@ -45,10 +44,10 @@ export const Gear = forwardRef<SVGPathElement, {
       <path
         id={id}
         ref={ref}
-        d={`${memorizedGearPath(calculateGearInfo(teeth, module))} ${memorizedGearHolePath(teeth, module, 0.03)} ${virtual ? memorizedGearHolePath(teeth, module, 0.1) : ''}`}
-        fill={active ? theme.colors.blue[4] : fillColor}
-        stroke={hovered ? 'black' : 'none'}
-        strokeWidth={hovered ? 1 : 0}
+        d={`${memorizedGearPath(calculateGearInfo(teeth, module))} ${virtual ? '' : memorizedGearHolePath(teeth, module, 0.03)}`}
+        fill={virtual ? theme.colors.blue[4] : fillColor}
+        stroke={hovered || virtual ? 'black' : 'none'}
+        strokeWidth={hovered || virtual ? 1 : 0}
         style={{ cursor: 'pointer' }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}

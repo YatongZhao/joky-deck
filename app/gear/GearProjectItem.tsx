@@ -28,6 +28,10 @@ export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
   const active = gearData?.id === activeGearId;
 
   useEffect(() => {
+    setVirtualGearChild(prev => ({
+      ...prev,
+      teeth: 1,
+    }));
     const subscription = fromEvent<MouseEvent>(window, 'mousemove').pipe(debounceTime(5)).subscribe((event) => {
       if (!active || mode !== Mode.Add) return;
       if (!ref.current) return;
@@ -60,11 +64,10 @@ export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
     positionAngle={gearData.positionAngle}
     module={gearProject.module}
     durationUnit={gearProject.durationUnit}
-    active={active}
     onClick={() => setActiveGearId(prev => prev === gearData.id ? null : gearData.id)}
   >
     {gearChildren.map(child => <GearProjectItem key={child.id} gearId={child.id} />)}
-    {active && mode === Mode.Add && virtualGearChild.teeth > 0 && (
+    {active && mode === Mode.Add && virtualGearChild.teeth > 1 && (
       <Gear
         id={virtualGearChild.id}
         key={`${virtualGearChild.teeth}-${virtualGearChild.positionAngle}`}

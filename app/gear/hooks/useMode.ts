@@ -21,6 +21,7 @@ export const useModeHotKeys = () => {
   const mode = useMode();
   const setAddModeEnabled = useGearProjectStore((state) => state.setAddModeEnabled);
   const setActiveGearId = useGearProjectStore((state) => state.setActiveGearId);
+  const activeGearId = useGearProjectStore((state) => state.activeGearId);
 
   useHotkeys('a', () => {
     if (mode === Mode.Active) {
@@ -34,6 +35,12 @@ export const useModeHotKeys = () => {
       setActiveGearId(null);
     }
   });
+
+  useEffect(() => {
+    if (!activeGearId) {
+      setAddModeEnabled(false);
+    }
+  }, [activeGearId, setAddModeEnabled]);
   
   useEffect(() => {
     const handleContextMenu = (event: MouseEvent) => {
