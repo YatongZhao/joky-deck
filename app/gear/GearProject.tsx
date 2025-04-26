@@ -8,6 +8,7 @@ import { DropZoneContainer } from "./DropZoneContainer";
 import { GearSettingPanel } from "./GearSettingPanel";
 import { useModeHotKeys } from "./hooks/useMode";
 import { CrossHair } from "./CrossHair";
+import { ExportViewBoxController } from "./ExportViewBoxController";
 interface ViewBoxState {
   left: number;
   top: number;
@@ -135,17 +136,45 @@ const useZoom = (
   return { handleWheel };
 };
 
+const REACTION_PANEL_HEIGHT = 20;
+
 export const GearProject: React.FC = () => {
+  const [initializing, setInitializing] = useState(true);
   const scale = useGearProjectStore((state) => state.scale);
   const setScale = useGearProjectStore((state) => state.setScale);
+  const gearProject = useGearProjectStore((state) => state.gearProject);
+  
+  const initialProjectViewBoxRef = useRef<{
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  }>(gearProject.viewBox);
+
+  const initialWindowInnerHeight = useRef(window.innerHeight - REACTION_PANEL_HEIGHT);
+  const initialScale = useMemo(() => {
+    const ratio = initialProjectViewBoxRef.current.width / initialProjectViewBoxRef.current.height;
+    const windowRatio = window.innerWidth / initialWindowInnerHeight.current;
+    return (ratio > windowRatio
+      ? initialProjectViewBoxRef.current.width / window.innerWidth
+      : initialProjectViewBoxRef.current.height / initialWindowInnerHeight.current)
+    * 1.1;
+  }, []);
+
   const [baseViewBoxSize, setBaseViewBoxSize] = useState<{ width: number, height: number }>({
     width: window.innerWidth,
     height: window.innerHeight
   });
   const [viewBoxPosition, setViewBoxPosition] = useState<{ left: number; top: number }>({
-    left: 0,
-    top: 0,
+    left: -(window.innerWidth * initialScale - initialProjectViewBoxRef.current.width) / 2 + initialProjectViewBoxRef.current.left,
+    top: -((initialWindowInnerHeight.current) * initialScale - initialProjectViewBoxRef.current.height) / 2 + initialProjectViewBoxRef.current.top,
   });
+
+  useEffect(() => {
+    setScale(initialScale);
+    setInitializing(false);
+  }, [initialScale, setScale]);
+
   const viewBox = useMemo(() => ({
     left: viewBoxPosition.left,
     top: viewBoxPosition.top,
@@ -184,7 +213,6 @@ export const GearProject: React.FC = () => {
   }
   const setGearProject = useGearProjectStore((state) => state.setGearProject);
 
-  const gearProject = useGearProjectStore((state) => state.gearProject);
   const activeGearId = useGearProjectStore((state) => state.activeGearId);
   const activeGear = useGear(activeGearId);
   const activeGearPosition = useActiveGearPosition();
@@ -195,6 +223,9 @@ export const GearProject: React.FC = () => {
 
   useModeHotKeys();
 
+  if (initializing) {
+    return <div>Initializing...</div>;
+  }
   return (
     <>
       <DropZoneContainer<GearProjectData> onJsonLoad={setGearProject} title="Drop a gear project here">
@@ -218,6 +249,7 @@ export const GearProject: React.FC = () => {
           }}
         >
           <GearProjectItem gearId={gearProject.rootGearId} />
+          <ExportViewBoxController />
           {activeGear && <CrossHair radius={activeGear.teeth * gearProject.module / 2} position={relativeActiveGearPosition} />}
         </svg>
       </DropZoneContainer>

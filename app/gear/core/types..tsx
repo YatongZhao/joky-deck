@@ -12,6 +12,12 @@ export type GearProjectData = {
   gears: GearData[];
   module: number;
   durationUnit: number;
+  viewBox: {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  };
 }
 
 export const mockGearProject: GearProjectData = {
@@ -19,7 +25,12 @@ export const mockGearProject: GearProjectData = {
   rootGearId: '1',
   module: 5,
   durationUnit: 1,
-
+  viewBox: {
+    left: -220,
+    top: -190,
+    width: 640,
+    height: 360,
+  },
   gears: [
     {
       id: '1',
