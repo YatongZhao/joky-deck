@@ -48,11 +48,28 @@ const useDrag = (viewBox: ViewBoxState, onViewBoxPositionChange: (newViewBoxPosi
     setDragState({ ...dragState, isDragging: false });
   };
 
+  const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
+    onViewBoxPositionChange({
+      left: viewBox.left + event.deltaX * (viewBox.width / event.currentTarget.clientWidth),
+      top: viewBox.top + event.deltaY * (viewBox.height / event.currentTarget.clientWidth),
+    });
+  }
+
+  useEffect(() => {
+    const handleWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    return () => window.removeEventListener('wheel', handleWheel);
+  }, []);
+
   return {
     dragState,
     handleMouseDown,
     handleMouseMove,
-    handleMouseUp
+    handleMouseUp,
+    handleWheel,
   };
 };
 
@@ -64,7 +81,7 @@ const useZoom = (
 ) => {
   const MAX_SCALE = 0.05; // This is actually the minimum zoom level (most zoomed out)
   const MIN_SCALE = 30;   // This is actually the maximum zoom level (most zoomed in)
-  const ZOOM_SPEED = 0.002;
+  const ZOOM_SPEED = 0.01;
 
   const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
     if (!event.ctrlKey) return;
@@ -147,9 +164,16 @@ export const GearProject: React.FC = () => {
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  const { dragState, handleMouseDown, handleMouseMove, handleMouseUp } = useDrag(viewBox, setViewBoxPosition);
-  const { handleWheel } = useZoom(viewBox, setViewBoxPosition, scale, setScale);
+  const { dragState, handleMouseDown, handleMouseMove, handleMouseUp, handleWheel: handleDragWheel } = useDrag(viewBox, setViewBoxPosition);
+  const { handleWheel: handleZoomWheel } = useZoom(viewBox, setViewBoxPosition, scale, setScale);
 
+  const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
+    if (event.ctrlKey) {
+      handleZoomWheel(event);
+    } else {
+      handleDragWheel(event);
+    }
+  }
   const setGearProject = useGearProjectStore((state) => state.setGearProject);
 
   const gearProject = useGearProjectStore((state) => state.gearProject);

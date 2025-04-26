@@ -18,7 +18,7 @@ export default function RootLayout({
       <head>
         <ColorSchemeScript />
       </head>
-      <body>
+      <body style={{ overscrollBehaviorX: 'none' }}>
         <MantineProvider theme={theme}>
           {children}
         </MantineProvider>
