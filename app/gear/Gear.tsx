@@ -14,6 +14,7 @@ const useParentGear = () => {
 };
 
 export const Gear = forwardRef<SVGPathElement, {
+  id: string;
   teeth: number;
   children?: React.ReactNode;
   positionAngle?: number;
@@ -26,7 +27,7 @@ export const Gear = forwardRef<SVGPathElement, {
   onClick?: () => void;
   active?: boolean;
   virtual?: boolean;
-}>(function Gear({ teeth, children, positionAngle = 0, direction = 1, module, durationUnit, onClick, active = false, virtual = false, color }, ref) {
+}>(function Gear({ id, teeth, children, positionAngle = 0, direction = 1, module, durationUnit, onClick, active = false, virtual = false, color }, ref) {
   const parentGear = useParentGear();
   const [hovered, setHovered] = useState(false);
   const theme = useTheme();
@@ -42,6 +43,7 @@ export const Gear = forwardRef<SVGPathElement, {
 
   return <g transform={parentGear ? getGearTransform(positionAngle, (parentGear.teeth * parentGear.module + teeth * module) / 2) : ''}>
       <path
+        id={id}
         ref={ref}
         d={`${memorizedGearPath(calculateGearInfo(teeth, module))} ${memorizedGearHolePath(teeth, module, 0.03)} ${virtual ? memorizedGearHolePath(teeth, module, 0.1) : ''}`}
         fill={active ? theme.colors.blue[4] : fillColor}

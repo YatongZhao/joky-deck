@@ -139,7 +139,7 @@ function involuteToothPath(
   };
 }
 
-function rotatePoint(point: [number, number], angleRad: number): [number, number] {
+export function rotatePoint(point: [number, number], angleRad: number): [number, number] {
   const cosA = Math.cos(angleRad);
   const sinA = Math.sin(angleRad);
   return [point[0] * cosA - point[1] * sinA, point[0] * sinA + point[1] * cosA];

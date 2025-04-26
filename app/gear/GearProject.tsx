@@ -1,13 +1,13 @@
 "use client"
 import { useEffect, useState, useMemo, useRef } from "react";
 import { GearProjectData } from "./core/types.";
-import { useGearProjectStore } from "./store";
+import { useActiveGearPosition, useGear, useGearProjectStore } from "./store";
 import { GearProjectItem } from "./GearProjectItem";
 import { ReactionPanel } from "./ReactionPanel";
 import { DropZoneContainer } from "./DropZoneContainer";
 import { GearSettingPanel } from "./GearSettingPanel";
 import { useModeHotKeys } from "./hooks/useMode";
-
+import { CrossHair } from "./CrossHair";
 interface ViewBoxState {
   left: number;
   top: number;
@@ -185,6 +185,13 @@ export const GearProject: React.FC = () => {
   const setGearProject = useGearProjectStore((state) => state.setGearProject);
 
   const gearProject = useGearProjectStore((state) => state.gearProject);
+  const activeGearId = useGearProjectStore((state) => state.activeGearId);
+  const activeGear = useGear(activeGearId);
+  const activeGearPosition = useActiveGearPosition();
+
+  const relativeActiveGearPosition = useMemo<[number, number]>(() => {
+    return [activeGearPosition[0] * scale + viewBox.left, activeGearPosition[1] * scale + viewBox.top];
+  }, [activeGearPosition, viewBox, scale]);
 
   useModeHotKeys();
 
@@ -211,6 +218,7 @@ export const GearProject: React.FC = () => {
           }}
         >
           <GearProjectItem gearId={gearProject.rootGearId} />
+          {activeGear && <CrossHair radius={activeGear.teeth * gearProject.module / 2} position={relativeActiveGearPosition} />}
         </svg>
       </DropZoneContainer>
       <ReactionPanel svgRef={svgRef} />

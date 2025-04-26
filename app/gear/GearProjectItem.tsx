@@ -53,6 +53,7 @@ export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
   }
 
   return <Gear
+    id={gearData.id}
     ref={ref}
     key={`${gearData.id}-${gearData.teeth}-${gearData.positionAngle}`}
     teeth={gearData.teeth}
@@ -65,6 +66,7 @@ export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
     {gearChildren.map(child => <GearProjectItem key={child.id} gearId={child.id} />)}
     {active && mode === Mode.Add && virtualGearChild.teeth > 0 && (
       <Gear
+        id={virtualGearChild.id}
         key={`${virtualGearChild.teeth}-${virtualGearChild.positionAngle}`}
         teeth={virtualGearChild.teeth}
         positionAngle={virtualGearChild.positionAngle}
