@@ -81,10 +81,17 @@ const useZoom = (
 ) => {
   const MAX_SCALE = 0.05; // This is actually the minimum zoom level (most zoomed out)
   const MIN_SCALE = 30;   // This is actually the maximum zoom level (most zoomed in)
-  const ZOOM_SPEED = 0.01;
+  const ZOOM_SPEED = 0.05;
+  const lastEventTimeRef = useRef<number>(0);
 
   const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
     if (!event.ctrlKey) return;
+    const currentTime = Date.now();
+    const timeSinceLastEvent = currentTime - lastEventTimeRef.current;
+    lastEventTimeRef.current = currentTime;
+    // Calculate the zoom speed based on the time since the last event
+    // The trackpad has a much faster zoom speed than the mouse wheel
+    const zoomSpeed = ZOOM_SPEED / timeSinceLastEvent;
     
     const svgRect = event.currentTarget.getBoundingClientRect();
     const mouseX = event.clientX - svgRect.left;
@@ -95,7 +102,7 @@ const useZoom = (
     const svgY = (mouseY / svgRect.height) * viewBox.height + viewBox.top;
     
     // Calculate new total scale with limits
-    const scaleFactor = 1 + event.deltaY * ZOOM_SPEED;
+    const scaleFactor = 1 + event.deltaY * zoomSpeed;
     const newTotalScale = Math.max(MAX_SCALE, Math.min(MIN_SCALE, scale * scaleFactor));
     
     // Calculate the scale change
