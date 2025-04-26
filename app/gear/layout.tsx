@@ -1,4 +1,6 @@
+import { MantineProvider } from "@mantine/core";
 import type { Metadata } from "next";
+import { theme } from "./theme";
 
 export const metadata: Metadata = {
   title: "Gear",
@@ -10,5 +12,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return children;
+  return (
+    <MantineProvider theme={theme}>
+      { children }
+    </MantineProvider>
+  );
 }

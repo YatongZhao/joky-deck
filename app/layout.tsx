@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import '@mantine/core/styles.css';
-import { ColorSchemeScript, MantineProvider } from "@mantine/core";
-import { theme } from "./theme";
+import { ColorSchemeScript } from "@mantine/core";
 
 export const metadata: Metadata = {
   title: "Joky Deck H5",
@@ -19,9 +18,7 @@ export default function RootLayout({
         <ColorSchemeScript />
       </head>
       <body style={{ overscrollBehaviorX: 'none' }}>
-        <MantineProvider theme={theme}>
-          {children}
-        </MantineProvider>
+        {children}
       </body>
     </html>
   );
