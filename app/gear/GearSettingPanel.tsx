@@ -14,18 +14,17 @@ export const GearSettingPanel = () => {
   }
 
   const positionAngle = activeGear?.positionAngle || 0;
-  console.log(activeGear);
 
   return (
     <Paper pos="fixed" right={10} top={10} shadow="md" fz="xs" style={{ zIndex: 1000 }}>
       settings
-      <AngleSlider
+      {activeGearId && <AngleSlider
         size={60}
         thumbSize={8}
         value={positionAngle + 90}
         onChange={handlePositionAngleChange}
         formatLabel={(value) => `${(value - 90 + 360) % 360}`}
-      />
+      />}
     </Paper>
   )
 }
