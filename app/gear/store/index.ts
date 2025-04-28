@@ -21,6 +21,7 @@ export const useGearProjectStore = create(
   setGearPositionAngle: (gearId: string, positionAngle: number) => void;
   setGearColor: (gearId: string, color: string) => void;
   setActiveGearPosition: (position: [number, number]) => void;
+  setSvgMatrix: (matrix: mat3) => void;
 
   // Mode related
   setAddModeEnabled: (addModeEnabled: boolean) => void;
@@ -29,11 +30,12 @@ export const useGearProjectStore = create(
       gearProject: mockGearProject,
       activeGearId: null,
       activeGearPosition: [0, 0],
-      svgMatrix$: new BehaviorSubject(mat3.create()),
+      svgMatrix$: new BehaviorSubject(mat3.fromValues(...mockGearProject.displayMatrix)),
       addModeEnabled: false,
-    }, (set) => ({
+    }, (set, getState) => ({
     setGearProject: (gearProject: GearProjectData) => {
       set({ gearProject });
+      set({ svgMatrix$: new BehaviorSubject(mat3.fromValues(...gearProject.displayMatrix)) });
     },
     addGear: (gearData: GearData) => {
       set((state) => ({
@@ -64,6 +66,16 @@ export const useGearProjectStore = create(
     },
     setActiveGearPosition: (position: [number, number]) => {
       set({ activeGearPosition: position });
+    },
+    setSvgMatrix: (matrix: mat3) => {
+      const svgMatrix$ = getState().svgMatrix$;
+      svgMatrix$.next(matrix);
+      set((state) => ({
+        gearProject: {
+          ...state.gearProject,
+          displayMatrix: Array.from(matrix) as [number, number, number, number, number, number, number, number, number],
+        },
+      }));
     },
     // Mode related
     setAddModeEnabled: (addModeEnabled: boolean) => {

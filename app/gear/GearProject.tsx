@@ -19,6 +19,7 @@ interface DragState {
 const useDrag = () => {
   const [dragState, setDragState] = useState<DragState>({ isDragging: false });
   const svgMatrix$ = useGearProjectStore((state) => state.svgMatrix$);
+  const setSvgMatrix = useGearProjectStore((state) => state.setSvgMatrix);
 
   const handleMouseDown = (event: React.MouseEvent<SVGSVGElement>) => {
     if (event.button === 1) { // Middle mouse button
@@ -32,8 +33,8 @@ const useDrag = () => {
     const translateMatrix = mat3.create();
     mat3.translate(translateMatrix, translateMatrix, [x, y]);
     mat3.multiply(matrix, translateMatrix, matrix);
-    svgMatrix$.next(matrix);
-  }, [svgMatrix$]);
+    setSvgMatrix(matrix);
+  }, [svgMatrix$, setSvgMatrix]);
 
   const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
     if (!dragState.isDragging) return;
@@ -72,6 +73,7 @@ const useZoom = () => {
   const ZOOM_SPEED = 0.05;
   const lastEventTimeRef = useRef<number>(0);
   const svgMatrix$ = useGearProjectStore((state) => state.svgMatrix$);
+  const setSvgMatrix = useGearProjectStore((state) => state.setSvgMatrix);
   const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
     if (!event.ctrlKey) return;
     const currentTime = Date.now();
@@ -92,7 +94,7 @@ const useZoom = () => {
     const scaleMatrix = mat3.create();
     scaleAtPoint(scaleMatrix, vec2.fromValues(event.clientX, event.clientY), newScale);
     mat3.multiply(matrix, scaleMatrix, matrix);
-    svgMatrix$.next(matrix);
+    setSvgMatrix(matrix);
   };
 
   useEffect(() => {
