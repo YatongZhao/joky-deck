@@ -1,7 +1,7 @@
 "use client"
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { GearProjectData } from "./core/types.";
-import { useActiveGearPosition, useGear, useGearProjectStore } from "./store";
+import { useGear, useGearProjectStore } from "./store";
 import { GearProjectItem } from "./GearProjectItem";
 import { ReactionPanel } from "./ReactionPanel";
 import { DropZoneContainer } from "./DropZoneContainer";
@@ -9,52 +9,43 @@ import { GearSettingPanel } from "./GearSettingPanel";
 import { useModeHotKeys } from "./hooks/useMode";
 import { CrossHair } from "./CrossHair";
 import { ExportViewBoxController } from "./ExportViewBoxController";
-interface ViewBoxState {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-}
+import { mat3, vec2 } from "gl-matrix";
+import { scaleAtPoint } from "./core/coordinate";
 
 interface DragState {
   isDragging: boolean;
-  startX: number;
-  startY: number;
 }
 
-const useDrag = (viewBox: ViewBoxState, onViewBoxPositionChange: (newViewBoxPosition: { left: number; top: number }) => void) => {
-  const [dragState, setDragState] = useState<DragState>({ isDragging: false, startX: 0, startY: 0 });
+const useDrag = () => {
+  const [dragState, setDragState] = useState<DragState>({ isDragging: false });
+  const svgMatrix$ = useGearProjectStore((state) => state.svgMatrix$);
 
   const handleMouseDown = (event: React.MouseEvent<SVGSVGElement>) => {
     if (event.button === 1) { // Middle mouse button
       event.preventDefault();
-      setDragState({ isDragging: true, startX: event.clientX, startY: event.clientY });
+      setDragState({ isDragging: true });
     }
   };
 
+  const translate = useCallback(([x, y]: [number, number]) => {
+    const matrix = svgMatrix$.getValue();
+    const translateMatrix = mat3.create();
+    mat3.translate(translateMatrix, translateMatrix, [x, y]);
+    mat3.multiply(matrix, translateMatrix, matrix);
+    svgMatrix$.next(matrix);
+  }, [svgMatrix$]);
+
   const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
     if (!dragState.isDragging) return;
-
-    const dx = event.clientX - dragState.startX;
-    const dy = event.clientY - dragState.startY;
-
-    onViewBoxPositionChange({
-      left: viewBox.left - dx * (viewBox.width / event.currentTarget.clientWidth),
-      top: viewBox.top - dy * (viewBox.height / event.currentTarget.clientWidth)
-    });
-
-    setDragState({ ...dragState, startX: event.clientX, startY: event.clientY });
+    translate([event.movementX, event.movementY]);
   };
 
   const handleMouseUp = () => {
-    setDragState({ ...dragState, isDragging: false });
+    setDragState({ isDragging: false });
   };
 
   const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
-    onViewBoxPositionChange({
-      left: viewBox.left + event.deltaX * (viewBox.width / event.currentTarget.clientWidth),
-      top: viewBox.top + event.deltaY * (viewBox.height / event.currentTarget.clientWidth),
-    });
+    translate([event.deltaX, event.deltaY]);
   }
 
   useEffect(() => {
@@ -75,17 +66,12 @@ const useDrag = (viewBox: ViewBoxState, onViewBoxPositionChange: (newViewBoxPosi
   };
 };
 
-const useZoom = (
-  viewBox: ViewBoxState,
-  onViewBoxPositionChange: (newViewBoxPosition: { left: number; top: number }) => void,
-  scale: number,
-  setScale: (newScale: number) => void,
-) => {
+const useZoom = () => {
   const MAX_SCALE = 0.05; // This is actually the minimum zoom level (most zoomed out)
   const MIN_SCALE = 30;   // This is actually the maximum zoom level (most zoomed in)
   const ZOOM_SPEED = 0.05;
   const lastEventTimeRef = useRef<number>(0);
-
+  const svgMatrix$ = useGearProjectStore((state) => state.svgMatrix$);
   const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
     if (!event.ctrlKey) return;
     const currentTime = Date.now();
@@ -94,32 +80,19 @@ const useZoom = (
     // Calculate the zoom speed based on the time since the last event
     // The trackpad has a much faster zoom speed than the mouse wheel
     const zoomSpeed = ZOOM_SPEED / timeSinceLastEvent;
-    
-    const svgRect = event.currentTarget.getBoundingClientRect();
-    const mouseX = event.clientX - svgRect.left;
-    const mouseY = event.clientY - svgRect.top;
-    
-    // Calculate the mouse position in SVG coordinates
-    const svgX = (mouseX / svgRect.width) * viewBox.width + viewBox.left;
-    const svgY = (mouseY / svgRect.height) * viewBox.height + viewBox.top;
-    
+    const matrix = svgMatrix$.getValue();
+
     // Calculate new total scale with limits
     const scaleFactor = 1 + event.deltaY * zoomSpeed;
-    const newTotalScale = Math.max(MAX_SCALE, Math.min(MIN_SCALE, scale * scaleFactor));
+    const oldScale = Math.hypot(matrix[0], matrix[1]);
+    const newTotalScale = Math.max(MAX_SCALE, Math.min(MIN_SCALE, oldScale * scaleFactor));
     
     // Calculate the scale change
-    const newScale = newTotalScale / scale;
-    
-    // Calculate the offset to keep the mouse point fixed
-    const offsetX = (svgX - viewBox.left) * (1 - newScale);
-    const offsetY = (svgY - viewBox.top) * (1 - newScale);
-    
-    onViewBoxPositionChange({
-      left: viewBox.left + offsetX,
-      top: viewBox.top + offsetY,
-    });
-    
-    setScale(newTotalScale);
+    const newScale = newTotalScale / oldScale;
+    const scaleMatrix = mat3.create();
+    scaleAtPoint(scaleMatrix, vec2.fromValues(event.clientX, event.clientY), newScale);
+    mat3.multiply(matrix, scaleMatrix, matrix);
+    svgMatrix$.next(matrix);
   };
 
   useEffect(() => {
@@ -132,77 +105,44 @@ const useZoom = (
     window.addEventListener('wheel', handleWheel, { passive: false });
     return () => window.removeEventListener('wheel', handleWheel);
   }, []);
-
+  
   return { handleWheel };
 };
 
-const REACTION_PANEL_HEIGHT = 20;
-
 export const GearProject: React.FC = () => {
-  const [initializing, setInitializing] = useState(true);
-  const scale = useGearProjectStore((state) => state.scale);
-  const setScale = useGearProjectStore((state) => state.setScale);
   const gearProject = useGearProjectStore((state) => state.gearProject);
-  
-  const initialProjectViewBoxRef = useRef<{
-    left: number;
-    top: number;
-    width: number;
-    height: number;
-  }>(gearProject.viewBox);
-
-  const initialWindowInnerHeight = useRef(window.innerHeight - REACTION_PANEL_HEIGHT);
-  const initialScale = useMemo(() => {
-    const ratio = initialProjectViewBoxRef.current.width / initialProjectViewBoxRef.current.height;
-    const windowRatio = window.innerWidth / initialWindowInnerHeight.current;
-    return (ratio > windowRatio
-      ? initialProjectViewBoxRef.current.width / window.innerWidth
-      : initialProjectViewBoxRef.current.height / initialWindowInnerHeight.current)
-    * 1.1;
-  }, []);
-
-  const [baseViewBoxSize, setBaseViewBoxSize] = useState<{ width: number, height: number }>({
-    width: window.innerWidth,
-    height: window.innerHeight
-  });
-  const [viewBoxPosition, setViewBoxPosition] = useState<{ left: number; top: number }>({
-    left: -(window.innerWidth * initialScale - initialProjectViewBoxRef.current.width) / 2 + initialProjectViewBoxRef.current.left,
-    top: -((initialWindowInnerHeight.current) * initialScale - initialProjectViewBoxRef.current.height) / 2 + initialProjectViewBoxRef.current.top,
-  });
-
-  useEffect(() => {
-    setScale(initialScale);
-    setInitializing(false);
-  }, [initialScale, setScale]);
-
-  const viewBox = useMemo(() => ({
-    left: viewBoxPosition.left,
-    top: viewBoxPosition.top,
-    width: baseViewBoxSize.width * scale,
-    height: baseViewBoxSize.height * scale
-  }), [viewBoxPosition, baseViewBoxSize, scale]);
   const svgRef = useRef<SVGSVGElement>(null);
+  const svgMatrix$ = useGearProjectStore((state) => state.svgMatrix$);
+
+  const updateViewBox = useCallback(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const matrix = svgMatrix$.getValue();
+    const matrixInverse = mat3.create();
+    mat3.invert(matrixInverse, matrix);
+
+    const windowInnerWidth = window.innerWidth;
+    const windowInnerHeight = window.innerHeight;
+
+    const scale = Math.hypot(matrix[0], matrix[1]);
+    svg.setAttribute('viewBox', vec2.transformMat3(vec2.create(), vec2.fromValues(0, 0), matrixInverse).join(' ')
+    + ` ${windowInnerWidth / scale} ${windowInnerHeight / scale}`);
+  }, [svgMatrix$]);
 
   useEffect(() => {
-    const updateDimensions = () => {
-      setBaseViewBoxSize({
-        width: window.innerWidth,
-        height: window.innerHeight
-      });
-    };
+    const subscription = svgMatrix$.subscribe(updateViewBox);
+    return () => subscription.unsubscribe();
+  }, [svgMatrix$, updateViewBox]);
 
-    // Initial update
-    updateDimensions();
+  useEffect(() => {
+    updateViewBox();
+    window.addEventListener('resize', updateViewBox);
+    return () => window.removeEventListener('resize', updateViewBox);
+  }, [updateViewBox]);
 
-    // Add resize listener
-    window.addEventListener('resize', updateDimensions);
-
-    // Cleanup
-    return () => window.removeEventListener('resize', updateDimensions);
-  }, []);
-
-  const { dragState, handleMouseDown, handleMouseMove, handleMouseUp, handleWheel: handleDragWheel } = useDrag(viewBox, setViewBoxPosition);
-  const { handleWheel: handleZoomWheel } = useZoom(viewBox, setViewBoxPosition, scale, setScale);
+  const { dragState, handleMouseDown, handleMouseMove, handleMouseUp, handleWheel: handleDragWheel } = useDrag();
+  const { handleWheel: handleZoomWheel } = useZoom();
 
   const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
     if (event.ctrlKey) {
@@ -215,17 +155,8 @@ export const GearProject: React.FC = () => {
 
   const activeGearId = useGearProjectStore((state) => state.activeGearId);
   const activeGear = useGear(activeGearId);
-  const activeGearPosition = useActiveGearPosition();
-
-  const relativeActiveGearPosition = useMemo<[number, number]>(() => {
-    return [activeGearPosition[0] * scale + viewBox.left, activeGearPosition[1] * scale + viewBox.top];
-  }, [activeGearPosition, viewBox, scale]);
-
   useModeHotKeys();
 
-  if (initializing) {
-    return <div>Initializing...</div>;
-  }
   return (
     <>
       <DropZoneContainer<GearProjectData> onJsonLoad={setGearProject} title="Drop a gear project here">
@@ -239,7 +170,6 @@ export const GearProject: React.FC = () => {
           width='100vw'
           height='100vh'
           xmlns="http://www.w3.org/2000/svg" 
-          viewBox={`${viewBox.left} ${viewBox.top} ${viewBox.width} ${viewBox.height}`}
           style={{
             cursor: dragState.isDragging ? 'grabbing' : 'default',
             overflow: 'hidden',
@@ -250,7 +180,7 @@ export const GearProject: React.FC = () => {
         >
           <GearProjectItem gearId={gearProject.rootGearId} />
           <ExportViewBoxController />
-          {activeGear && <CrossHair radius={activeGear.teeth * gearProject.module / 2} position={relativeActiveGearPosition} />}
+          {activeGear && <CrossHair radius={activeGear.teeth * gearProject.module / 2} />}
         </svg>
       </DropZoneContainer>
       <ReactionPanel svgRef={svgRef} />

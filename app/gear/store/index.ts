@@ -2,13 +2,15 @@ import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import { GearData, GearProjectData, mockGearProject } from "../core/types.";
 import { SetStateAction, useMemo, Dispatch, useEffect } from "react";
+import { BehaviorSubject } from "rxjs";
+import { mat3 } from "gl-matrix";
 
 export const useGearProjectStore = create(
   combine<{
   activeGearId: string | null;
   activeGearPosition: [number, number];
   gearProject: GearProjectData;
-  scale: number;
+  svgMatrix$: BehaviorSubject<mat3>;
 
   // Mode related
   addModeEnabled: boolean;
@@ -16,7 +18,6 @@ export const useGearProjectStore = create(
   addGear: (gear: GearData) => void;
   setActiveGearId: Dispatch<SetStateAction<string | null>>;
   setGearProject: (gearProject: GearProjectData) => void;
-  setScale: Dispatch<SetStateAction<number>>;
   setGearPositionAngle: (gearId: string, positionAngle: number) => void;
   setGearColor: (gearId: string, color: string) => void;
   setActiveGearPosition: (position: [number, number]) => void;
@@ -28,7 +29,7 @@ export const useGearProjectStore = create(
       gearProject: mockGearProject,
       activeGearId: null,
       activeGearPosition: [0, 0],
-      scale: 1,
+      svgMatrix$: new BehaviorSubject(mat3.create()),
       addModeEnabled: false,
     }, (set) => ({
     setGearProject: (gearProject: GearProjectData) => {
@@ -44,9 +45,6 @@ export const useGearProjectStore = create(
     },
     setActiveGearId: (activeGearId) => {
       set((state) => ({ activeGearId: typeof activeGearId === 'function' ? activeGearId(state.activeGearId) : activeGearId }));
-    },
-    setScale: (scale) => {
-      set((state) => ({ scale: typeof scale === 'function' ? scale(state.scale) : scale }));
     },
     setGearPositionAngle: (gearId: string, positionAngle: number) => {
       set((state) => ({
@@ -85,7 +83,7 @@ export const useGearChildren = (gearId: string) => {
 }
 
 export const useActiveGearPosition = () => {
-  const scale = useGearProjectStore((state) => state.scale);
+  const svgMatrix$ = useGearProjectStore((state) => state.svgMatrix$);
   const setActiveGearPosition = useGearProjectStore((state) => state.setActiveGearPosition);
   const gearProject = useGearProjectStore((state) => state.gearProject);
   const activeGearId = useGearProjectStore((state) => state.activeGearId);
@@ -93,16 +91,19 @@ export const useActiveGearPosition = () => {
   const activeGearPosition = useGearProjectStore((state) => state.activeGearPosition);
 
   useEffect(() => {
-    if (!activeGear) return;
+    const subscription = svgMatrix$.subscribe(() => {
+      if (!activeGear) return;
 
-    const activeGearElement = document.getElementById(activeGear.id);
-    if (!activeGearElement) return;
+      const activeGearElement = document.getElementById(activeGear.id);
+      if (!activeGearElement) return;
 
-    const { x, y, width, height } = activeGearElement.getBoundingClientRect();
+      const { x, y, width, height } = activeGearElement.getBoundingClientRect();
 
-    setActiveGearPosition([x + width / 2, y + height / 2]);
+      setActiveGearPosition([x + width / 2, y + height / 2]);
+    });
 
-  }, [gearProject.gears, activeGear, setActiveGearPosition, scale]);
+    return () => subscription.unsubscribe();
+  }, [gearProject.gears, activeGear, setActiveGearPosition, svgMatrix$]);
 
   return activeGearPosition;
 }

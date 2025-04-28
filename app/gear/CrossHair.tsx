@@ -1,4 +1,7 @@
+import { useEffect, useRef } from "react";
 import { rotatePoint } from "./core/gear";
+import { useActiveGearPosition, useGearProjectStore } from "./store";
+import { mat3, vec2 } from "gl-matrix";
 
 const drawCrossHair = (radius: number) => {
   let path = '';
@@ -17,9 +20,25 @@ const drawCrossHair = (radius: number) => {
   return path;
 }
 
-export const CrossHair: React.FC<{ radius: number, position: [number, number] }> = ({ radius, position }) => {
+export const CrossHair: React.FC<{ radius: number }> = ({ radius }) => {
+  const activeGearPosition = useActiveGearPosition();
+  const gRef = useRef<SVGGElement>(null);
+  const svgMatrix$ = useGearProjectStore((state) => state.svgMatrix$);
+
+  useEffect(() => {
+    const subscription = svgMatrix$.subscribe((matrix) => {
+      if (gRef.current) {
+        const matrixInverse = mat3.create();
+        mat3.invert(matrixInverse, matrix);
+        const position = vec2.create();
+        vec2.transformMat3(position, vec2.fromValues(activeGearPosition[0], activeGearPosition[1]), matrixInverse);
+        gRef.current.setAttribute('transform', `translate(${position[0]}, ${position[1]})`);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [activeGearPosition, svgMatrix$]);
   return (
-    <g transform={`translate(${position[0]}, ${position[1]})`}>
+    <g ref={gRef}>
       <path d={drawCrossHair(radius)}>
         <animateTransform
           attributeName="transform"
