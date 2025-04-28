@@ -1,55 +1,29 @@
 import { useHotkeys } from "react-hotkeys-hook";
-import { useGearProjectStore } from "../store";
 import { useEffect } from "react";
-
-export enum Mode {
-  Normal = 'normal',
-  Add = 'add',
-  Active = 'active',
-}
-
-export const useMode = (): Mode => {
-  const activeGearId = useGearProjectStore((state) => state.activeGearId);
-  const addModeEnabled = useGearProjectStore((state) => state.addModeEnabled);
-
-  if (!activeGearId) return Mode.Normal;
-  if (addModeEnabled) return Mode.Add;
-  return Mode.Active;
-}
+import { EditorMachineContext } from "../editorMachine";
 
 export const useModeHotKeys = () => {
-  const mode = useMode();
-  const setAddModeEnabled = useGearProjectStore((state) => state.setAddModeEnabled);
-  const setActiveGearId = useGearProjectStore((state) => state.setActiveGearId);
-  const activeGearId = useGearProjectStore((state) => state.activeGearId);
+  const state = EditorMachineContext.useSelector((state) => state);
+  const { send } = EditorMachineContext.useActorRef();
 
   useHotkeys('a', () => {
-    if (mode === Mode.Active) {
-      setAddModeEnabled(true);
-    }
+    send({ type: 'enterAddingMode' });
   });
+
   useHotkeys('esc', () => {
-    if (mode === Mode.Add) {
-      setAddModeEnabled(false);
-    } else if (mode === Mode.Active) {
-      setActiveGearId(null);
+    if (state.hasTag('CanEscape')) {
+      send({ type: 'esc' });
     }
   });
 
   useEffect(() => {
-    if (!activeGearId) {
-      setAddModeEnabled(false);
-    }
-  }, [activeGearId, setAddModeEnabled]);
-  
-  useEffect(() => {
     const handleContextMenu = (event: MouseEvent) => {
-      if (mode === Mode.Add) {
+      if (state.hasTag('CanEscape')) {
         event.preventDefault();
-        setAddModeEnabled(false);
+        send({ type: 'esc' });
       }
     }
     window.addEventListener('contextmenu', handleContextMenu);
     return () => window.removeEventListener('contextmenu', handleContextMenu);
-  }, [mode, setAddModeEnabled]);
+  }, [send, state]);
 }

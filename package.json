@@ -16,11 +16,15 @@
     "@mantine/hooks": "^7.13.0",
     "@react-spring/web": "^9.7.4",
     "@reactivex/rxjs": "^6.6.7",
+    "@statelyai/inspect": "^0.4.0",
+    "@xstate/react": "^5.0.3",
     "@yatongzhao/joky-deck-core": "^1.6.0",
     "animejs": "^3.2.2",
     "classnames": "^2.5.1",
     "file-saver": "^2.0.5",
     "gl-matrix": "^3.4.3",
+    "lucide": "^0.503.0",
+    "lucide-react": "^0.503.0",
     "next": "14.2.11",
     "ramda": "^0.30.1",
     "react": "^18",
@@ -31,6 +35,7 @@
     "rxjs": "^7.8.2",
     "sass": "^1.79.4",
     "uuid": "^11.1.0",
+    "xstate": "^5.19.2",
     "zustand": "^5.0.3"
   },
   "devDependencies": {

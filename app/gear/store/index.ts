@@ -1,37 +1,28 @@
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import { GearData, GearProjectData, mockGearProject } from "../core/types.";
-import { SetStateAction, useMemo, Dispatch, useEffect } from "react";
+import { useMemo, useEffect } from "react";
 import { BehaviorSubject } from "rxjs";
 import { mat3 } from "gl-matrix";
+import { EditorMachineContext } from "../editorMachine";
 
 export const useGearProjectStore = create(
   combine<{
-  activeGearId: string | null;
   activeGearPosition: [number, number];
   gearProject: GearProjectData;
   svgMatrix$: BehaviorSubject<mat3>;
-
-  // Mode related
-  addModeEnabled: boolean;
 }, {
   addGear: (gear: GearData) => void;
-  setActiveGearId: Dispatch<SetStateAction<string | null>>;
   setGearProject: (gearProject: GearProjectData) => void;
   setGearPositionAngle: (gearId: string, positionAngle: number) => void;
   setGearColor: (gearId: string, color: string) => void;
   setActiveGearPosition: (position: [number, number]) => void;
   setSvgMatrix: (matrix: mat3) => void;
-
-  // Mode related
-  setAddModeEnabled: (addModeEnabled: boolean) => void;
 }>(
     {
       gearProject: mockGearProject,
-      activeGearId: null,
       activeGearPosition: [0, 0],
       svgMatrix$: new BehaviorSubject(mat3.fromValues(...mockGearProject.displayMatrix)),
-      addModeEnabled: false,
     }, (set, getState) => ({
     setGearProject: (gearProject: GearProjectData) => {
       set({ gearProject });
@@ -44,9 +35,6 @@ export const useGearProjectStore = create(
           gears: [...state.gearProject.gears, gearData],
         },
       }));
-    },
-    setActiveGearId: (activeGearId) => {
-      set((state) => ({ activeGearId: typeof activeGearId === 'function' ? activeGearId(state.activeGearId) : activeGearId }));
     },
     setGearPositionAngle: (gearId: string, positionAngle: number) => {
       set((state) => ({
@@ -70,16 +58,13 @@ export const useGearProjectStore = create(
     setSvgMatrix: (matrix: mat3) => {
       const svgMatrix$ = getState().svgMatrix$;
       svgMatrix$.next(matrix);
-      set((state) => ({
-        gearProject: {
-          ...state.gearProject,
-          displayMatrix: Array.from(matrix) as [number, number, number, number, number, number, number, number, number],
-        },
-      }));
-    },
-    // Mode related
-    setAddModeEnabled: (addModeEnabled: boolean) => {
-      set({ addModeEnabled });
+      // TODO: 
+      // set((state) => ({
+      //   gearProject: {
+      //     ...state.gearProject,
+      //     displayMatrix: Array.from(matrix) as [number, number, number, number, number, number, number, number, number],
+      //   },
+      // }));
     },
   }))
 );
@@ -98,7 +83,7 @@ export const useActiveGearPosition = () => {
   const svgMatrix$ = useGearProjectStore((state) => state.svgMatrix$);
   const setActiveGearPosition = useGearProjectStore((state) => state.setActiveGearPosition);
   const gearProject = useGearProjectStore((state) => state.gearProject);
-  const activeGearId = useGearProjectStore((state) => state.activeGearId);
+  const activeGearId = EditorMachineContext.useSelector((state) => state.context.selectedGearId);
   const activeGear = useGear(activeGearId);
   const activeGearPosition = useGearProjectStore((state) => state.activeGearPosition);
 

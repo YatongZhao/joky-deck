@@ -11,6 +11,8 @@ import { CrossHair } from "./CrossHair";
 import { ExportViewBoxController } from "./ExportViewBoxController";
 import { mat3, vec2 } from "gl-matrix";
 import { getScale, scaleAtPoint } from "./core/coordinate";
+import { ToolsPanel } from "./ToolsPanel";
+import { EditorMachineContext } from "./editorMachine";
 
 interface DragState {
   isDragging: boolean;
@@ -155,9 +157,11 @@ export const GearProject: React.FC = () => {
   }
   const setGearProject = useGearProjectStore((state) => state.setGearProject);
 
-  const activeGearId = useGearProjectStore((state) => state.activeGearId);
+  const activeGearId = EditorMachineContext.useSelector((state) => state.context.selectedGearId);
+
   const activeGear = useGear(activeGearId);
   useModeHotKeys();
+  console.log('rerender');
 
   return (
     <>
@@ -187,6 +191,7 @@ export const GearProject: React.FC = () => {
       </DropZoneContainer>
       <ReactionPanel svgRef={svgRef} />
       <GearSettingPanel />
+      <ToolsPanel />
     </>
   )
 }
