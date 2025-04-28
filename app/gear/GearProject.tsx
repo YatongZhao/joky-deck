@@ -10,7 +10,7 @@ import { useModeHotKeys } from "./hooks/useMode";
 import { CrossHair } from "./CrossHair";
 import { ExportViewBoxController } from "./ExportViewBoxController";
 import { mat3, vec2 } from "gl-matrix";
-import { scaleAtPoint } from "./core/coordinate";
+import { getScale, scaleAtPoint } from "./core/coordinate";
 
 interface DragState {
   isDragging: boolean;
@@ -67,8 +67,8 @@ const useDrag = () => {
 };
 
 const useZoom = () => {
-  const MAX_SCALE = 0.05; // This is actually the minimum zoom level (most zoomed out)
-  const MIN_SCALE = 30;   // This is actually the maximum zoom level (most zoomed in)
+  const MIN_SCALE = 0.05;
+  const MAX_SCALE = 30;
   const ZOOM_SPEED = 0.05;
   const lastEventTimeRef = useRef<number>(0);
   const svgMatrix$ = useGearProjectStore((state) => state.svgMatrix$);
@@ -83,9 +83,9 @@ const useZoom = () => {
     const matrix = svgMatrix$.getValue();
 
     // Calculate new total scale with limits
-    const scaleFactor = 1 + event.deltaY * zoomSpeed;
-    const oldScale = Math.hypot(matrix[0], matrix[1]);
-    const newTotalScale = Math.max(MAX_SCALE, Math.min(MIN_SCALE, oldScale * scaleFactor));
+    const scaleFactor = 1 - event.deltaY * zoomSpeed;
+    const oldScale = getScale(matrix)[0];
+    const newTotalScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, oldScale * scaleFactor));
     
     // Calculate the scale change
     const newScale = newTotalScale / oldScale;
