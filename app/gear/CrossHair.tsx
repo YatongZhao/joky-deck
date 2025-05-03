@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { rotatePoint } from "./core/gear";
-import { svgMatrix$, useActiveGearPosition } from "./store";
+import { finalMatrix$, useActiveGearPosition } from "./store";
 import { mat3, vec2 } from "gl-matrix";
 
 const drawCrossHair = (radius: number) => {
@@ -25,7 +25,7 @@ export const CrossHair: React.FC<{ radius: number }> = ({ radius }) => {
   const gRef = useRef<SVGGElement>(null);
 
   useEffect(() => {
-    const subscription = svgMatrix$.subscribe((matrix) => {
+    const subscription = finalMatrix$.subscribe((matrix) => {
       if (gRef.current) {
         const matrixInverse = mat3.create();
         mat3.invert(matrixInverse, matrix);

@@ -28,8 +28,8 @@ export const mockGearProject: GearProjectData = {
   module: 5,
   durationUnit: 1,
   viewBox: {
-    left: -220,
-    top: -190,
+    left: -320,
+    top: -180,
     width: 640,
     height: 360,
   },
