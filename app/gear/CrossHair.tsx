@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { rotatePoint } from "./core/gear";
-import { useActiveGearPosition, useGearProjectStore } from "./store";
+import { svgMatrix$, useActiveGearPosition } from "./store";
 import { mat3, vec2 } from "gl-matrix";
 
 const drawCrossHair = (radius: number) => {
@@ -23,7 +23,6 @@ const drawCrossHair = (radius: number) => {
 export const CrossHair: React.FC<{ radius: number }> = ({ radius }) => {
   const activeGearPosition = useActiveGearPosition();
   const gRef = useRef<SVGGElement>(null);
-  const svgMatrix$ = useGearProjectStore((state) => state.svgMatrix$);
 
   useEffect(() => {
     const subscription = svgMatrix$.subscribe((matrix) => {
@@ -36,7 +35,7 @@ export const CrossHair: React.FC<{ radius: number }> = ({ radius }) => {
       }
     });
     return () => subscription.unsubscribe();
-  }, [activeGearPosition, svgMatrix$]);
+  }, [activeGearPosition]);
   return (
     <g ref={gRef}>
       <path d={drawCrossHair(radius)}>

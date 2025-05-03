@@ -3,13 +3,12 @@ import { GearData } from "./core/types.";
 import { Gear } from "./Gear";
 import { useEffect, useRef, useState } from "react";
 import { combineLatest, debounceTime, fromEvent } from "rxjs";
-import { useGearProjectStore, useGear, useGearChildren } from "./store";
+import { useGearProjectStore, useGear, useGearChildren, svgMatrix$ } from "./store";
 import { getScale } from "./core/coordinate";
 import { EditorMachineContext } from "./editorMachine";
 
 export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
   const ref = useRef<SVGPathElement>(null);
-  const svgMatrix$ = useGearProjectStore((state) => state.svgMatrix$);
   const gearProject = useGearProjectStore((state) => state.gearProject);
   const addGear = useGearProjectStore((state) => state.addGear);
   const gearData = useGear(gearId);
@@ -50,7 +49,7 @@ export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, [gearData?.teeth, gearProject.module, active, state, svgMatrix$]);
+  }, [gearData?.teeth, gearProject.module, active, state]);
 
   if (!gearData) {
     return `Error: Gear(${gearId}) not found`;
