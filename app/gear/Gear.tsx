@@ -1,6 +1,7 @@
 import React, { forwardRef, useState, useMemo } from "react"
-import { calculateGearInfo, getGearTransform, memorizedGearHolePath, memorizedGearPath } from "./core/gear";
+import { calculateGearInfo, getGearTransformVector, memorizedGearHolePath, memorizedGearPath } from "./core/gear";
 import { useTheme } from "@/app/theme";
+import { mat3, vec2 } from "gl-matrix";
 
 const parentGearContext = React.createContext<{
   teeth: number;
@@ -26,11 +27,34 @@ export const Gear = forwardRef<SVGPathElement, {
 
   onClick?: () => void;
   virtual?: boolean;
-}>(function Gear({ id, teeth, children, positionAngle = 0, direction = 1, module, durationUnit, onClick, virtual = false, color }, ref) {
+}>(function Gear({
+  id,
+  teeth,
+  children,
+  positionAngle = 0,
+  direction = 1,
+  module,
+  durationUnit,
+  onClick,
+  virtual = false,
+  color
+}, ref) {
   const parentGear = useParentGear();
   const [hovered, setHovered] = useState(false);
   const theme = useTheme();
   const fillColor = color || theme.colors.gray[4];
+  const transformMatrix = useMemo(() => {
+    const result = mat3.create();
+    if (!parentGear) return result;
+    mat3.translate(result, result, getGearTransformVector(positionAngle, teeth, parentGear.teeth, module));
+    return result;
+  }, [parentGear, positionAngle, module, teeth]);
+
+  const transform = useMemo(() => {
+    const transformVec2 = vec2.create();
+    vec2.transformMat3(transformVec2, transformVec2, transformMatrix);
+    return `translate(${transformVec2.join(', ')})`;
+  }, [transformMatrix]);
 
   const currentDirection = (parentGear ? -parentGear.direction : direction) as (1 | -1);
   const currentInitAngle = parentGear
@@ -46,9 +70,8 @@ export const Gear = forwardRef<SVGPathElement, {
     return result;
   }, [currentInitAngle, currentDirection, duration]);
 
-  return <g transform={parentGear ? getGearTransform(positionAngle, (parentGear.teeth * parentGear.module + teeth * module) / 2) : ''}>
+  return <g id={id} transform={transform}>
       <path
-        id={id}
         ref={ref}
         d={`${memorizedGearPath(calculateGearInfo(teeth, module))} ${virtual ? '' : memorizedGearHolePath(teeth, module, 0.03)}`}
         fill={virtual ? theme.colors.blue[4] : fillColor}
@@ -62,7 +85,7 @@ export const Gear = forwardRef<SVGPathElement, {
       >
         <animateTransform attributeName="transform" type="rotate" begin={`${begin}s`} from="0" to={`${360 * currentDirection}`} dur={`${duration}s`} repeatCount="indefinite" />
       </path>
-    <parentGearContext.Provider value={{ teeth, module: module, direction: currentDirection, initAngle: currentInitAngle }}>
+    <parentGearContext.Provider value={{ teeth, module, direction: currentDirection, initAngle: currentInitAngle }}>
       {children}
     </parentGearContext.Provider>
   </g>

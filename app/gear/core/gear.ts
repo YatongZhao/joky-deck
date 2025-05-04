@@ -1,3 +1,4 @@
+import { ReadonlyVec2 } from "gl-matrix";
 import { memoizeWith } from "ramda";
 
 type GearInfo = {
@@ -147,11 +148,12 @@ export function rotatePoint(point: [number, number], angleRad: number): [number,
 
 export const memorizedGearPath = memoizeWith((gearParams: GearParams) => `${gearParams.teeth}-${gearParams.module}-${gearParams.pressureAngleDeg}-${gearParams.resolution}`, generateGearPath);
 
-export const getGearTransform = (positionAngle: number, toothPitch: number) => {
-  const x = Math.cos(positionAngle / 180 * Math.PI) * toothPitch;
-  const y = Math.sin(positionAngle / 180 * Math.PI) * toothPitch;
-  return `translate(${x}, ${y})`;
-};
+export const getGearTransformVector = (positionAngle: number, teeth: number, parentTeeth: number, module: number): ReadonlyVec2 => {
+  const distance = (parentTeeth * module + teeth * module) / 2;
+  const x = Math.cos(positionAngle / 180 * Math.PI) * distance;
+  const y = Math.sin(positionAngle / 180 * Math.PI) * distance;
+  return [x, y];
+}
 
 export const generateGearHolePath = (teeth: number, module: number, spokeWidthBase: number) => {
   const pitchRadius = teeth * module / 2;

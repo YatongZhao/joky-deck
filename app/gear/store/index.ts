@@ -1,10 +1,10 @@
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import { GearData, GearProjectData, mockGearProject } from "../core/types.";
-import { useMemo, useEffect } from "react";
+import { useMemo } from "react";
 import { BehaviorSubject, combineLatest, fromEvent, merge, of } from "rxjs";
 import { mat3, vec2 } from "gl-matrix";
-import { EditorMachineContext } from "../editorMachine";
+import { getGearTransformVector } from "../core/gear";
 
 export const svgMatrix$ = new BehaviorSubject<mat3>(mat3.fromValues(...mockGearProject.displayMatrix));
 
@@ -28,18 +28,15 @@ combineLatest([svgMatrix$, translateMatrix$]).subscribe(([svgMatrix, translateMa
 
 export const useGearProjectStore = create(
   combine<{
-  activeGearPosition: [number, number];
   gearProject: GearProjectData;
 }, {
   addGear: (gear: GearData) => void;
   setGearProject: (gearProject: GearProjectData) => void;
   setGearPositionAngle: (gearId: string, positionAngle: number) => void;
   setGearColor: (gearId: string, color: string) => void;
-  setActiveGearPosition: (position: [number, number]) => void;
 }>(
     {
       gearProject: mockGearProject,
-      activeGearPosition: [0, 0],
     }, (set) => ({
     setGearProject: (gearProject: GearProjectData) => {
       set({ gearProject });
@@ -68,15 +65,14 @@ export const useGearProjectStore = create(
         },
       }));
     },
-    setActiveGearPosition: (position: [number, number]) => {
-      set({ activeGearPosition: position });
-    },
   }))
 );
 
+const getGear = (gears: GearData[], gearId: string | null) => gears.find((gear) => gear.id === gearId);
+
 export const useGear = (gearId: string | null) => {
-  const gearProject = useGearProjectStore((state) => state.gearProject);
-  return useMemo(() => gearProject.gears.find((gear) => gear.id === gearId), [gearProject.gears, gearId]);
+  const gears = useGearProjectStore((state) => state.gearProject.gears);
+  return useMemo(() => getGear(gears, gearId), [gears, gearId]);
 }
 
 export const useGearChildren = (gearId: string) => {
@@ -84,27 +80,26 @@ export const useGearChildren = (gearId: string) => {
   return useMemo(() => gearProject.gears.filter((gear) => gear.parentId === gearId), [gearProject.gears, gearId]);
 }
 
-export const useActiveGearPosition = () => {
-  const setActiveGearPosition = useGearProjectStore((state) => state.setActiveGearPosition);
-  const gearProject = useGearProjectStore((state) => state.gearProject);
-  const activeGearId = EditorMachineContext.useSelector((state) => state.context.selectedGearId);
-  const activeGear = useGear(activeGearId);
-  const activeGearPosition = useGearProjectStore((state) => state.activeGearPosition);
+export const useGearPosition = (gearId: string | null) => {
+  const gears = useGearProjectStore((state) => state.gearProject.gears);
+  const gearModule = useGearProjectStore((state) => state.gearProject.module);
+  const targetGear = useGear(gearId);
 
-  useEffect(() => {
-    const subscription = svgMatrix$.subscribe(() => {
-      if (!activeGear) return;
+  const gearPosition = useMemo(() => {
+    let currentGear = targetGear;
+    const globalTransformMatrix = mat3.create();
+  
+    if (!currentGear) return vec2.create();
+  
+    let parentGear;
+    while (currentGear.parentId !== null) {
+      parentGear = getGear(gears, currentGear.parentId)!;
+      mat3.translate(globalTransformMatrix, globalTransformMatrix, getGearTransformVector(currentGear.positionAngle, currentGear.teeth, parentGear.teeth, gearModule))
+      currentGear = parentGear;
+    }
+  
+    return vec2.transformMat3(vec2.create(), vec2.create(), globalTransformMatrix);
+  }, [gears, gearModule, targetGear])
 
-      const activeGearElement = document.getElementById(activeGear.id);
-      if (!activeGearElement) return;
-
-      const { x, y, width, height } = activeGearElement.getBoundingClientRect();
-
-      setActiveGearPosition([x + width / 2, y + height / 2]);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [gearProject.gears, activeGear, setActiveGearPosition]);
-
-  return activeGearPosition;
+  return gearPosition;
 }

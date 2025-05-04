@@ -150,7 +150,6 @@ export const GearProject: React.FC = () => {
 
   const activeGear = useGear(activeGearId);
   useModeHotKeys();
-  console.log('rerender');
 
   return (
     <>
@@ -169,12 +168,13 @@ export const GearProject: React.FC = () => {
             cursor: dragState.isDragging ? 'grabbing' : 'default',
             overflow: 'hidden',
             position: 'fixed',
+            background: 'gray',
             top: 0,
             left: 0,
           }}
         >
+          <ExportViewBoxController id="export-view-box-controller" />
           <GearProjectItem gearId={gearProject.rootGearId} />
-          <ExportViewBoxController />
           {activeGear && <CrossHair radius={activeGear.teeth * gearProject.module / 2} />}
         </svg>
       </DropZoneContainer>

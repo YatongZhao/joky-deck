@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { rotatePoint } from "./core/gear";
-import { finalMatrix$, useActiveGearPosition } from "./store";
-import { mat3, vec2 } from "gl-matrix";
+import { useGearPosition } from "./store";
+import { EditorMachineContext } from "./editorMachine";
 
 const drawCrossHair = (radius: number) => {
   let path = '';
@@ -21,20 +21,13 @@ const drawCrossHair = (radius: number) => {
 }
 
 export const CrossHair: React.FC<{ radius: number }> = ({ radius }) => {
-  const activeGearPosition = useActiveGearPosition();
+  const activeGearId = EditorMachineContext.useSelector((state) => state.context.selectedGearId);
   const gRef = useRef<SVGGElement>(null);
+  const activeGearPosition = useGearPosition(activeGearId);
 
   useEffect(() => {
-    const subscription = finalMatrix$.subscribe((matrix) => {
-      if (gRef.current) {
-        const matrixInverse = mat3.create();
-        mat3.invert(matrixInverse, matrix);
-        const position = vec2.create();
-        vec2.transformMat3(position, vec2.fromValues(activeGearPosition[0], activeGearPosition[1]), matrixInverse);
-        gRef.current.setAttribute('transform', `translate(${position[0]}, ${position[1]})`);
-      }
-    });
-    return () => subscription.unsubscribe();
+    if (!gRef.current) return;
+    gRef.current.setAttribute('transform', `translate(${activeGearPosition[0]}, ${activeGearPosition[1]})`);
   }, [activeGearPosition]);
   return (
     <g ref={gRef}>
