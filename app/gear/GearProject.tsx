@@ -46,7 +46,7 @@ const useDrag = () => {
   };
 
   const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
-    translate([event.deltaX, event.deltaY]);
+    translate([-event.deltaX, -event.deltaY]);
   }
 
   useEffect(() => {
@@ -70,7 +70,7 @@ const useDrag = () => {
 const useZoom = () => {
   const MIN_SCALE = 0.05;
   const MAX_SCALE = 30;
-  const ZOOM_SPEED = 0.05;
+  const ZOOM_SPEED = 0.1;
   const lastEventTimeRef = useRef<number>(0);
   const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
     if (!event.ctrlKey) return;
