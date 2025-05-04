@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState, useRef, useCallback } from "react";
 import { GearProjectData } from "./core/types.";
-import { useGear, useGearProjectStore } from "./store";
+import { useGear, useGearProjectStore, svgMatrix$, translateMatrix$, finalMatrix$ } from "./store";
 import { GearProjectItem } from "./GearProjectItem";
 import { ReactionPanel } from "./ReactionPanel";
 import { DropZoneContainer } from "./DropZoneContainer";
@@ -11,6 +11,8 @@ import { CrossHair } from "./CrossHair";
 import { ExportViewBoxController } from "./ExportViewBoxController";
 import { mat3, vec2 } from "gl-matrix";
 import { getScale, scaleAtPoint } from "./core/coordinate";
+import { ToolsPanel } from "./ToolsPanel";
+import { EditorMachineContext } from "./editorMachine";
 
 interface DragState {
   isDragging: boolean;
@@ -18,7 +20,6 @@ interface DragState {
 
 const useDrag = () => {
   const [dragState, setDragState] = useState<DragState>({ isDragging: false });
-  const svgMatrix$ = useGearProjectStore((state) => state.svgMatrix$);
 
   const handleMouseDown = (event: React.MouseEvent<SVGSVGElement>) => {
     if (event.button === 1) { // Middle mouse button
@@ -33,7 +34,7 @@ const useDrag = () => {
     mat3.translate(translateMatrix, translateMatrix, [x, y]);
     mat3.multiply(matrix, translateMatrix, matrix);
     svgMatrix$.next(matrix);
-  }, [svgMatrix$]);
+  }, []);
 
   const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
     if (!dragState.isDragging) return;
@@ -71,9 +72,9 @@ const useZoom = () => {
   const MAX_SCALE = 30;
   const ZOOM_SPEED = 0.05;
   const lastEventTimeRef = useRef<number>(0);
-  const svgMatrix$ = useGearProjectStore((state) => state.svgMatrix$);
   const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
     if (!event.ctrlKey) return;
+    const translateMatrix = translateMatrix$.getValue();
     const currentTime = Date.now();
     const timeSinceLastEvent = currentTime - lastEventTimeRef.current;
     lastEventTimeRef.current = currentTime;
@@ -90,7 +91,7 @@ const useZoom = () => {
     // Calculate the scale change
     const newScale = newTotalScale / oldScale;
     const scaleMatrix = mat3.create();
-    scaleAtPoint(scaleMatrix, vec2.fromValues(event.clientX, event.clientY), newScale);
+    scaleAtPoint(scaleMatrix, vec2.transformMat3(vec2.create(), vec2.fromValues(event.clientX, event.clientY), mat3.invert(mat3.create(), translateMatrix)), newScale);
     mat3.multiply(matrix, scaleMatrix, matrix);
     svgMatrix$.next(matrix);
   };
@@ -112,33 +113,25 @@ const useZoom = () => {
 export const GearProject: React.FC = () => {
   const gearProject = useGearProjectStore((state) => state.gearProject);
   const svgRef = useRef<SVGSVGElement>(null);
-  const svgMatrix$ = useGearProjectStore((state) => state.svgMatrix$);
 
-  const updateViewBox = useCallback(() => {
+  const updateViewBox = useCallback((finalMatrix: mat3) => {
     const svg = svgRef.current;
     if (!svg) return;
-
-    const matrix = svgMatrix$.getValue();
-    const matrixInverse = mat3.create();
-    mat3.invert(matrixInverse, matrix);
 
     const windowInnerWidth = window.innerWidth;
     const windowInnerHeight = window.innerHeight;
 
-    const scale = Math.hypot(matrix[0], matrix[1]);
+    const matrixInverse = mat3.create();
+    mat3.invert(matrixInverse, finalMatrix);
+
+    const scale = Math.hypot(finalMatrix[0], finalMatrix[1]);
     svg.setAttribute('viewBox', vec2.transformMat3(vec2.create(), vec2.fromValues(0, 0), matrixInverse).join(' ')
     + ` ${windowInnerWidth / scale} ${windowInnerHeight / scale}`);
-  }, [svgMatrix$]);
+  }, []);
 
   useEffect(() => {
-    const subscription = svgMatrix$.subscribe(updateViewBox);
+    const subscription = finalMatrix$.subscribe(updateViewBox);
     return () => subscription.unsubscribe();
-  }, [svgMatrix$, updateViewBox]);
-
-  useEffect(() => {
-    updateViewBox();
-    window.addEventListener('resize', updateViewBox);
-    return () => window.removeEventListener('resize', updateViewBox);
   }, [updateViewBox]);
 
   const { dragState, handleMouseDown, handleMouseMove, handleMouseUp, handleWheel: handleDragWheel } = useDrag();
@@ -153,9 +146,11 @@ export const GearProject: React.FC = () => {
   }
   const setGearProject = useGearProjectStore((state) => state.setGearProject);
 
-  const activeGearId = useGearProjectStore((state) => state.activeGearId);
+  const activeGearId = EditorMachineContext.useSelector((state) => state.context.selectedGearId);
+
   const activeGear = useGear(activeGearId);
   useModeHotKeys();
+  console.log('rerender');
 
   return (
     <>
@@ -185,6 +180,7 @@ export const GearProject: React.FC = () => {
       </DropZoneContainer>
       <ReactionPanel svgRef={svgRef} />
       <GearSettingPanel />
+      <ToolsPanel />
     </>
   )
 }

@@ -1,36 +1,45 @@
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import { GearData, GearProjectData, mockGearProject } from "../core/types.";
-import { SetStateAction, useMemo, Dispatch, useEffect } from "react";
-import { BehaviorSubject } from "rxjs";
-import { mat3 } from "gl-matrix";
+import { useMemo, useEffect } from "react";
+import { BehaviorSubject, combineLatest, fromEvent, merge, of } from "rxjs";
+import { mat3, vec2 } from "gl-matrix";
+import { EditorMachineContext } from "../editorMachine";
+
+export const svgMatrix$ = new BehaviorSubject<mat3>(mat3.fromValues(...mockGearProject.displayMatrix));
+
+export const translateMatrix$ = new BehaviorSubject<mat3>(mat3.create());
+merge(of(null), fromEvent(window, 'resize')).subscribe(() => {
+  const windowInnerWidth = window.innerWidth;
+  const windowInnerHeight = window.innerHeight;
+  const translateVector = vec2.fromValues(windowInnerWidth / 2, windowInnerHeight / 2);
+  const translateMatrix = mat3.create();
+  mat3.translate(translateMatrix, translateMatrix, translateVector);
+  translateMatrix$.next(translateMatrix);
+});
+
+export const finalMatrix$ = new BehaviorSubject<mat3>(mat3.create());
+combineLatest([svgMatrix$, translateMatrix$]).subscribe(([svgMatrix, translateMatrix]) => {
+  const finalMatrix = mat3.create();
+  mat3.multiply(finalMatrix, translateMatrix, svgMatrix);
+  finalMatrix$.next(finalMatrix);
+});
+
 
 export const useGearProjectStore = create(
   combine<{
-  activeGearId: string | null;
   activeGearPosition: [number, number];
   gearProject: GearProjectData;
-  svgMatrix$: BehaviorSubject<mat3>;
-
-  // Mode related
-  addModeEnabled: boolean;
 }, {
   addGear: (gear: GearData) => void;
-  setActiveGearId: Dispatch<SetStateAction<string | null>>;
   setGearProject: (gearProject: GearProjectData) => void;
   setGearPositionAngle: (gearId: string, positionAngle: number) => void;
   setGearColor: (gearId: string, color: string) => void;
   setActiveGearPosition: (position: [number, number]) => void;
-
-  // Mode related
-  setAddModeEnabled: (addModeEnabled: boolean) => void;
 }>(
     {
       gearProject: mockGearProject,
-      activeGearId: null,
       activeGearPosition: [0, 0],
-      svgMatrix$: new BehaviorSubject(mat3.create()),
-      addModeEnabled: false,
     }, (set) => ({
     setGearProject: (gearProject: GearProjectData) => {
       set({ gearProject });
@@ -42,9 +51,6 @@ export const useGearProjectStore = create(
           gears: [...state.gearProject.gears, gearData],
         },
       }));
-    },
-    setActiveGearId: (activeGearId) => {
-      set((state) => ({ activeGearId: typeof activeGearId === 'function' ? activeGearId(state.activeGearId) : activeGearId }));
     },
     setGearPositionAngle: (gearId: string, positionAngle: number) => {
       set((state) => ({
@@ -65,10 +71,6 @@ export const useGearProjectStore = create(
     setActiveGearPosition: (position: [number, number]) => {
       set({ activeGearPosition: position });
     },
-    // Mode related
-    setAddModeEnabled: (addModeEnabled: boolean) => {
-      set({ addModeEnabled });
-    },
   }))
 );
 
@@ -83,10 +85,9 @@ export const useGearChildren = (gearId: string) => {
 }
 
 export const useActiveGearPosition = () => {
-  const svgMatrix$ = useGearProjectStore((state) => state.svgMatrix$);
   const setActiveGearPosition = useGearProjectStore((state) => state.setActiveGearPosition);
   const gearProject = useGearProjectStore((state) => state.gearProject);
-  const activeGearId = useGearProjectStore((state) => state.activeGearId);
+  const activeGearId = EditorMachineContext.useSelector((state) => state.context.selectedGearId);
   const activeGear = useGear(activeGearId);
   const activeGearPosition = useGearProjectStore((state) => state.activeGearPosition);
 
@@ -103,7 +104,7 @@ export const useActiveGearPosition = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [gearProject.gears, activeGear, setActiveGearPosition, svgMatrix$]);
+  }, [gearProject.gears, activeGear, setActiveGearPosition]);
 
   return activeGearPosition;
 }
