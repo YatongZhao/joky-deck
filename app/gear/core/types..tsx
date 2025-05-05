@@ -1,3 +1,5 @@
+import { vec2, mat3 } from "gl-matrix";
+
 export type GearData = {
   id: string;
   parentId: string | null;
@@ -8,30 +10,26 @@ export type GearData = {
 
 export type GearProjectData = {
   version: string;
-  displayMatrix: [number, number, number, number, number, number, number, number, number];
+  displayMatrix: mat3;
   rootGearId: string;
   gears: GearData[];
   module: number;
   durationUnit: number;
   viewBox: {
-    left: number;
-    top: number;
-    width: number;
-    height: number;
+    a: vec2;
+    b: vec2;
   };
 }
 
 export const mockGearProject: GearProjectData = {
   version: '1.0.0',
-  displayMatrix: [1, 0, 0, 0, 1, 0, 0, 0, 1],
+  displayMatrix: mat3.create(),
   rootGearId: '1',
   module: 5,
   durationUnit: 1,
   viewBox: {
-    left: -320,
-    top: -180,
-    width: 640,
-    height: 360,
+    a: vec2.fromValues(-320, -180),
+    b: vec2.fromValues(320, 180),
   },
   gears: [
     {

@@ -1,17 +1,26 @@
-import { useGearProjectStore } from "./store";
-import { useTheme } from "@/app/theme";
+import { useEffect, useRef } from "react";
+import { viewBoxA$, viewBoxB$ } from "./store";
+import { combineLatest } from "rxjs";
+
 export const ExportViewBoxController = ({ id }: { id?: string }) => {
-  const theme = useTheme();
-  const gearProject = useGearProjectStore((state) => state.gearProject);
-  const viewBox = gearProject.viewBox;
+  const ref = useRef<SVGPathElement>(null);
   
+  useEffect(() => {
+    const subscription = combineLatest([viewBoxA$, viewBoxB$]).subscribe(([a, b]) => {
+      console.log(a, b);
+      if (ref.current) {
+        ref.current.setAttribute('d', `M ${a[0]} ${a[1]} L ${b[0]} ${a[1]} L ${b[0]} ${b[1]} L ${a[0]} ${b[1]} Z`);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
   return (
     <path
       id={id}
-      d={`M ${viewBox.left} ${viewBox.top} L ${viewBox.left + viewBox.width} ${viewBox.top} L ${viewBox.left + viewBox.width} ${viewBox.top + viewBox.height} L ${viewBox.left} ${viewBox.top + viewBox.height} Z`}
+      ref={ref}
       stroke="none"
       strokeWidth="1"
-      fill={theme.colors.gray[2]}
+      fill="white"
     />
   )
 }

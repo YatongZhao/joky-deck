@@ -1,39 +1,34 @@
 import { useDrag } from "./hooks/useDrag";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { mat3, vec2 } from "gl-matrix";
 import { finalMatrix$ } from "./store";
+import { BehaviorSubject } from "rxjs";
 
-export const DragHandle = () => {
-  const { translateMatrix$, ref } = useDrag<SVGPathElement>();
-  const svgPositionRef = useRef<vec2>(vec2.create());
+export const DragHandle: React.FC<{ position$: BehaviorSubject<vec2> }> = ({ position$ }) => {
+  const { deltaMatrix$, ref } = useDrag<SVGPathElement>();
+
   useEffect(() => {
-    if (!ref.current) return;
-    const target = ref.current;
-    const translateSubscription = translateMatrix$.subscribe((translateMatrix) => {
-      const finalMatrix = finalMatrix$.getValue();
-      const vector = vec2.create();
-      const matrix = mat3.create();
-      mat3.invert(matrix, finalMatrix);
-      mat3.multiply(matrix, matrix, translateMatrix);
-      vec2.transformMat3(svgPositionRef.current, vector, matrix);
-      target.setAttribute('transform', `translate(${svgPositionRef.current[0]}, ${svgPositionRef.current[1]})`);
+    const subscription = position$.subscribe((position) => {
+      if (!ref.current) return;
+      const target = ref.current;
+      target.setAttribute('transform', `translate(${position[0]}, ${position[1]})`);
     });
-    const finalMatrixSubscription = finalMatrix$.subscribe((finalMatrix) => {
+    return () => subscription.unsubscribe();
+  }, [position$, ref]);
+  
+  useEffect(() => {
+    const deltaSubscription = deltaMatrix$.subscribe((deltaMatrix) => {
       const screenPosition = vec2.create();
-      const translateMatrix = translateMatrix$.getValue();
-      const invertTranslateMatrix = mat3.create();
-      mat3.invert(invertTranslateMatrix, translateMatrix);
-      const matrix = mat3.create();
-      mat3.multiply(matrix, invertTranslateMatrix, finalMatrix);
-      vec2.transformMat3(screenPosition, svgPositionRef.current, matrix);
-      mat3.translate(translateMatrix, translateMatrix, screenPosition);
+      vec2.transformMat3(screenPosition, position$.getValue(), finalMatrix$.getValue());
+      vec2.transformMat3(screenPosition, screenPosition, deltaMatrix);
+      vec2.transformMat3(position$.getValue(), screenPosition, mat3.invert(mat3.create(), finalMatrix$.getValue()));
+      position$.next(position$.getValue());
     });
 
     return () => {
-      translateSubscription.unsubscribe();
-      finalMatrixSubscription.unsubscribe();
+      deltaSubscription.unsubscribe();
     };
-  }, [ref, translateMatrix$]);
+  }, [deltaMatrix$, position$]);
 
-  return <path ref={ref} d={"M 10 10 L 10 20 L 20 20 L 20 10 Z"} fill="black" />
+  return <path ref={ref} d={"M 5 5 L 5 -5 L -5 -5 L -5 5 Z"} fill="white" stroke="black" strokeWidth="1" />
 }

@@ -6,7 +6,47 @@ import { BehaviorSubject, combineLatest, fromEvent, merge, of } from "rxjs";
 import { mat3, vec2 } from "gl-matrix";
 import { getGearTransformVector } from "../core/gear";
 
-export const svgMatrix$ = new BehaviorSubject<mat3>(mat3.fromValues(...mockGearProject.displayMatrix));
+const { viewBox, ...mockGearProjectWithoutViewBox } = mockGearProject;
+
+export const viewBoxA$ = new BehaviorSubject<vec2>(viewBox.a);
+export const viewBoxB$ = new BehaviorSubject<vec2>(viewBox.b);
+viewBoxA$.subscribe((value) => {
+  if (viewBoxC$.getValue()[0] !== value[0]) {
+    viewBoxC$.next(vec2.fromValues(value[0], viewBoxC$.getValue()[1]));
+  }
+  if (viewBoxD$.getValue()[1] !== value[1]) {
+    viewBoxD$.next(vec2.fromValues(viewBoxD$.getValue()[0], value[1]));
+  }
+});
+viewBoxB$.subscribe((value) => {
+  if (viewBoxC$.getValue()[1] !== value[1]) {
+    viewBoxC$.next(vec2.fromValues(viewBoxC$.getValue()[0], value[1]));
+  }
+  if (viewBoxD$.getValue()[0] !== value[0]) {
+    viewBoxD$.next(vec2.fromValues(value[0], viewBoxD$.getValue()[1]));
+  }
+});
+
+export const viewBoxC$ = new BehaviorSubject<vec2>(vec2.fromValues(viewBox.a[0], viewBox.b[1]));
+export const viewBoxD$ = new BehaviorSubject<vec2>(vec2.fromValues(viewBox.b[0], viewBox.a[1]));
+viewBoxC$.subscribe((value) => {
+  if (viewBoxA$.getValue()[0] !== value[0]) {
+    viewBoxA$.next(vec2.fromValues(value[0], viewBoxA$.getValue()[1]));
+  }
+  if (viewBoxB$.getValue()[1] !== value[1]) {
+    viewBoxB$.next(vec2.fromValues(viewBoxB$.getValue()[0], value[1]));
+  }
+});
+viewBoxD$.subscribe((value) => {
+  if (viewBoxA$.getValue()[1] !== value[1]) {
+    viewBoxA$.next(vec2.fromValues(viewBoxA$.getValue()[0], value[1]));
+  }
+  if (viewBoxB$.getValue()[0] !== value[0]) {
+    viewBoxB$.next(vec2.fromValues(value[0], viewBoxB$.getValue()[1]));
+  }
+});
+
+export const svgMatrix$ = new BehaviorSubject<mat3>(mockGearProject.displayMatrix);
 
 export const translateMatrix$ = new BehaviorSubject<mat3>(mat3.create());
 merge(of(null), fromEvent(window, 'resize')).subscribe(() => {
@@ -28,7 +68,7 @@ combineLatest([svgMatrix$, translateMatrix$]).subscribe(([svgMatrix, translateMa
 
 export const useGearProjectStore = create(
   combine<{
-  gearProject: GearProjectData;
+  gearProject: Omit<GearProjectData, 'viewBox'>;
 }, {
   addGear: (gear: GearData) => void;
   setGearProject: (gearProject: GearProjectData) => void;
@@ -36,10 +76,15 @@ export const useGearProjectStore = create(
   setGearColor: (gearId: string, color: string) => void;
 }>(
     {
-      gearProject: mockGearProject,
+      gearProject: mockGearProjectWithoutViewBox,
     }, (set) => ({
     setGearProject: (gearProject: GearProjectData) => {
-      set({ gearProject });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { viewBox, ...gearProjectWithoutViewBox } = gearProject;
+      set({ gearProject: gearProjectWithoutViewBox });
+      viewBoxA$.next(viewBox.a);
+      viewBoxB$.next(viewBox.b);
+      svgMatrix$.next(gearProject.displayMatrix);
     },
     addGear: (gearData: GearData) => {
       set((state) => ({

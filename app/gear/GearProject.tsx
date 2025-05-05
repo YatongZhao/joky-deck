@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState, useRef, useCallback } from "react";
 import { GearProjectData } from "./core/types.";
-import { useGear, useGearProjectStore, svgMatrix$, translateMatrix$, finalMatrix$ } from "./store";
+import { useGear, useGearProjectStore, svgMatrix$, translateMatrix$, finalMatrix$, viewBoxA$, viewBoxB$, viewBoxC$, viewBoxD$ } from "./store";
 import { GearProjectItem } from "./GearProjectItem";
 import { ReactionPanel } from "./ReactionPanel";
 import { DropZoneContainer } from "./DropZoneContainer";
@@ -143,6 +143,7 @@ export const GearProject: React.FC = () => {
   const setGearProject = useGearProjectStore((state) => state.setGearProject);
 
   const activeGearId = EditorMachineContext.useSelector((state) => state.context.selectedGearId);
+  const state = EditorMachineContext.useSelector((state) => state);
 
   const activeGear = useGear(activeGearId);
   useModeHotKeys();
@@ -168,8 +169,12 @@ export const GearProject: React.FC = () => {
           <ExportViewBoxController id="export-view-box-controller" />
           <GearProjectItem gearId={gearProject.rootGearId} />
           {activeGear && <CrossHair radius={activeGear.teeth * gearProject.module / 2} />}
-          <DragHandle />
-          {/* <DragHandle /> */}
+          {state.matches('ViewportSetting') && <>
+            <DragHandle position$={viewBoxA$} />
+            <DragHandle position$={viewBoxB$} />
+            <DragHandle position$={viewBoxC$} />
+            <DragHandle position$={viewBoxD$} />
+          </>}
         </svg>
       </DropZoneContainer>
       <ReactionPanel svgRef={svgRef} />
