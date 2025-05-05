@@ -17,6 +17,7 @@ import { DragHandle } from "./DragHandle";
 import { BehaviorSubject } from "rxjs";
 import { useDrag } from "./hooks/useDrag";
 import { useMergedRef } from "@mantine/hooks";
+import { useTheme } from "./theme";
 
 const useWheelDrag = () => {
   const ref = useRef<SVGSVGElement>(null);
@@ -147,6 +148,7 @@ export const GearProject: React.FC = () => {
 
   const activeGear = useGear(activeGearId);
   useModeHotKeys();
+  const theme = useTheme();
 
   return (
     <>
@@ -161,7 +163,7 @@ export const GearProject: React.FC = () => {
             cursor: dragState.isDragging ? 'grabbing' : 'default',
             overflow: 'hidden',
             position: 'fixed',
-            background: 'gray',
+            background: theme.colors.gameMain[2],
             top: 0,
             left: 0,
           }}

@@ -7,7 +7,6 @@ export const ExportViewBoxController = ({ id }: { id?: string }) => {
   
   useEffect(() => {
     const subscription = combineLatest([viewBoxA$, viewBoxB$]).subscribe(([a, b]) => {
-      console.log(a, b);
       if (ref.current) {
         ref.current.setAttribute('d', `M ${a[0]} ${a[1]} L ${b[0]} ${a[1]} L ${b[0]} ${b[1]} L ${a[0]} ${b[1]} Z`);
       }
@@ -21,6 +20,7 @@ export const ExportViewBoxController = ({ id }: { id?: string }) => {
       stroke="none"
       strokeWidth="1"
       fill="white"
+      filter="drop-shadow(0 0 10px rgba(0, 0, 0, 0.1))"
     />
   )
 }
