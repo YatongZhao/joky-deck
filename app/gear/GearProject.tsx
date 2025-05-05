@@ -13,59 +13,38 @@ import { mat3, vec2 } from "gl-matrix";
 import { getScale, scaleAtPoint } from "./core/coordinate";
 import { ToolsPanel } from "./ToolsPanel";
 import { EditorMachineContext } from "./editorMachine";
+import { DragHandle } from "./DragHandle";
+import { BehaviorSubject } from "rxjs";
+import { useDrag } from "./hooks/useDrag";
+import { useMergedRef } from "@mantine/hooks";
 
-interface DragState {
-  isDragging: boolean;
-}
+const useWheelDrag = () => {
+  const ref = useRef<SVGSVGElement>(null);
+  const [deltaMatrix$] = useState(new BehaviorSubject<mat3>(mat3.create()));
+  const [translateMatrix$] = useState(new BehaviorSubject<mat3>(mat3.create()));
 
-const useDrag = () => {
-  const [dragState, setDragState] = useState<DragState>({ isDragging: false });
+  const handleWheel = useCallback((event: WheelEvent) => {
+    if (event.ctrlKey) return;
 
-  const handleMouseDown = (event: React.MouseEvent<SVGSVGElement>) => {
-    if (event.button === 1) { // Middle mouse button
-      event.preventDefault();
-      setDragState({ isDragging: true });
-    }
-  };
-
-  const translate = useCallback(([x, y]: [number, number]) => {
-    const matrix = svgMatrix$.getValue();
-    const translateMatrix = mat3.create();
-    mat3.translate(translateMatrix, translateMatrix, [x, y]);
-    mat3.multiply(matrix, translateMatrix, matrix);
-    svgMatrix$.next(matrix);
-  }, []);
-
-  const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
-    if (!dragState.isDragging) return;
-    translate([event.movementX, event.movementY]);
-  };
-
-  const handleMouseUp = () => {
-    setDragState({ isDragging: false });
-  };
-
-  const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
-    translate([-event.deltaX, -event.deltaY]);
-  }
+    event.preventDefault();
+    event.stopPropagation();
+    const matrix = mat3.create();
+    mat3.translate(matrix, matrix, [-event.deltaX, -event.deltaY]);
+    deltaMatrix$.next(matrix);
+    mat3.multiply(translateMatrix$.getValue(), matrix, translateMatrix$.getValue());
+    translateMatrix$.next(translateMatrix$.getValue());
+  }, [deltaMatrix$, translateMatrix$]);
 
   useEffect(() => {
-    const handleWheel = (event: WheelEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    window.addEventListener('wheel', handleWheel, { passive: false });
-    return () => window.removeEventListener('wheel', handleWheel);
-  }, []);
+    const target = ref.current;
+    target?.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      target?.removeEventListener('wheel', handleWheel);
+    };
+  }, [handleWheel]);
 
-  return {
-    dragState,
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
-    handleWheel,
-  };
-};
+  return { ref, translateMatrix$, deltaMatrix$ };
+}
 
 const useZoom = () => {
   const MIN_SCALE = 0.05;
@@ -112,7 +91,28 @@ const useZoom = () => {
 
 export const GearProject: React.FC = () => {
   const gearProject = useGearProjectStore((state) => state.gearProject);
+  const { ref: wheelDragRef, deltaMatrix$ } = useWheelDrag();
+  const { ref: dragHandleRef, deltaMatrix$: dragHandleDeltaMatrix$, dragState } = useDrag(true);
   const svgRef = useRef<SVGSVGElement>(null);
+  const ref = useMergedRef(wheelDragRef, dragHandleRef, svgRef);
+
+  useEffect(() => {
+    const subscription = deltaMatrix$.subscribe((matrix) => {
+      const svgMatrix = svgMatrix$.getValue();
+      mat3.multiply(svgMatrix, matrix, svgMatrix);
+      svgMatrix$.next(svgMatrix);
+    });
+    return () => subscription.unsubscribe();
+  }, [deltaMatrix$]);
+
+  useEffect(() => {
+    const subscription = dragHandleDeltaMatrix$.subscribe((matrix) => {
+      const svgMatrix = svgMatrix$.getValue();
+      mat3.multiply(svgMatrix, matrix, svgMatrix);
+      svgMatrix$.next(svgMatrix);
+    });
+    return () => subscription.unsubscribe();
+  }, [dragHandleDeltaMatrix$]);
 
   const updateViewBox = useCallback((finalMatrix: mat3) => {
     const svg = svgRef.current;
@@ -127,21 +127,17 @@ export const GearProject: React.FC = () => {
     const scale = Math.hypot(finalMatrix[0], finalMatrix[1]);
     svg.setAttribute('viewBox', vec2.transformMat3(vec2.create(), vec2.fromValues(0, 0), matrixInverse).join(' ')
     + ` ${windowInnerWidth / scale} ${windowInnerHeight / scale}`);
-  }, []);
+  }, [svgRef]);
 
   useEffect(() => {
     const subscription = finalMatrix$.subscribe(updateViewBox);
     return () => subscription.unsubscribe();
   }, [updateViewBox]);
 
-  const { dragState, handleMouseDown, handleMouseMove, handleMouseUp, handleWheel: handleDragWheel } = useDrag();
   const { handleWheel: handleZoomWheel } = useZoom();
-
   const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
     if (event.ctrlKey) {
       handleZoomWheel(event);
-    } else {
-      handleDragWheel(event);
     }
   }
   const setGearProject = useGearProjectStore((state) => state.setGearProject);
@@ -155,12 +151,8 @@ export const GearProject: React.FC = () => {
     <>
       <DropZoneContainer<GearProjectData> onJsonLoad={setGearProject} title="Drop a gear project here">
         <svg 
-          ref={svgRef}
+          ref={ref}
           onWheel={handleWheel}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
           width='100vw'
           height='100vh'
           xmlns="http://www.w3.org/2000/svg" 
@@ -176,6 +168,8 @@ export const GearProject: React.FC = () => {
           <ExportViewBoxController id="export-view-box-controller" />
           <GearProjectItem gearId={gearProject.rootGearId} />
           {activeGear && <CrossHair radius={activeGear.teeth * gearProject.module / 2} />}
+          <DragHandle />
+          {/* <DragHandle /> */}
         </svg>
       </DropZoneContainer>
       <ReactionPanel svgRef={svgRef} />
