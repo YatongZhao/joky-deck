@@ -1,7 +1,4 @@
 import { assign, setup } from "xstate";
-import { createActorContext } from "@xstate/react";
-// import { createBrowserInspector } from '@statelyai/inspect'
-// import { useEffect } from "react";
 
 export const editorMachine = setup({
   types: {
@@ -112,24 +109,3 @@ export const editorMachine = setup({
     },
   },
 });
-
-// export const useEditorMachine = () => {
-//   const result = useActor(editorMachine);
-
-//   const [state, send, actor] = result;
-
-//   useEffect(() => {
-//     actor.subscribe((state) => {
-//       console.log('state', state);
-//     });
-//   }, [actor]);
-
-//   useEffect(() => {
-//     console.log('state', state);
-//   }, [state]);
-
-//   return result;
-
-// }
-
-export const EditorMachineContext = createActorContext(editorMachine);

@@ -1,7 +1,6 @@
 "use client"
 import { GearProject } from "@/app/gear/GearProject";
 import { useEffect, useState } from "react";
-import { EditorMachineContext } from "./editorMachine";
 
 export default function Home() {
   const [isInClient, setIsInClient] = useState(false);
@@ -10,9 +9,7 @@ export default function Home() {
   }, []);
   return isInClient
     ? (
-      <EditorMachineContext.Provider>
-        <GearProject />
-      </EditorMachineContext.Provider>
+      <GearProject />
     )
     : ( <div>Loading...</div> );
 }

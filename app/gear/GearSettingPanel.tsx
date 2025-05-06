@@ -1,9 +1,11 @@
 import { AngleSlider, ColorInput, DEFAULT_THEME, Paper } from "@mantine/core"
 import { useGear } from "./store";
 import { useGearProjectStore } from "./store";
-import { EditorMachineContext } from "./editorMachine";
+import { useSelector } from "@xstate/react";
+
 export const GearSettingPanel = () => {
-  const activeGearId = EditorMachineContext.useSelector((state) => state.context.selectedGearId);
+  const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
+  const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const activeGear = useGear(activeGearId);
   const setGearPositionAngle = useGearProjectStore((state) => state.setGearPositionAngle);
   const setGearColor = useGearProjectStore((state) => state.setGearColor);

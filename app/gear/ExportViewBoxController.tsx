@@ -1,12 +1,13 @@
 import { useEffect } from "react";
-import { finalMatrix$, viewBoxA$, viewBoxB$ } from "./store";
+import { finalMatrix$, useGearProjectStore, viewBoxA$, viewBoxB$ } from "./store";
 import { combineLatest } from "rxjs";
-import { EditorMachineContext } from "./editorMachine";
+import { useSelector } from "@xstate/react";
 import { useDrag } from "./hooks/useDrag";
 import { vec2, mat3 } from "gl-matrix";
 
 export const ExportViewBoxController = ({ id }: { id?: string }) => {
-  const state = EditorMachineContext.useSelector((state) => state);
+  const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
+  const state = useSelector(editorMachineActor, (state) => state);
   const isViewportSetting = state.matches("ViewportSetting");
   const { ref, deltaMatrix$ } = useDrag<SVGPathElement>();
   

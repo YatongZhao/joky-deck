@@ -1,10 +1,12 @@
 import { useHotkeys } from "react-hotkeys-hook";
 import { useEffect } from "react";
-import { EditorMachineContext } from "../editorMachine";
+import { useGearProjectStore } from "../store";
+import { useSelector } from "@xstate/react";
 
 export const useModeHotKeys = () => {
-  const state = EditorMachineContext.useSelector((state) => state);
-  const { send } = EditorMachineContext.useActorRef();
+  const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
+  const state = useSelector(editorMachineActor, (state) => state);
+  const { send } = editorMachineActor;
 
   useHotkeys('a', () => {
     send({ type: 'enterAddingMode' });

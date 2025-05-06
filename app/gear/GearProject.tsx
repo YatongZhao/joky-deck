@@ -12,12 +12,12 @@ import { ExportViewBoxController } from "./ExportViewBoxController";
 import { mat3, vec2 } from "gl-matrix";
 import { getScale, scaleAtPoint } from "./core/coordinate";
 import { ToolsPanel } from "./ToolsPanel";
-import { EditorMachineContext } from "./editorMachine";
 import { DragHandle } from "./DragHandle";
 import { BehaviorSubject } from "rxjs";
 import { useDrag } from "./hooks/useDrag";
 import { useMergedRef } from "@mantine/hooks";
 import { useTheme } from "./theme";
+import { useSelector } from "@xstate/react";
 
 const useWheelDrag = () => {
   const ref = useRef<SVGSVGElement>(null);
@@ -143,8 +143,12 @@ export const GearProject: React.FC = () => {
   }
   const setGearProject = useGearProjectStore((state) => state.setGearProject);
 
-  const activeGearId = EditorMachineContext.useSelector((state) => state.context.selectedGearId);
-  const state = EditorMachineContext.useSelector((state) => state);
+  const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
+  const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
+  const state = useSelector(editorMachineActor, (state) => state);
+  useEffect(() => {
+    console.log(editorMachineActor);
+  }, [editorMachineActor]);
 
   const activeGear = useGear(activeGearId);
   useModeHotKeys();

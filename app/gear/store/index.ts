@@ -5,11 +5,16 @@ import { useMemo } from "react";
 import { BehaviorSubject, combineLatest, fromEvent, merge, of } from "rxjs";
 import { mat3, vec2 } from "gl-matrix";
 import { getGearTransformVector } from "../core/gear";
-
+import { createUndoRedoManager, UndoRedoManager } from "./undoRedoManager";
+import { editorMachine } from "../editorMachine";
+import { Actor, createActor } from "xstate";
 const { viewBox, ...mockGearProjectWithoutViewBox } = mockGearProject;
 
 export const viewBoxA$ = new BehaviorSubject<vec2>(viewBox.a);
 export const viewBoxB$ = new BehaviorSubject<vec2>(viewBox.b);
+export const viewBoxC$ = new BehaviorSubject<vec2>(vec2.fromValues(viewBox.a[0], viewBox.b[1]));
+export const viewBoxD$ = new BehaviorSubject<vec2>(vec2.fromValues(viewBox.b[0], viewBox.a[1]));
+
 viewBoxA$.subscribe((value) => {
   if (viewBoxC$.getValue()[0] !== value[0]) {
     viewBoxC$.next(vec2.fromValues(value[0], viewBoxC$.getValue()[1]));
@@ -27,8 +32,6 @@ viewBoxB$.subscribe((value) => {
   }
 });
 
-export const viewBoxC$ = new BehaviorSubject<vec2>(vec2.fromValues(viewBox.a[0], viewBox.b[1]));
-export const viewBoxD$ = new BehaviorSubject<vec2>(vec2.fromValues(viewBox.b[0], viewBox.a[1]));
 viewBoxC$.subscribe((value) => {
   if (viewBoxA$.getValue()[0] !== value[0]) {
     viewBoxA$.next(vec2.fromValues(value[0], viewBoxA$.getValue()[1]));
@@ -65,10 +68,13 @@ combineLatest([svgMatrix$, translateMatrix$]).subscribe(([svgMatrix, translateMa
   finalMatrix$.next(finalMatrix);
 });
 
+const editorMachineActor = createActor(editorMachine).start();
 
 export const useGearProjectStore = create(
   combine<{
   gearProject: Omit<GearProjectData, 'viewBox'>;
+  undoRedoManager: UndoRedoManager<GearProjectData>;
+  editorMachineActor: Actor<typeof editorMachine>;
 }, {
   addGear: (gear: GearData) => void;
   setGearProject: (gearProject: GearProjectData) => void;
@@ -77,6 +83,8 @@ export const useGearProjectStore = create(
 }>(
     {
       gearProject: mockGearProjectWithoutViewBox,
+      undoRedoManager: createUndoRedoManager(mockGearProject),
+      editorMachineActor,
     }, (set) => ({
     setGearProject: (gearProject: GearProjectData) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
