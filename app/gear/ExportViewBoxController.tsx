@@ -20,6 +20,7 @@ export const ExportViewBoxController = ({ id }: { id?: string }) => {
   }, [ref]);
 
   useEffect(() => {
+    if (!isViewportSetting) return;
     const subscription = deltaMatrix$.subscribe((deltaMatrix) => {
       const screenPositionA = vec2.create();
       vec2.transformMat3(screenPositionA, viewBoxA$.getValue(), finalMatrix$.getValue());
@@ -34,7 +35,7 @@ export const ExportViewBoxController = ({ id }: { id?: string }) => {
       viewBoxB$.next(viewBoxB$.getValue());
     });
     return () => subscription.unsubscribe();
-  }, [deltaMatrix$]);
+  }, [deltaMatrix$, isViewportSetting]);
 
   return (
     <path
@@ -43,9 +44,10 @@ export const ExportViewBoxController = ({ id }: { id?: string }) => {
         cursor: isViewportSetting ? "grab" : "default",
       }}
       ref={ref}
-      stroke="none"
+      stroke={isViewportSetting ? "black" : "none"}
+      strokeDasharray="2 2"
       strokeWidth="1"
-      fill="rgba(255, 255, 255, 1)"
+      fill={isViewportSetting ? "rgba(255, 255, 255, 0)" : "white"}
       filter="drop-shadow(0 0 10px rgba(0, 0, 0, 0.1))"
     />
   )

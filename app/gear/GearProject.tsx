@@ -168,9 +168,10 @@ export const GearProject: React.FC = () => {
             left: 0,
           }}
         >
-          <ExportViewBoxController id="export-view-box-controller" />
+          {!state.matches('ViewportSetting') && <ExportViewBoxController key="export-view-box-controller" id="export-view-box-controller" />}
           <GearProjectItem gearId={gearProject.rootGearId} />
           {activeGear && <CrossHair radius={activeGear.teeth * gearProject.module / 2} />}
+          {state.matches('ViewportSetting') && <ExportViewBoxController key="export-view-box-controller" id="export-view-box-controller" />}
           {state.matches('ViewportSetting') && <>
             <DragHandle position$={viewBoxA$} />
             <DragHandle position$={viewBoxB$} />

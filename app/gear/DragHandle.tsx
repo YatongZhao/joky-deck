@@ -30,5 +30,5 @@ export const DragHandle: React.FC<{ position$: BehaviorSubject<vec2> }> = ({ pos
     };
   }, [deltaMatrix$, position$]);
 
-  return <path ref={ref} d={"M 5 5 L 5 -5 L -5 -5 L -5 5 Z"} fill="white" stroke="black" strokeWidth="1" />
+  return <path ref={ref} d={"M 5 5 L 5 -5 L -5 -5 L -5 5 Z"} fill="white" stroke="black" strokeWidth="1" style={{ cursor: "move" }} />
 }
