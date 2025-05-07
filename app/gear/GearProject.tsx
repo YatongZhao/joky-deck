@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState, useRef, useCallback } from "react";
 import { GearProjectData } from "./core/types.";
-import { useGear, useGearProjectStore, svgMatrix$, translateMatrix$, finalMatrix$, viewBoxA$, viewBoxB$, viewBoxC$, viewBoxD$ } from "./store";
+import { useGear, useGearProjectStore, svgMatrix$, translateMatrix$, finalMatrix$, viewBoxA$, viewBoxB$, viewBoxC$, viewBoxD$, useInitialTranslateMatrix$ } from "./store";
 import { GearProjectItem } from "./GearProjectItem";
 import { ReactionPanel } from "./ReactionPanel";
 import { DropZoneContainer } from "./DropZoneContainer";
@@ -91,6 +91,8 @@ const useZoom = () => {
 };
 
 export const GearProject: React.FC = () => {
+  useInitialTranslateMatrix$();
+
   const gearProject = useGearProjectStore((state) => state.gearProject);
   const { ref: wheelDragRef, deltaMatrix$ } = useWheelDrag();
   const { ref: dragHandleRef, deltaMatrix$: dragHandleDeltaMatrix$, dragState } = useDrag(true);
@@ -146,9 +148,6 @@ export const GearProject: React.FC = () => {
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const state = useSelector(editorMachineActor, (state) => state);
-  useEffect(() => {
-    console.log(editorMachineActor);
-  }, [editorMachineActor]);
 
   const activeGear = useGear(activeGearId);
   useModeHotKeys();

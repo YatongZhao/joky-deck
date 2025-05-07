@@ -52,14 +52,17 @@ viewBoxD$.subscribe((value) => {
 export const svgMatrix$ = new BehaviorSubject<mat3>(mockGearProject.displayMatrix);
 
 export const translateMatrix$ = new BehaviorSubject<mat3>(mat3.create());
-merge(of(null), fromEvent(window, 'resize')).subscribe(() => {
-  const windowInnerWidth = window.innerWidth;
-  const windowInnerHeight = window.innerHeight;
-  const translateVector = vec2.fromValues(windowInnerWidth / 2, windowInnerHeight / 2);
-  const translateMatrix = mat3.create();
-  mat3.translate(translateMatrix, translateMatrix, translateVector);
-  translateMatrix$.next(translateMatrix);
-});
+export const useInitialTranslateMatrix$ = () => {
+  const subscription = merge(of(null), fromEvent(window, 'resize')).subscribe(() => {
+    const windowInnerWidth = window.innerWidth;
+    const windowInnerHeight = window.innerHeight;
+    const translateVector = vec2.fromValues(windowInnerWidth / 2, windowInnerHeight / 2);
+    const translateMatrix = mat3.create();
+    mat3.translate(translateMatrix, translateMatrix, translateVector);
+    translateMatrix$.next(translateMatrix);
+  });
+  return () => subscription.unsubscribe();
+}
 
 export const finalMatrix$ = new BehaviorSubject<mat3>(mat3.create());
 combineLatest([svgMatrix$, translateMatrix$]).subscribe(([svgMatrix, translateMatrix]) => {
