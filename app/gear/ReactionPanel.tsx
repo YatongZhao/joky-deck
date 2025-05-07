@@ -3,6 +3,7 @@ import { Button, Group } from '@mantine/core';
 import { svgMatrix$, useGearProjectStore, viewBoxA$, viewBoxB$ } from './store';
 import { GearProjectData } from './core/types.';
 import { vec2 } from 'gl-matrix';
+import { UndoRedoController } from './UndoRedoController';
 
 export const ReactionPanel = ({ svgRef }: { svgRef: React.RefObject<SVGSVGElement> }) => {
   const gearProjectWithoutViewBox = useGearProjectStore((state) => state.gearProject);
@@ -31,6 +32,7 @@ export const ReactionPanel = ({ svgRef }: { svgRef: React.RefObject<SVGSVGElemen
     saveAs(new Blob([svgData.outerHTML], { type: 'image/svg+xml' }), 'gear-project.svg');
   }
   return <Group pos="fixed" justify="center" bottom={0} left={0} right={0} p="md" style={{ zIndex: 1000 }}>
+    <UndoRedoController />
     <Button onClick={handleExportProject}>Export Gear Project</Button>
     <Button onClick={handleExportSVG}>Export SVG</Button>
   </Group>;

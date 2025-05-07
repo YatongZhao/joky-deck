@@ -1,13 +1,13 @@
-import { create } from "zustand";
+import { create, StateCreator } from "zustand";
 import { combine } from "zustand/middleware";
 import { GearData, GearProjectData, mockGearProject } from "../core/types.";
 import { useMemo } from "react";
 import { BehaviorSubject, combineLatest, fromEvent, merge, of } from "rxjs";
 import { mat3, vec2 } from "gl-matrix";
 import { getGearTransformVector } from "../core/gear";
-import { createUndoRedoManager, UndoRedoManager } from "./undoRedoManager";
+import { createUndoRedoManager, pushUndoRedoNode, UndoRedoManager, undoUndoRedoNode, redoUndoRedoNode, getUndoRedoNode } from "./undoRedoManager";
 import { editorMachine } from "../editorMachine";
-import { Actor, createActor } from "xstate";
+import { Actor, createActor, Snapshot } from "xstate";
 const { viewBox, ...mockGearProjectWithoutViewBox } = mockGearProject;
 
 export const viewBoxA$ = new BehaviorSubject<vec2>(viewBox.a);
@@ -69,31 +69,69 @@ combineLatest([svgMatrix$, translateMatrix$]).subscribe(([svgMatrix, translateMa
 });
 
 const editorMachineActor = createActor(editorMachine).start();
+const initialEditorMachineSnapshot = editorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>;
 
-export const useGearProjectStore = create(
-  combine<{
+type UndoRedoState = { gearProject: GearProjectData; editorMachine: Snapshot<typeof editorMachine> };
+
+type GearProjectStoreState = {
   gearProject: Omit<GearProjectData, 'viewBox'>;
-  undoRedoManager: UndoRedoManager<GearProjectData>;
+  undoRedoManager: UndoRedoManager<UndoRedoState>;
   editorMachineActor: Actor<typeof editorMachine>;
-}, {
+}
+
+type GearProjectStoreActions = {
   addGear: (gear: GearData) => void;
   setGearProject: (gearProject: GearProjectData) => void;
   setGearPositionAngle: (gearId: string, positionAngle: number) => void;
-  setGearColor: (gearId: string, color: string) => void;
-}>(
+  setGearColor: (gearId: string, color: string) => boolean; // return true if the color is changed
+  pushUndo: () => void;
+  undo: () => void;
+  redo: () => void;
+  setEditorMachineActor: (editorMachineSnapshot: Snapshot<typeof editorMachine>) => void;
+}
+
+type AdditionalGearProjectStateCreator = StateCreator<GearProjectStoreState, [], [], GearProjectStoreActions>;
+type SetGearProjectStore = Parameters<AdditionalGearProjectStateCreator>[0];
+type GetGearProjectStore = Parameters<AdditionalGearProjectStateCreator>[1];
+
+const setGearProject = (gearProject: GearProjectData, set: SetGearProjectStore) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { viewBox, ...gearProjectWithoutViewBox } = gearProject;
+  set({ gearProject: gearProjectWithoutViewBox });
+  viewBoxA$.next(viewBox.a);
+  viewBoxB$.next(viewBox.b);
+  svgMatrix$.next(gearProject.displayMatrix);
+}
+
+const setEditorMachineActor = (editorMachineSnapshot: Snapshot<typeof editorMachine>, set: SetGearProjectStore) => {
+  set((state) => {
+    state.editorMachineActor.stop();
+    return {
+      editorMachineActor: createActor(editorMachine, { snapshot: editorMachineSnapshot }).start(),
+    }
+  });
+}
+
+const setUndoRedoManager = (
+  undoRedoManager: UndoRedoManager<UndoRedoState>,
+  set: SetGearProjectStore,
+  get: GetGearProjectStore
+) => {
+  if (undoRedoManager === get().undoRedoManager) return;
+  const { gearProject, editorMachine } = getUndoRedoNode(undoRedoManager);
+  setGearProject(gearProject, set);
+  setEditorMachineActor(editorMachine, set);
+  set({ undoRedoManager });
+}
+
+export const useGearProjectStore = create(
+  combine<GearProjectStoreState, GearProjectStoreActions>(
     {
       gearProject: mockGearProjectWithoutViewBox,
-      undoRedoManager: createUndoRedoManager(mockGearProject),
+      undoRedoManager: createUndoRedoManager({ gearProject: mockGearProject, editorMachine: initialEditorMachineSnapshot }),
       editorMachineActor,
-    }, (set) => ({
-    setGearProject: (gearProject: GearProjectData) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { viewBox, ...gearProjectWithoutViewBox } = gearProject;
-      set({ gearProject: gearProjectWithoutViewBox });
-      viewBoxA$.next(viewBox.a);
-      viewBoxB$.next(viewBox.b);
-      svgMatrix$.next(gearProject.displayMatrix);
-    },
+    }, (set, get) => ({
+    setGearProject: (gearProject: GearProjectData) => setGearProject(gearProject, set),
     addGear: (gearData: GearData) => {
       set((state) => ({
         gearProject: {
@@ -111,13 +149,30 @@ export const useGearProjectStore = create(
       }));
     },
     setGearColor: (gearId: string, color: string) => {
+      if (get().gearProject.gears.find((gear) => gear.id === gearId)?.color === color) return false;
       set((state) => ({
         gearProject: {
           ...state.gearProject,
           gears: state.gearProject.gears.map((gear) => gear.id === gearId ? { ...gear, color } : gear),
         },
       }));
+      return true;
     },
+    pushUndo: () => {
+      set((state) => ({
+        undoRedoManager: pushUndoRedoNode(state.undoRedoManager, {
+          gearProject: { ...state.gearProject, viewBox: { a: viewBoxA$.getValue(), b: viewBoxB$.getValue() } },
+          editorMachine: state.editorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>,
+        }),
+      }));
+    },
+    undo: () => {
+      setUndoRedoManager(undoUndoRedoNode(get().undoRedoManager), set, get);
+    },
+    redo: () => {
+      setUndoRedoManager(redoUndoRedoNode(get().undoRedoManager), set, get);
+    },
+    setEditorMachineActor: (editorMachineSnapshot: Snapshot<typeof editorMachine>) => setEditorMachineActor(editorMachineSnapshot, set),
   }))
 );
 
