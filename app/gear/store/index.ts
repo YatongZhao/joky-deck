@@ -74,10 +74,10 @@ combineLatest([svgMatrix$, translateMatrix$]).subscribe(([svgMatrix, translateMa
 const editorMachineActor = createActor(editorMachine).start();
 const initialEditorMachineSnapshot = editorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>;
 
-type UndoRedoState = { gearProject: GearProjectData; editorMachine: Snapshot<typeof editorMachine> };
+type UndoRedoState = { gearProject: GearProjectData; };
 
 type GearProjectStoreState = {
-  gearProject: Omit<GearProjectData, 'viewBox' | 'displayMatrix'>;
+  gearProject: Omit<GearProjectData, 'viewBox' | 'displayMatrix' | 'editorMachineState'>;
   undoRedoManager: UndoRedoManager<UndoRedoState>;
   editorMachineActor: Actor<typeof editorMachine>;
 }
@@ -97,23 +97,25 @@ type AdditionalGearProjectStateCreator = StateCreator<GearProjectStoreState, [],
 type SetGearProjectStore = Parameters<AdditionalGearProjectStateCreator>[0];
 type GetGearProjectStore = Parameters<AdditionalGearProjectStateCreator>[1];
 
-const setGearProject = (gearProject: GearProjectData, set: SetGearProjectStore) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { viewBox, ...gearProjectWithoutViewBox } = gearProject;
-  set({ gearProject: gearProjectWithoutViewBox });
-  viewBoxA$.next(vec2.clone(viewBox.a));
-  viewBoxB$.next(vec2.clone(viewBox.b));
-  svgMatrix$.next(mat3.clone(gearProject.displayMatrix));
-}
-
-const setEditorMachineActor = (editorMachineSnapshot: Snapshot<typeof editorMachine>, set: SetGearProjectStore) => {
+const setEditorMachineActor = (editorMachineSnapshot: Snapshot<typeof editorMachine> | null, set: SetGearProjectStore) => {
   set((state) => {
     state.editorMachineActor.stop();
     return {
-      editorMachineActor: createActor(editorMachine, { snapshot: editorMachineSnapshot }).start(),
+      editorMachineActor: createActor(editorMachine, { snapshot: editorMachineSnapshot ?? undefined }).start(),
     }
   });
 }
+
+const setGearProject = (gearProject: GearProjectData, set: SetGearProjectStore) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { viewBox, displayMatrix, editorMachineState, ...gearProjectWithoutViewBox } = gearProject;
+  set({ gearProject: gearProjectWithoutViewBox });
+  viewBoxA$.next(vec2.clone(viewBox.a));
+  viewBoxB$.next(vec2.clone(viewBox.b));
+  svgMatrix$.next(mat3.clone(displayMatrix));
+  setEditorMachineActor(editorMachineState, set);
+}
+
 
 const setUndoRedoManager = (
   undoRedoManager: UndoRedoManager<UndoRedoState>,
@@ -121,9 +123,8 @@ const setUndoRedoManager = (
   get: GetGearProjectStore
 ) => {
   if (undoRedoManager === get().undoRedoManager) return;
-  const { gearProject, editorMachine } = getUndoRedoNode(undoRedoManager);
+  const { gearProject } = getUndoRedoNode(undoRedoManager);
   setGearProject(gearProject, set);
-  setEditorMachineActor(editorMachine, set);
   set({ undoRedoManager });
 }
 
@@ -171,12 +172,7 @@ export const useGearProjectStore = create(
     pushUndo: () => {
       set((state) => ({
         undoRedoManager: pushUndoRedoNode(state.undoRedoManager, {
-          gearProject: {
-            ...state.gearProject,
-            viewBox: { a: vec2.clone(viewBoxA$.getValue()), b: vec2.clone(viewBoxB$.getValue()) },
-            displayMatrix: mat3.clone(svgMatrix$.getValue()),
-          },
-          editorMachine: state.editorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>,
+          gearProject: getGearProjectSnapshot(),
         }),
       }));
     },
@@ -224,4 +220,14 @@ export const useGearPosition = (gearId: string | null) => {
   }, [gears, gearModule, targetGear])
 
   return gearPosition;
+}
+
+export function getGearProjectSnapshot(): GearProjectData {
+  const state =useGearProjectStore.getState();
+  return {
+    ...state.gearProject,
+    viewBox: { a: vec2.clone(viewBoxA$.getValue()), b: vec2.clone(viewBoxB$.getValue()) },
+    displayMatrix: mat3.clone(svgMatrix$.getValue()),
+    editorMachineState: state.editorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>,
+  };
 }

@@ -1,4 +1,6 @@
 import { vec2, mat3 } from "gl-matrix";
+import { editorMachine } from "../editorMachine";
+import { Snapshot } from "xstate";
 
 export type GearData = {
   id: string;
@@ -19,6 +21,7 @@ export type GearProjectData = {
     a: vec2;
     b: vec2;
   };
+  editorMachineState: Snapshot<typeof editorMachine> | null;
 }
 
 export const mockGearProject: GearProjectData = {
@@ -76,8 +79,5 @@ export const mockGearProject: GearProjectData = {
       positionAngle: 30,
     },
   ],
-}
-
-export const addGearToMockGearProject = (gear: GearData) => {
-  mockGearProject.gears = [...mockGearProject.gears, gear];
+  editorMachineState: null,
 }

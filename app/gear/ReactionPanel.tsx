@@ -1,22 +1,12 @@
 import { saveAs } from 'file-saver';
 import { Button, Group } from '@mantine/core';
-import { svgMatrix$, useGearProjectStore, viewBoxA$, viewBoxB$ } from './store';
-import { GearProjectData } from './core/types.';
+import { getGearProjectSnapshot, viewBoxA$, viewBoxB$ } from './store';
 import { vec2 } from 'gl-matrix';
 import { UndoRedoController } from './UndoRedoController';
 
 export const ReactionPanel = ({ svgRef }: { svgRef: React.RefObject<SVGSVGElement> }) => {
-  const gearProjectWithoutViewBox = useGearProjectStore((state) => state.gearProject);
-
   const handleExportProject = () => {
-    const gearProjectJson = JSON.stringify({
-      ...gearProjectWithoutViewBox,
-      displayMatrix: svgMatrix$.getValue(),
-      viewBox: {
-        a: viewBoxA$.getValue(),
-        b: viewBoxB$.getValue(),
-      }
-    } as GearProjectData);
+    const gearProjectJson = JSON.stringify(getGearProjectSnapshot());
     saveAs(new Blob([gearProjectJson], { type: 'application/json' }), 'gear-project.json');
   }
 
