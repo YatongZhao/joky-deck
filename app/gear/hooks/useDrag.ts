@@ -2,7 +2,11 @@ import { mat3 } from "gl-matrix";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BehaviorSubject } from "rxjs";
 
-export const useDrag = <T extends SVGElement>(middleButton: boolean = false) => {
+type UseDragProps = {
+  middleButton?: boolean;
+  onDragEnd?: () => void;
+}
+export const useDrag = <T extends SVGElement>({ middleButton = false, onDragEnd }: UseDragProps = {}) => {
   const ref = useRef<T>(null);
   const [dragState, setDragState] = useState<DragState>({ isDragging: false });
   const [deltaMatrix$] = useState(new BehaviorSubject<mat3>(mat3.create()));
@@ -31,8 +35,11 @@ export const useDrag = <T extends SVGElement>(middleButton: boolean = false) => 
   }, [dragState.isDragging, translate]);
 
   const handleMouseUp = useCallback(() => {
+    if (dragState.isDragging) {
+      onDragEnd?.();
+    }
     setDragState({ isDragging: false });
-  }, [setDragState]);
+  }, [dragState.isDragging, onDragEnd]);
 
   useEffect(() => {
     if (!ref.current) return;

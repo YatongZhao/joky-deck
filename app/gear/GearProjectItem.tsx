@@ -11,6 +11,7 @@ export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
   const ref = useRef<SVGPathElement>(null);
   const gearProject = useGearProjectStore((state) => state.gearProject);
   const addGear = useGearProjectStore((state) => state.addGear);
+  const pushUndo = useGearProjectStore((state) => state.pushUndo);
   const gearData = useGear(gearId);
   const gearChildren = useGearChildren(gearId);
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
@@ -83,6 +84,7 @@ export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
             id: v4(),
           });
           send({ type: 'selectGear', gearId: gearData.id });
+          pushUndo();
         }}
         virtual
       />

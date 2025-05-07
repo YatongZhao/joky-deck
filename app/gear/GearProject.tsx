@@ -95,7 +95,7 @@ export const GearProject: React.FC = () => {
 
   const gearProject = useGearProjectStore((state) => state.gearProject);
   const { ref: wheelDragRef, deltaMatrix$ } = useWheelDrag();
-  const { ref: dragHandleRef, deltaMatrix$: dragHandleDeltaMatrix$, dragState } = useDrag(true);
+  const { ref: dragHandleRef, deltaMatrix$: dragHandleDeltaMatrix$, dragState } = useDrag({ middleButton: true });
   const svgRef = useRef<SVGSVGElement>(null);
   const ref = useMergedRef(wheelDragRef, dragHandleRef, svgRef);
 

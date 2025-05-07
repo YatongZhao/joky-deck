@@ -1,5 +1,4 @@
 import { MantineColorsTuple, MantineTheme, createTheme, useMantineTheme } from "@mantine/core";
-import { MaliFont } from "../theme";
 
 const gameMains: MantineColorsTuple[] = [
     [
@@ -44,7 +43,6 @@ const themeConf: ReturnType<typeof createTheme> = {
     colors: {
         gameMain: gameMains[2],
     },
-    fontFamily: MaliFont.style.fontFamily,
 } as const;
 export const theme = createTheme(themeConf);
 

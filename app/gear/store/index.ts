@@ -77,7 +77,7 @@ const initialEditorMachineSnapshot = editorMachineActor.getPersistedSnapshot() a
 type UndoRedoState = { gearProject: GearProjectData; editorMachine: Snapshot<typeof editorMachine> };
 
 type GearProjectStoreState = {
-  gearProject: Omit<GearProjectData, 'viewBox'>;
+  gearProject: Omit<GearProjectData, 'viewBox' | 'displayMatrix'>;
   undoRedoManager: UndoRedoManager<UndoRedoState>;
   editorMachineActor: Actor<typeof editorMachine>;
 }
@@ -101,9 +101,9 @@ const setGearProject = (gearProject: GearProjectData, set: SetGearProjectStore) 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { viewBox, ...gearProjectWithoutViewBox } = gearProject;
   set({ gearProject: gearProjectWithoutViewBox });
-  viewBoxA$.next(viewBox.a);
-  viewBoxB$.next(viewBox.b);
-  svgMatrix$.next(gearProject.displayMatrix);
+  viewBoxA$.next(vec2.clone(viewBox.a));
+  viewBoxB$.next(vec2.clone(viewBox.b));
+  svgMatrix$.next(mat3.clone(gearProject.displayMatrix));
 }
 
 const setEditorMachineActor = (editorMachineSnapshot: Snapshot<typeof editorMachine>, set: SetGearProjectStore) => {
@@ -131,7 +131,14 @@ export const useGearProjectStore = create(
   combine<GearProjectStoreState, GearProjectStoreActions>(
     {
       gearProject: mockGearProjectWithoutViewBox,
-      undoRedoManager: createUndoRedoManager({ gearProject: mockGearProject, editorMachine: initialEditorMachineSnapshot }),
+      undoRedoManager: createUndoRedoManager({
+        gearProject: {
+          ...mockGearProject,
+          viewBox: { a: vec2.clone(mockGearProject.viewBox.a), b: vec2.clone(mockGearProject.viewBox.b) },
+          displayMatrix: mat3.clone(mockGearProject.displayMatrix),
+        },
+        editorMachine: initialEditorMachineSnapshot,
+      }),
       editorMachineActor,
     }, (set, get) => ({
     setGearProject: (gearProject: GearProjectData) => setGearProject(gearProject, set),
@@ -164,7 +171,11 @@ export const useGearProjectStore = create(
     pushUndo: () => {
       set((state) => ({
         undoRedoManager: pushUndoRedoNode(state.undoRedoManager, {
-          gearProject: { ...state.gearProject, viewBox: { a: viewBoxA$.getValue(), b: viewBoxB$.getValue() } },
+          gearProject: {
+            ...state.gearProject,
+            viewBox: { a: vec2.clone(viewBoxA$.getValue()), b: vec2.clone(viewBoxB$.getValue()) },
+            displayMatrix: mat3.clone(svgMatrix$.getValue()),
+          },
           editorMachine: state.editorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>,
         }),
       }));

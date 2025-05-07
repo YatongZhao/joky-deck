@@ -9,7 +9,8 @@ export const ExportViewBoxController = ({ id }: { id?: string }) => {
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
   const state = useSelector(editorMachineActor, (state) => state);
   const isViewportSetting = state.matches("ViewportSetting");
-  const { ref, deltaMatrix$ } = useDrag<SVGPathElement>();
+  const onDragEnd = useGearProjectStore((state) => state.pushUndo);
+  const { ref, deltaMatrix$ } = useDrag<SVGPathElement>({ onDragEnd });
   
   useEffect(() => {
     const subscription = combineLatest([viewBoxA$, viewBoxB$]).subscribe(([a, b]) => {
