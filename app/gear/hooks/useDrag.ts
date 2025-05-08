@@ -33,7 +33,6 @@ export const useDrag = <T extends SVGElement>({ middleButton = false, onDragEnd 
     }
 
     const handleMouseMove = (event: MouseEvent) => {
-      console.log("handleMouseMove", dragState.isDragging);
       if (!dragState.isDragging) return;
       translate([event.movementX, event.movementY]);
     }

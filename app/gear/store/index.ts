@@ -102,10 +102,7 @@ const setEditorMachineActor = (editorMachineSnapshot: Snapshot<typeof editorMach
   set((state) => {
     state.editorMachineActor.stop();
     const editorMachineActor = createActor(editorMachine, { snapshot: editorMachineSnapshot ?? undefined }).start();
-    editorMachineActor.subscribe(() => {
-      console.log("editorMachineActor");
-      trySaveGearProjectToLocalStorage();
-    });
+    editorMachineActor.subscribe(trySaveGearProjectToLocalStorage);
     return {
       editorMachineActor,
     }
