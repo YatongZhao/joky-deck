@@ -75,7 +75,10 @@ combineLatest([svgMatrix$, translateMatrix$]).subscribe(([svgMatrix, translateMa
 const editorMachineActor = createActor(editorMachine).start();
 const initialEditorMachineSnapshot = editorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>;
 
-type UndoRedoState = { gearProject: GearProjectData; description: string };
+// UndoRedoState is the state of the undo/redo manager
+// It is the state of the gear project without the display matrix
+// because the display matrix is not part of the undo/redo history
+type UndoRedoState = { gearProject: Omit<GearProjectData, 'displayMatrix'>; description: string };
 
 type GearProjectStoreState = {
   gearProject: Omit<GearProjectData, 'viewBox' | 'displayMatrix' | 'editorMachineState'>;
@@ -91,6 +94,8 @@ type GearProjectStoreActions = {
   pushUndo: (description: string) => void;
   undo: () => void;
   redo: () => void;
+  // Anytime we start a new project, we need to reset the undo/redo manager
+  resetUndoRedoManager: () => void;
   setEditorMachineActor: (editorMachineSnapshot: Snapshot<typeof editorMachine>) => void;
 }
 
@@ -109,16 +114,19 @@ const setEditorMachineActor = (editorMachineSnapshot: Snapshot<typeof editorMach
   });
 }
 
-const setGearProject = (gearProject: GearProjectData, set: SetGearProjectStore) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { viewBox, displayMatrix, editorMachineState, ...gearProjectWithoutViewBox } = gearProject;
+const setGearProjectWithoutDisplayMatrix = (gearProject: Omit<GearProjectData, 'displayMatrix'>, set: SetGearProjectStore) => {
+  const { viewBox, editorMachineState, ...gearProjectWithoutViewBox } = gearProject;
   set({ gearProject: gearProjectWithoutViewBox });
   viewBoxA$.next(vec2.clone(viewBox.a));
   viewBoxB$.next(vec2.clone(viewBox.b));
-  svgMatrix$.next(mat3.clone(displayMatrix));
   setEditorMachineActor(editorMachineState, set);
 }
 
+const setGearProject = (gearProject: GearProjectData, set: SetGearProjectStore) => {
+  const { displayMatrix, ...gearProjectWithoutDisplayMatrix } = gearProject;
+  setGearProjectWithoutDisplayMatrix(gearProjectWithoutDisplayMatrix, set);
+  svgMatrix$.next(mat3.clone(displayMatrix));
+}
 
 const setUndoRedoManager = (
   undoRedoManager: UndoRedoManager<UndoRedoState>,
@@ -127,7 +135,7 @@ const setUndoRedoManager = (
 ) => {
   if (undoRedoManager === get().undoRedoManager) return;
   const { gearProject } = getUndoRedoNode(undoRedoManager);
-  setGearProject(gearProject, set);
+  setGearProjectWithoutDisplayMatrix(gearProject, set);
   set({ undoRedoManager });
 }
 
@@ -186,6 +194,18 @@ export const useGearProjectStore = create(
     },
     redo: () => {
       setUndoRedoManager(redoUndoRedoNode(get().undoRedoManager), set, get);
+    },
+    resetUndoRedoManager: () => {
+      set(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { displayMatrix, ...gearProjectWithoutDisplayMatrix } = getGearProjectSnapshot();
+        return {
+          undoRedoManager: createUndoRedoManager({
+            description: "",
+            gearProject: gearProjectWithoutDisplayMatrix,
+          }),
+        }
+      });
     },
     setEditorMachineActor: (editorMachineSnapshot: Snapshot<typeof editorMachine>) => setEditorMachineActor(editorMachineSnapshot, set),
   }))

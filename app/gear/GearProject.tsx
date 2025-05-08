@@ -93,12 +93,14 @@ const useZoom = () => {
 
 const useInitializeGearProject = () => {
   const setGearProject = useGearProjectStore((state) => state.setGearProject);
+  const resetUndoRedoManager = useGearProjectStore((state) => state.resetUndoRedoManager);
   useEffect(() => {
     const localStorageGearProjectData = getGearProjectDataFromLocalStorage();
     if (localStorageGearProjectData) {
       setGearProject(localStorageGearProjectData);
+      resetUndoRedoManager();
     }
-  }, [setGearProject]);
+  }, [setGearProject, resetUndoRedoManager]);
 }
 
 export const GearProject: React.FC = () => {
@@ -156,6 +158,7 @@ export const GearProject: React.FC = () => {
     }
   }
   const setGearProject = useGearProjectStore((state) => state.setGearProject);
+  const resetUndoRedoManager = useGearProjectStore((state) => state.resetUndoRedoManager);
 
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
@@ -165,9 +168,14 @@ export const GearProject: React.FC = () => {
   useModeHotKeys();
   const theme = useTheme();
 
+  const handleLoadProject = (gearProject: GearProjectData) => {
+    setGearProject(gearProject);
+    resetUndoRedoManager();
+  }
+
   return (
     <>
-      <DropZoneContainer<GearProjectData> onJsonLoad={setGearProject} title="Drop a gear project here">
+      <DropZoneContainer<GearProjectData> onJsonLoad={handleLoadProject} title="Drop a gear project here">
         <svg 
           ref={ref}
           onWheel={handleWheel}
