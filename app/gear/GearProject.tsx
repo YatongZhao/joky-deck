@@ -159,6 +159,7 @@ export const GearProject: React.FC = () => {
   }
   const setGearProject = useGearProjectStore((state) => state.setGearProject);
   const resetUndoRedoManager = useGearProjectStore((state) => state.resetUndoRedoManager);
+  const pushUndo = useGearProjectStore((state) => state.pushUndo);
 
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
@@ -172,6 +173,10 @@ export const GearProject: React.FC = () => {
     setGearProject(gearProject);
     resetUndoRedoManager();
   }
+
+  const handleExportViewBoxDragHandleDragEnd = useCallback(() => {
+    pushUndo('Export View Box Changed');
+  }, [pushUndo]);
 
   return (
     <>
@@ -196,10 +201,10 @@ export const GearProject: React.FC = () => {
           {activeGear && <CrossHair radius={activeGear.teeth * gearProject.module / 2} />}
           {state.matches('ViewportSetting') && <ExportViewBoxController key="export-view-box-controller" id="export-view-box-controller" />}
           {state.matches('ViewportSetting') && <>
-            <DragHandle position$={viewBoxA$} />
-            <DragHandle position$={viewBoxB$} />
-            <DragHandle position$={viewBoxC$} />
-            <DragHandle position$={viewBoxD$} />
+            <DragHandle position$={viewBoxA$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+            <DragHandle position$={viewBoxB$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+            <DragHandle position$={viewBoxC$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+            <DragHandle position$={viewBoxD$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
           </>}
         </svg>
       </DropZoneContainer>

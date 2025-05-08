@@ -4,8 +4,8 @@ import { mat3, vec2 } from "gl-matrix";
 import { finalMatrix$ } from "./store";
 import { BehaviorSubject } from "rxjs";
 
-export const DragHandle: React.FC<{ position$: BehaviorSubject<vec2> }> = ({ position$ }) => {
-  const { deltaMatrix$, ref } = useDrag<SVGPathElement>();
+export const DragHandle: React.FC<{ position$: BehaviorSubject<vec2>; onDragEnd?: () => void }> = ({ position$, onDragEnd }) => {
+  const { deltaMatrix$, ref } = useDrag<SVGPathElement>({ onDragEnd });
 
   useEffect(() => {
     const subscription = position$.subscribe((position) => {
