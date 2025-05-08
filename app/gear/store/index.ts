@@ -72,8 +72,16 @@ combineLatest([svgMatrix$, translateMatrix$]).subscribe(([svgMatrix, translateMa
   finalMatrix$.next(finalMatrix);
 });
 
-const editorMachineActor = createActor(editorMachine).start();
-const initialEditorMachineSnapshot = editorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>;
+function createEditorMachineActor(editorMachineSnapshot?: Snapshot<typeof editorMachine> | null) {
+  const editorMachineActor = createActor(editorMachine, { snapshot: editorMachineSnapshot ?? undefined }).start();
+  editorMachineActor.subscribe(trySaveGearProjectToLocalStorage);
+  editorMachineActor.subscribe(() => useGearProjectStore.getState().pushUndo('editor state changed'));
+  return editorMachineActor;
+}
+
+const initEditorMachineActor = createEditorMachineActor();
+
+const initialEditorMachineSnapshot = initEditorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>;
 
 // UndoRedoState is the state of the undo/redo manager
 // It is the state of the gear project without the display matrix
@@ -106,8 +114,7 @@ type GetGearProjectStore = Parameters<AdditionalGearProjectStateCreator>[1];
 const setEditorMachineActor = (editorMachineSnapshot: Snapshot<typeof editorMachine> | null, set: SetGearProjectStore) => {
   set((state) => {
     state.editorMachineActor.stop();
-    const editorMachineActor = createActor(editorMachine, { snapshot: editorMachineSnapshot ?? undefined }).start();
-    editorMachineActor.subscribe(trySaveGearProjectToLocalStorage);
+    const editorMachineActor = createEditorMachineActor(editorMachineSnapshot);
     return {
       editorMachineActor,
     }
@@ -152,7 +159,7 @@ export const useGearProjectStore = create(
         },
         editorMachine: initialEditorMachineSnapshot,
       }),
-      editorMachineActor,
+      editorMachineActor: initEditorMachineActor,
     }, (set, get) => ({
     setGearProject: (gearProject: GearProjectData) => setGearProject(gearProject, set),
     addGear: (gearData: GearData) => {
@@ -272,5 +279,4 @@ export function trySaveGearProjectToLocalStorage() {
 viewBoxA$.pipe(skip(1)).subscribe(trySaveGearProjectToLocalStorage);
 viewBoxB$.pipe(skip(1)).subscribe(trySaveGearProjectToLocalStorage);
 svgMatrix$.pipe(skip(1)).subscribe(trySaveGearProjectToLocalStorage);
-editorMachineActor.subscribe(trySaveGearProjectToLocalStorage);
 useGearProjectStore.subscribe(trySaveGearProjectToLocalStorage);
