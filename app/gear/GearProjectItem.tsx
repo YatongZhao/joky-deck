@@ -1,5 +1,5 @@
 import { v4 } from "uuid";
-import { GearData } from "./core/types.";
+import { GearData } from "./core/types";
 import { Gear } from "./Gear";
 import { useEffect, useRef, useState } from "react";
 import { combineLatest, debounceTime, fromEvent } from "rxjs";
@@ -84,7 +84,7 @@ export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
             id: v4(),
           });
           send({ type: 'selectGear', gearId: gearData.id });
-          pushUndo();
+          pushUndo("Add Gear");
         }}
         virtual
       />

@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState, useRef, useCallback } from "react";
-import { GearProjectData } from "./core/types.";
+import { GearProjectData } from "./core/types";
 import { useGear, useGearProjectStore, svgMatrix$, translateMatrix$, finalMatrix$, viewBoxA$, viewBoxB$, viewBoxC$, viewBoxD$, useInitialTranslateMatrix$ } from "./store";
 import { GearProjectItem } from "./GearProjectItem";
 import { ReactionPanel } from "./ReactionPanel";
@@ -18,6 +18,7 @@ import { useDrag } from "./hooks/useDrag";
 import { useMergedRef } from "@mantine/hooks";
 import { useTheme } from "./theme";
 import { useSelector } from "@xstate/react";
+import { getGearProjectDataFromLocalStorage } from "./store/localStorage";
 
 const useWheelDrag = () => {
   const ref = useRef<SVGSVGElement>(null);
@@ -90,7 +91,18 @@ const useZoom = () => {
   return { handleWheel };
 };
 
+const useInitializeGearProject = () => {
+  const setGearProject = useGearProjectStore((state) => state.setGearProject);
+  useEffect(() => {
+    const localStorageGearProjectData = getGearProjectDataFromLocalStorage();
+    if (localStorageGearProjectData) {
+      setGearProject(localStorageGearProjectData);
+    }
+  }, [setGearProject]);
+}
+
 export const GearProject: React.FC = () => {
+  useInitializeGearProject();
   useInitialTranslateMatrix$();
 
   const gearProject = useGearProjectStore((state) => state.gearProject);

@@ -21,7 +21,7 @@ export const GearSettingPanel = () => {
     if (activeGearId) {
       const isColorChanged = setGearColor(activeGearId, value);
       if (isColorChanged) {
-        pushUndo();
+        pushUndo("Change Gear Color");
       }
     }
   }
@@ -39,7 +39,7 @@ export const GearSettingPanel = () => {
             thumbSize={8}
             value={positionAngle + 90}
             onChange={handlePositionAngleChange}
-            onChangeEnd={pushUndo}
+            onChangeEnd={() => pushUndo("Change Gear Position Angle")}
             formatLabel={(value) => `${(value - 90 + 360) % 360}`}
           />
           <ColorInput

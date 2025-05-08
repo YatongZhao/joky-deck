@@ -1,15 +1,8 @@
 "use client"
-import { GearProject } from "@/app/gear/GearProject";
-import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+
+const GearProject = dynamic(() => import("./GearProject").then(mod => mod.GearProject), { ssr: false });
 
 export default function Home() {
-  const [isInClient, setIsInClient] = useState(false);
-  useEffect(() => {
-    setIsInClient(true);
-  }, []);
-  return isInClient
-    ? (
-      <GearProject />
-    )
-    : ( <div>Loading...</div> );
+  return <GearProject />
 }

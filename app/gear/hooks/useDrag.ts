@@ -21,29 +21,29 @@ export const useDrag = <T extends SVGElement>({ middleButton = false, onDragEnd 
     deltaMatrix$.next(translateMatrix);
   }, [translateMatrix$, deltaMatrix$]);
 
-  const handleMouseDown = useCallback((event: MouseEvent) => {
-    if (middleButton && event.button !== 1) return;
-    event.preventDefault();
-    setDragState({ isDragging: true });
-    translate([0, 0]);
-  }, [translate, middleButton]);
-
-
-  const handleMouseMove = useCallback((event: MouseEvent) => {
-    if (!dragState.isDragging) return;
-    translate([event.movementX, event.movementY]);
-  }, [dragState.isDragging, translate]);
-
-  const handleMouseUp = useCallback(() => {
-    if (dragState.isDragging) {
-      onDragEnd?.();
-    }
-    setDragState({ isDragging: false });
-  }, [dragState.isDragging, onDragEnd]);
-
   useEffect(() => {
     if (!ref.current) return;
     const target = ref.current;
+    const handleMouseDown = (event: MouseEvent) => {
+      if (middleButton && event.button !== 1) return;
+      if (!middleButton && event.button !== 0) return;
+      event.preventDefault();
+      setDragState({ isDragging: true });
+      translate([0, 0]);
+    }
+
+    const handleMouseMove = (event: MouseEvent) => {
+      console.log("handleMouseMove", dragState.isDragging);
+      if (!dragState.isDragging) return;
+      translate([event.movementX, event.movementY]);
+    }
+
+    const handleMouseUp = () => {
+      if (dragState.isDragging) {
+        setDragState({ isDragging: false });
+        onDragEnd?.();
+      }
+    }
 
     target.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mousemove', handleMouseMove);
@@ -53,7 +53,7 @@ export const useDrag = <T extends SVGElement>({ middleButton = false, onDragEnd 
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [handleMouseDown, handleMouseMove, handleMouseUp, ref]);
+  }, [middleButton, translate, ref, onDragEnd, dragState.isDragging]);
 
   return {
     dragState,

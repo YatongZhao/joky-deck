@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { finalMatrix$, useGearProjectStore, viewBoxA$, viewBoxB$ } from "./store";
 import { combineLatest } from "rxjs";
 import { useSelector } from "@xstate/react";
@@ -9,8 +9,11 @@ export const ExportViewBoxController = ({ id }: { id?: string }) => {
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
   const state = useSelector(editorMachineActor, (state) => state);
   const isViewportSetting = state.matches("ViewportSetting");
-  const onDragEnd = useGearProjectStore((state) => state.pushUndo);
-  const { ref, deltaMatrix$ } = useDrag<SVGPathElement>({ onDragEnd });
+  const pushUndo = useGearProjectStore((state) => state.pushUndo);
+  const handleDragEnd = useCallback(() => {
+    pushUndo("Export ViewBox Change");
+  }, [pushUndo]);
+  const { ref, deltaMatrix$ } = useDrag<SVGPathElement>({ onDragEnd: handleDragEnd });
   
   useEffect(() => {
     const subscription = combineLatest([viewBoxA$, viewBoxB$]).subscribe(([a, b]) => {

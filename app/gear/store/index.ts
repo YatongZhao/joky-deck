@@ -1,13 +1,14 @@
 import { create, StateCreator } from "zustand";
 import { combine } from "zustand/middleware";
-import { GearData, GearProjectData, mockGearProject } from "../core/types.";
+import { GearData, GearProjectData, mockGearProject } from "../core/types";
 import { useMemo } from "react";
-import { BehaviorSubject, combineLatest, fromEvent, merge, of } from "rxjs";
+import { BehaviorSubject, combineLatest, debounceTime, fromEvent, merge, of, skip } from "rxjs";
 import { mat3, vec2 } from "gl-matrix";
 import { getGearTransformVector } from "../core/gear";
 import { createUndoRedoManager, pushUndoRedoNode, UndoRedoManager, undoUndoRedoNode, redoUndoRedoNode, getUndoRedoNode } from "./undoRedoManager";
 import { editorMachine } from "../editorMachine";
 import { Actor, createActor, Snapshot } from "xstate";
+import { setGearProjectDataToLocalStorage } from "./localStorage";
 const { viewBox, ...mockGearProjectWithoutViewBox } = mockGearProject;
 
 export const viewBoxA$ = new BehaviorSubject<vec2>(viewBox.a);
@@ -74,7 +75,7 @@ combineLatest([svgMatrix$, translateMatrix$]).subscribe(([svgMatrix, translateMa
 const editorMachineActor = createActor(editorMachine).start();
 const initialEditorMachineSnapshot = editorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>;
 
-type UndoRedoState = { gearProject: GearProjectData; };
+type UndoRedoState = { gearProject: GearProjectData; description: string };
 
 type GearProjectStoreState = {
   gearProject: Omit<GearProjectData, 'viewBox' | 'displayMatrix' | 'editorMachineState'>;
@@ -87,7 +88,7 @@ type GearProjectStoreActions = {
   setGearProject: (gearProject: GearProjectData) => void;
   setGearPositionAngle: (gearId: string, positionAngle: number) => void;
   setGearColor: (gearId: string, color: string) => boolean; // return true if the color is changed
-  pushUndo: () => void;
+  pushUndo: (description: string) => void;
   undo: () => void;
   redo: () => void;
   setEditorMachineActor: (editorMachineSnapshot: Snapshot<typeof editorMachine>) => void;
@@ -100,8 +101,13 @@ type GetGearProjectStore = Parameters<AdditionalGearProjectStateCreator>[1];
 const setEditorMachineActor = (editorMachineSnapshot: Snapshot<typeof editorMachine> | null, set: SetGearProjectStore) => {
   set((state) => {
     state.editorMachineActor.stop();
+    const editorMachineActor = createActor(editorMachine, { snapshot: editorMachineSnapshot ?? undefined }).start();
+    editorMachineActor.subscribe(() => {
+      console.log("editorMachineActor");
+      trySaveGearProjectToLocalStorage();
+    });
     return {
-      editorMachineActor: createActor(editorMachine, { snapshot: editorMachineSnapshot ?? undefined }).start(),
+      editorMachineActor,
     }
   });
 }
@@ -133,6 +139,7 @@ export const useGearProjectStore = create(
     {
       gearProject: mockGearProjectWithoutViewBox,
       undoRedoManager: createUndoRedoManager({
+        description: "",
         gearProject: {
           ...mockGearProject,
           viewBox: { a: vec2.clone(mockGearProject.viewBox.a), b: vec2.clone(mockGearProject.viewBox.b) },
@@ -169,10 +176,11 @@ export const useGearProjectStore = create(
       }));
       return true;
     },
-    pushUndo: () => {
+    pushUndo: (description: string) => {
       set((state) => ({
         undoRedoManager: pushUndoRedoNode(state.undoRedoManager, {
           gearProject: getGearProjectSnapshot(),
+          description,
         }),
       }));
     },
@@ -231,3 +239,21 @@ export function getGearProjectSnapshot(): GearProjectData {
     editorMachineState: state.editorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>,
   };
 }
+
+const saveGearProjectToLocalStorage$ = new BehaviorSubject<GearProjectData | null>(null);
+saveGearProjectToLocalStorage$.pipe(debounceTime(500)).subscribe((gearProject) => {
+  if (gearProject) {
+    setGearProjectDataToLocalStorage(gearProject);
+  }
+});
+
+export function trySaveGearProjectToLocalStorage() {
+  const gearProject = getGearProjectSnapshot();
+  saveGearProjectToLocalStorage$.next(gearProject);
+}
+
+viewBoxA$.pipe(skip(1)).subscribe(trySaveGearProjectToLocalStorage);
+viewBoxB$.pipe(skip(1)).subscribe(trySaveGearProjectToLocalStorage);
+svgMatrix$.pipe(skip(1)).subscribe(trySaveGearProjectToLocalStorage);
+editorMachineActor.subscribe(trySaveGearProjectToLocalStorage);
+useGearProjectStore.subscribe(trySaveGearProjectToLocalStorage);
