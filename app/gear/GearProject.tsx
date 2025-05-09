@@ -197,7 +197,7 @@ export const GearProject: React.FC = () => {
           }}
         >
           {!state.matches('ViewportSetting') && <ExportViewBoxController key="export-view-box-controller" id="export-view-box-controller" />}
-          <GearProjectItem gearId={gearProject.rootGearId} />
+          <GearProjectItem gearId={gearProject.rootGearId} rootPosition={gearProject.rootGearPosition} />
           {activeGear && <CrossHair radius={activeGear.teeth * gearProject.module / 2} />}
           {state.matches('ViewportSetting') && <ExportViewBoxController key="export-view-box-controller" id="export-view-box-controller" />}
           {state.matches('ViewportSetting') && <>

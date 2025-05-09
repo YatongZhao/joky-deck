@@ -14,6 +14,7 @@ export type GearProjectData = {
   version: string;
   displayMatrix: mat3;
   rootGearId: string;
+  rootGearPosition: vec2;
   gears: GearData[];
   module: number;
   durationUnit: number;
@@ -28,6 +29,7 @@ export const mockGearProject: GearProjectData = {
   version: '1.0.0',
   displayMatrix: mat3.create(),
   rootGearId: '1',
+  rootGearPosition: vec2.create(),
   module: 5,
   durationUnit: 1,
   viewBox: {

@@ -99,6 +99,7 @@ type GearProjectStoreState = {
 type GearProjectStoreActions = {
   addGear: (gear: GearData) => void;
   setGearProject: (gearProject: GearProjectData) => void;
+  setRootGearPosition: (rootGearPosition: vec2) => void;
   setGear: (gearId: string, partialGear: Partial<GearData>) => void;
   setGearPositionAngle: (gearId: string, positionAngle: number) => void;
   setGearColor: (gearId: string, color: string) => boolean; // return true if the color is changed
@@ -170,6 +171,14 @@ export const useGearProjectStore = create(
         gearProject: {
           ...state.gearProject,
           gears: [...state.gearProject.gears, gearData],
+        },
+      }));
+    },
+    setRootGearPosition: (rootGearPosition: vec2) => {
+      set((state) => ({
+        gearProject: {
+          ...state.gearProject,
+          rootGearPosition,
         },
       }));
     },
@@ -245,8 +254,14 @@ export const useGearSvgPosition = (gearId?: string | null) => {
   const gears = useGearProjectStore((state) => state.gearProject.gears);
   const gearModule = useGearProjectStore((state) => state.gearProject.module);
   const targetGear = useGear(gearId);
+  const rootGearId = useGearProjectStore((state) => state.gearProject.rootGearId);
+  const rootGearPosition = useGearProjectStore((state) => state.gearProject.rootGearPosition);
 
   const gearPosition = useMemo(() => {
+    if (gearId === rootGearId) {
+      return rootGearPosition;
+    }
+
     let currentGear = targetGear;
     const globalTransformMatrix = mat3.create();
   
@@ -259,8 +274,8 @@ export const useGearSvgPosition = (gearId?: string | null) => {
       currentGear = parentGear;
     }
   
-    return vec2.transformMat3(vec2.create(), vec2.create(), globalTransformMatrix);
-  }, [gears, gearModule, targetGear])
+    return vec2.transformMat3(vec2.create(), rootGearPosition, globalTransformMatrix);
+  }, [gears, gearModule, targetGear, rootGearId, rootGearPosition, gearId])
 
   return gearPosition;
 }

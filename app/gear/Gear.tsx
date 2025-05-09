@@ -22,6 +22,8 @@ export const Gear = forwardRef<SVGPathElement, {
   direction?: 1 | -1;
   module: number;
   durationUnit: number;
+  
+  rootPosition?: vec2;
 
   color?: string;
 
@@ -37,18 +39,24 @@ export const Gear = forwardRef<SVGPathElement, {
   durationUnit,
   onClick,
   virtual = false,
-  color
+  color,
+  rootPosition,
 }, ref) {
   const parentGear = useParentGear();
   const [hovered, setHovered] = useState(false);
   const theme = useTheme();
   const fillColor = color || theme.colors.gray[4];
   const transformMatrix = useMemo(() => {
+    if (rootPosition) {
+      const result = mat3.create();
+      mat3.translate(result, result, rootPosition);
+      return result;
+    }
     const result = mat3.create();
     if (!parentGear) return result;
     mat3.translate(result, result, getGearTransformVector(positionAngle, teeth, parentGear.teeth, module));
     return result;
-  }, [parentGear, positionAngle, module, teeth]);
+  }, [parentGear, positionAngle, module, teeth, rootPosition]);
 
   const transform = useMemo(() => {
     const transformVec2 = vec2.create();

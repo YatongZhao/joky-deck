@@ -9,6 +9,9 @@ import { DragHandle } from "./DragHandle";
 
 export const ActiveGearHandle = () => {
   const gearProject = useGearProjectStore((state) => state.gearProject);
+  const rootGearId = useGearProjectStore((state) => state.gearProject.rootGearId);
+  const rootGearPosition = useGearProjectStore((state) => state.gearProject.rootGearPosition);
+  const setRootGearPosition = useGearProjectStore((state) => state.setRootGearPosition);
   const setGear = useGearProjectStore((state) => state.setGear);
   const pushUndo = useGearProjectStore((state) => state.pushUndo);
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
@@ -27,7 +30,12 @@ export const ActiveGearHandle = () => {
       gearHandleSvgPosition$.next(activeGearSvgPosition);
     }
     const subscription = gearHandleSvgPosition$.pipe(skip(1)).subscribe((position) => {
-      if (isDragging && activeGearId) {
+      if (!isDragging) return;
+      if (!activeGearId) return;
+
+      if (activeGearId === rootGearId) {
+        setRootGearPosition(vec2.clone(position));
+      } else {
         const angle = Math.atan2(position[1] - parentGearSvgPosition[1], position[0] - parentGearSvgPosition[0]);
         const distance = Math.hypot(position[0] - parentGearSvgPosition[0], position[1] - parentGearSvgPosition[1]);
         let teeth = Math.round(distance / gearProject.module - (parentGear?.teeth ?? 0) / 2) * 2;
@@ -37,7 +45,7 @@ export const ActiveGearHandle = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [activeGearSvgPosition, gearHandleSvgPosition$, isDragging, parentGearSvgPosition, parentGear?.teeth, gearProject.module, setGear, activeGearId, pushUndo]);
+  }, [activeGearSvgPosition, gearHandleSvgPosition$, isDragging, parentGearSvgPosition, parentGear?.teeth, gearProject.module, setGear, activeGearId, pushUndo, rootGearId, rootGearPosition, setRootGearPosition]);
   
   const handleDragEnd = useCallback(() => {
     setIsDragging(false);
@@ -50,10 +58,6 @@ export const ActiveGearHandle = () => {
     setIsDragging(true);
     lastGearPositionInfoRef.current = { teeth: activeGear?.teeth ?? 0, positionAngle: activeGear?.positionAngle ?? 0 };
   }, [activeGear]);
-
-  if (!parentGearId) {
-    return null;
-  }
 
   return <>
     <DragHandle svgPosition$={gearHandleSvgPosition$} onDragEnd={handleDragEnd} onDragStart={handleDragStart} shape="circle" />
