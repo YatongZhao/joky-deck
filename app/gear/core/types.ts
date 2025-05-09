@@ -25,12 +25,12 @@ export type GearProjectData = {
   editorMachineState: Snapshot<typeof editorMachine> | null;
 }
 
-export const mockGearProject: GearProjectData = {
+export const initialGearProject: GearProjectData = {
   version: '1.0.0',
   displayMatrix: mat3.create(),
   rootGearId: '1',
   rootGearPosition: vec2.create(),
-  module: 5,
+  module: 10,
   durationUnit: 1,
   viewBox: {
     a: vec2.fromValues(-320, -180),

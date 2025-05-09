@@ -1,6 +1,6 @@
 import { create, StateCreator } from "zustand";
 import { combine } from "zustand/middleware";
-import { GearData, GearProjectData, mockGearProject } from "../core/types";
+import { GearData, GearProjectData, initialGearProject } from "../core/types";
 import { useCallback, useMemo } from "react";
 import { BehaviorSubject, combineLatest, debounceTime, fromEvent, merge, of, skip } from "rxjs";
 import { mat3, vec2 } from "gl-matrix";
@@ -11,7 +11,7 @@ import { Actor, createActor, Snapshot } from "xstate";
 import { setGearProjectDataToLocalStorage } from "./localStorage";
 import { useSelector } from "@xstate/react";
 
-const { viewBox, ...mockGearProjectWithoutViewBox } = mockGearProject;
+const { viewBox, ...initialGearProjectWithoutViewBox } = initialGearProject;
 
 export const viewBoxA$ = new BehaviorSubject<vec2>(viewBox.a);
 export const viewBoxB$ = new BehaviorSubject<vec2>(viewBox.b);
@@ -52,7 +52,7 @@ viewBoxD$.subscribe((value) => {
   }
 });
 
-export const svgMatrix$ = new BehaviorSubject<mat3>(mockGearProject.displayMatrix);
+export const svgMatrix$ = new BehaviorSubject<mat3>(initialGearProject.displayMatrix);
 
 export const translateMatrix$ = new BehaviorSubject<mat3>(mat3.create());
 export const useInitialTranslateMatrix$ = () => {
@@ -154,13 +154,13 @@ const setUndoRedoManager = (
 export const useGearProjectStore = create(
   combine<GearProjectStoreState, GearProjectStoreActions>(
     {
-      gearProject: mockGearProjectWithoutViewBox,
+      gearProject: initialGearProjectWithoutViewBox,
       undoRedoManager: createUndoRedoManager({
         description: "",
         gearProject: {
-          ...mockGearProject,
-          viewBox: { a: vec2.clone(mockGearProject.viewBox.a), b: vec2.clone(mockGearProject.viewBox.b) },
-          displayMatrix: mat3.clone(mockGearProject.displayMatrix),
+          ...initialGearProject,
+          viewBox: { a: vec2.clone(initialGearProject.viewBox.a), b: vec2.clone(initialGearProject.viewBox.b) },
+          displayMatrix: mat3.clone(initialGearProject.displayMatrix),
         },
         editorMachine: initialEditorMachineSnapshot,
       }),
