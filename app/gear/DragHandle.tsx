@@ -4,11 +4,16 @@ import { mat3, vec2 } from "gl-matrix";
 import { finalMatrix$ } from "./store";
 import { BehaviorSubject } from "rxjs";
 
+const rectPath = "M 5 5 L 5 -5 L -5 -5 L -5 5 Z";
+const radius = 5;
+const circlePath = `M ${0}, ${radius} A ${radius} ${radius} 0 0 1 ${0} ${-radius} A ${radius} ${radius} 0 0 1 ${0} ${radius} Z`;
+
 export const DragHandle: React.FC<{
   svgPosition$: BehaviorSubject<vec2>;
   onDragEnd?: () => void;
   onDragStart?: () => void;
-}> = ({ svgPosition$, onDragEnd, onDragStart }) => {
+  shape?: "circle" | "rect";
+}> = ({ svgPosition$, onDragEnd, onDragStart, shape = "rect" }) => {
   const { deltaMatrix$, ref } = useDrag<SVGPathElement>({ onDragEnd, onDragStart });
 
   useEffect(() => {
@@ -34,5 +39,5 @@ export const DragHandle: React.FC<{
     };
   }, [deltaMatrix$, svgPosition$]);
 
-  return <path ref={ref} d={"M 5 5 L 5 -5 L -5 -5 L -5 5 Z"} fill="white" stroke="black" strokeWidth="1" style={{ cursor: "move" }} />
+  return <path ref={ref} d={shape === "circle" ? circlePath : rectPath} fill="white" stroke="black" strokeWidth="1" style={{ cursor: "move" }} />
 }

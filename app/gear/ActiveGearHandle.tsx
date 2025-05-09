@@ -30,7 +30,8 @@ export const ActiveGearHandle = () => {
       if (isDragging && activeGearId) {
         const angle = Math.atan2(position[1] - parentGearSvgPosition[1], position[0] - parentGearSvgPosition[0]);
         const distance = Math.hypot(position[0] - parentGearSvgPosition[0], position[1] - parentGearSvgPosition[1]);
-        const teeth = Math.round(distance / gearProject.module - (parentGear?.teeth ?? 0) / 2) * 2;
+        let teeth = Math.round(distance / gearProject.module - (parentGear?.teeth ?? 0) / 2) * 2;
+        teeth = Math.max(teeth, 3);
         setGear(activeGearId, { teeth, positionAngle: 360 * angle / (2 * Math.PI) });
       }
     });
@@ -55,6 +56,6 @@ export const ActiveGearHandle = () => {
   }
 
   return <>
-    <DragHandle svgPosition$={gearHandleSvgPosition$} onDragEnd={handleDragEnd} onDragStart={handleDragStart} />
+    <DragHandle svgPosition$={gearHandleSvgPosition$} onDragEnd={handleDragEnd} onDragStart={handleDragStart} shape="circle" />
   </>
 }
