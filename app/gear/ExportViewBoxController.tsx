@@ -13,7 +13,7 @@ export const ExportViewBoxController = ({ id }: { id?: string }) => {
   const handleDragEnd = useCallback(() => {
     pushUndo("Export ViewBox Change");
   }, [pushUndo]);
-  const { ref, deltaMatrix$ } = useDrag<SVGPathElement>({ onDragEnd: handleDragEnd });
+  const { ref, deltaMatrix$ } = useDrag<SVGPathElement>({ onDragEnd: handleDragEnd, disabled: !isViewportSetting });
   
   useEffect(() => {
     const subscription = combineLatest([viewBoxA$, viewBoxB$]).subscribe(([a, b]) => {

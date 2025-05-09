@@ -4,31 +4,35 @@ import { mat3, vec2 } from "gl-matrix";
 import { finalMatrix$ } from "./store";
 import { BehaviorSubject } from "rxjs";
 
-export const DragHandle: React.FC<{ position$: BehaviorSubject<vec2>; onDragEnd?: () => void }> = ({ position$, onDragEnd }) => {
-  const { deltaMatrix$, ref } = useDrag<SVGPathElement>({ onDragEnd });
+export const DragHandle: React.FC<{
+  svgPosition$: BehaviorSubject<vec2>;
+  onDragEnd?: () => void;
+  onDragStart?: () => void;
+}> = ({ svgPosition$, onDragEnd, onDragStart }) => {
+  const { deltaMatrix$, ref } = useDrag<SVGPathElement>({ onDragEnd, onDragStart });
 
   useEffect(() => {
-    const subscription = position$.subscribe((position) => {
+    const subscription = svgPosition$.subscribe((position) => {
       if (!ref.current) return;
       const target = ref.current;
       target.setAttribute('transform', `translate(${position[0]}, ${position[1]})`);
     });
     return () => subscription.unsubscribe();
-  }, [position$, ref]);
+  }, [svgPosition$, ref]);
   
   useEffect(() => {
     const deltaSubscription = deltaMatrix$.subscribe((deltaMatrix) => {
       const screenPosition = vec2.create();
-      vec2.transformMat3(screenPosition, position$.getValue(), finalMatrix$.getValue());
+      vec2.transformMat3(screenPosition, svgPosition$.getValue(), finalMatrix$.getValue());
       vec2.transformMat3(screenPosition, screenPosition, deltaMatrix);
-      vec2.transformMat3(position$.getValue(), screenPosition, mat3.invert(mat3.create(), finalMatrix$.getValue()));
-      position$.next(position$.getValue());
+      vec2.transformMat3(svgPosition$.getValue(), screenPosition, mat3.invert(mat3.create(), finalMatrix$.getValue()));
+      svgPosition$.next(svgPosition$.getValue());
     });
 
     return () => {
       deltaSubscription.unsubscribe();
     };
-  }, [deltaMatrix$, position$]);
+  }, [deltaMatrix$, svgPosition$]);
 
   return <path ref={ref} d={"M 5 5 L 5 -5 L -5 -5 L -5 5 Z"} fill="white" stroke="black" strokeWidth="1" style={{ cursor: "move" }} />
 }

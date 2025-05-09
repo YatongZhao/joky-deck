@@ -97,6 +97,7 @@ type GearProjectStoreState = {
 type GearProjectStoreActions = {
   addGear: (gear: GearData) => void;
   setGearProject: (gearProject: GearProjectData) => void;
+  setGear: (gearId: string, partialGear: Partial<GearData>) => void;
   setGearPositionAngle: (gearId: string, positionAngle: number) => void;
   setGearColor: (gearId: string, color: string) => boolean; // return true if the color is changed
   pushUndo: (description: string) => void;
@@ -170,6 +171,14 @@ export const useGearProjectStore = create(
         },
       }));
     },
+    setGear: (gearId: string, partialGear: Partial<GearData>) => {
+      set((state) => ({
+        gearProject: {
+          ...state.gearProject,
+          gears: state.gearProject.gears.map((gear) => gear.id === gearId ? { ...gear, ...partialGear } : gear),
+        },
+      }));
+    },
     setGearPositionAngle: (gearId: string, positionAngle: number) => {
       set((state) => ({
         gearProject: {
@@ -218,9 +227,9 @@ export const useGearProjectStore = create(
   }))
 );
 
-const getGear = (gears: GearData[], gearId: string | null) => gears.find((gear) => gear.id === gearId);
+const getGear = (gears: GearData[], gearId?: string | null) => gearId ? gears.find((gear) => gear.id === gearId) : null;
 
-export const useGear = (gearId: string | null) => {
+export const useGear = (gearId?: string | null) => {
   const gears = useGearProjectStore((state) => state.gearProject.gears);
   return useMemo(() => getGear(gears, gearId), [gears, gearId]);
 }
@@ -230,7 +239,7 @@ export const useGearChildren = (gearId: string) => {
   return useMemo(() => gearProject.gears.filter((gear) => gear.parentId === gearId), [gearProject.gears, gearId]);
 }
 
-export const useGearPosition = (gearId: string | null) => {
+export const useGearSvgPosition = (gearId?: string | null) => {
   const gears = useGearProjectStore((state) => state.gearProject.gears);
   const gearModule = useGearProjectStore((state) => state.gearProject.module);
   const targetGear = useGear(gearId);

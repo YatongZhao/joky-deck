@@ -19,7 +19,7 @@ import { useMergedRef } from "@mantine/hooks";
 import { useTheme } from "./theme";
 import { useSelector } from "@xstate/react";
 import { getGearProjectDataFromLocalStorage } from "./store/localStorage";
-
+import { ActiveGearHandle } from "./ActiveGearHandle";
 const useWheelDrag = () => {
   const ref = useRef<SVGSVGElement>(null);
   const [deltaMatrix$] = useState(new BehaviorSubject<mat3>(mat3.create()));
@@ -201,11 +201,12 @@ export const GearProject: React.FC = () => {
           {activeGear && <CrossHair radius={activeGear.teeth * gearProject.module / 2} />}
           {state.matches('ViewportSetting') && <ExportViewBoxController key="export-view-box-controller" id="export-view-box-controller" />}
           {state.matches('ViewportSetting') && <>
-            <DragHandle position$={viewBoxA$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
-            <DragHandle position$={viewBoxB$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
-            <DragHandle position$={viewBoxC$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
-            <DragHandle position$={viewBoxD$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+            <DragHandle svgPosition$={viewBoxA$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+            <DragHandle svgPosition$={viewBoxB$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+            <DragHandle svgPosition$={viewBoxC$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+            <DragHandle svgPosition$={viewBoxD$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
           </>}
+          {activeGearId && <ActiveGearHandle />}
         </svg>
       </DropZoneContainer>
       <ReactionPanel svgRef={svgRef} />
