@@ -10,11 +10,13 @@ const getRectPath = (radius: number) => `M ${radius} ${radius} L ${radius} -${ra
 const getCirclePath = (radius: number) => `M ${0}, ${radius} A ${radius} ${radius} 0 0 1 ${0} ${-radius} A ${radius} ${radius} 0 0 1 ${0} ${radius} Z`;
 
 export const DragHandle: React.FC<{
-  svgPosition$: BehaviorSubject<vec2>;
+  targetSvgPosition$: BehaviorSubject<vec2>;
+  handleSvgPosition$?: BehaviorSubject<vec2>;
   onDragEnd?: () => void;
   onDragStart?: () => void;
   shape?: "circle" | "rect";
-}> = ({ svgPosition$, onDragEnd, onDragStart, shape = "rect" }) => {
+}> = ({ targetSvgPosition$, handleSvgPosition$, onDragEnd, onDragStart, shape = "rect" }) => {
+  const finalSvgPosition$ = handleSvgPosition$ ?? targetSvgPosition$;
   const { deltaMatrix$, ref } = useDrag<SVGPathElement>({ onDragEnd, onDragStart });
 
   useEffect(() => {
@@ -30,27 +32,27 @@ export const DragHandle: React.FC<{
   }, [shape, ref]);
 
   useEffect(() => {
-    const subscription = svgPosition$.subscribe((position) => {
+    const subscription = finalSvgPosition$.subscribe((position) => {
       if (!ref.current) return;
       const target = ref.current;
       target.setAttribute('transform', `translate(${position[0]}, ${position[1]})`);
     });
     return () => subscription.unsubscribe();
-  }, [svgPosition$, ref]);
+  }, [finalSvgPosition$, ref]);
   
   useEffect(() => {
     const deltaSubscription = deltaMatrix$.subscribe((deltaMatrix) => {
       const screenPosition = vec2.create();
-      vec2.transformMat3(screenPosition, svgPosition$.getValue(), finalMatrix$.getValue());
+      vec2.transformMat3(screenPosition, targetSvgPosition$.getValue(), finalMatrix$.getValue());
       vec2.transformMat3(screenPosition, screenPosition, deltaMatrix);
-      vec2.transformMat3(svgPosition$.getValue(), screenPosition, mat3.invert(mat3.create(), finalMatrix$.getValue()));
-      svgPosition$.next(svgPosition$.getValue());
+      vec2.transformMat3(targetSvgPosition$.getValue(), screenPosition, mat3.invert(mat3.create(), finalMatrix$.getValue()));
+      targetSvgPosition$.next(targetSvgPosition$.getValue());
     });
 
     return () => {
       deltaSubscription.unsubscribe();
     };
-  }, [deltaMatrix$, svgPosition$]);
+  }, [deltaMatrix$, targetSvgPosition$]);
 
   return <path ref={ref} d={shape === "circle" ? getCirclePath(BASE_RADIUS) : getRectPath(BASE_RADIUS)} fill="white" stroke="black" strokeWidth="1" style={{ cursor: "move" }} />
 }

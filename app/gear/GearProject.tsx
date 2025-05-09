@@ -201,10 +201,10 @@ export const GearProject: React.FC = () => {
           {activeGear && <CrossHair radius={activeGear.teeth * gearProject.module / 2} />}
           {state.matches('ViewportSetting') && <ExportViewBoxController key="export-view-box-controller" id="export-view-box-controller" />}
           {state.matches('ViewportSetting') && <>
-            <DragHandle svgPosition$={viewBoxA$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
-            <DragHandle svgPosition$={viewBoxB$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
-            <DragHandle svgPosition$={viewBoxC$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
-            <DragHandle svgPosition$={viewBoxD$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+            <DragHandle targetSvgPosition$={viewBoxA$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+            <DragHandle targetSvgPosition$={viewBoxB$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+            <DragHandle targetSvgPosition$={viewBoxC$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+            <DragHandle targetSvgPosition$={viewBoxD$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
           </>}
           {activeGearId && <ActiveGearHandle />}
         </svg>
