@@ -4,9 +4,10 @@ import { combineLatest } from "rxjs";
 import { useSelector } from "@xstate/react";
 import { useDrag } from "./hooks/useDrag";
 import { vec2, mat3 } from "gl-matrix";
-
+import { useEditorMachineSend } from "./store";
 export const ExportViewBoxController = ({ id }: { id?: string }) => {
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
+  const send = useEditorMachineSend();
   const state = useSelector(editorMachineActor, (state) => state);
   const isViewportSetting = state.matches("ViewportSetting");
   const pushUndo = useGearProjectStore((state) => state.pushUndo);
@@ -47,6 +48,9 @@ export const ExportViewBoxController = ({ id }: { id?: string }) => {
       id={id}
       style={{
         cursor: isViewportSetting ? "grab" : "default",
+      }}
+      onClick={() => {
+        send({ type: 'unselectGear' });
       }}
       ref={ref}
       stroke={isViewportSetting ? "black" : "none"}

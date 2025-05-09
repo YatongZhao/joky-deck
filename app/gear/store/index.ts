@@ -1,7 +1,7 @@
 import { create, StateCreator } from "zustand";
 import { combine } from "zustand/middleware";
 import { GearData, GearProjectData, mockGearProject } from "../core/types";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { BehaviorSubject, combineLatest, debounceTime, fromEvent, merge, of, skip } from "rxjs";
 import { mat3, vec2 } from "gl-matrix";
 import { getGearTransformVector } from "../core/gear";
@@ -9,6 +9,8 @@ import { createUndoRedoManager, pushUndoRedoNode, UndoRedoManager, undoUndoRedoN
 import { editorMachine } from "../editorMachine";
 import { Actor, createActor, Snapshot } from "xstate";
 import { setGearProjectDataToLocalStorage } from "./localStorage";
+import { useSelector } from "@xstate/react";
+
 const { viewBox, ...mockGearProjectWithoutViewBox } = mockGearProject;
 
 export const viewBoxA$ = new BehaviorSubject<vec2>(viewBox.a);
@@ -261,6 +263,25 @@ export const useGearSvgPosition = (gearId?: string | null) => {
   }, [gears, gearModule, targetGear])
 
   return gearPosition;
+}
+
+export const useEditorMachineSend = () => {
+  const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
+  const send = editorMachineActor.send;
+  const state = useSelector(editorMachineActor, (state) => state);
+  type Event = Parameters<typeof editorMachineActor.send>[0];
+  /**
+   * This function is used to send events to the editor machine.
+   * @returns true if the event is sent, false if the event is not sent because the state does not allow it.
+   */
+  const safeSend = useCallback((event: Event) => {
+    if (state.can(event)) {
+      send(event);
+      return true;
+    }
+    return false;
+  }, [send, state]);
+  return safeSend;
 }
 
 export function getGearProjectSnapshot(): GearProjectData {

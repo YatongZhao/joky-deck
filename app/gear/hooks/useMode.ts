@@ -1,28 +1,25 @@
 import { useHotkeys } from "react-hotkeys-hook";
 import { useEffect } from "react";
-import { useGearProjectStore } from "../store";
+import { useGearProjectStore, useEditorMachineSend } from "../store";
 import { useSelector } from "@xstate/react";
 
 export const useModeHotKeys = () => {
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
   const state = useSelector(editorMachineActor, (state) => state);
-  const { send } = editorMachineActor;
+  const send = useEditorMachineSend();
 
   useHotkeys('a', () => {
     send({ type: 'enterAddingMode' });
   });
 
   useHotkeys('esc', () => {
-    if (state.hasTag('CanEscape')) {
-      send({ type: 'esc' });
-    }
+    send({ type: 'esc' });
   });
 
   useEffect(() => {
     const handleContextMenu = (event: MouseEvent) => {
-      if (state.hasTag('CanEscape')) {
+      if (send({ type: 'esc' })) {
         event.preventDefault();
-        send({ type: 'esc' });
       }
     }
     window.addEventListener('contextmenu', handleContextMenu);

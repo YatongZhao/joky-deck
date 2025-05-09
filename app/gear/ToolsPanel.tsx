@@ -2,7 +2,7 @@ import { SegmentedControl } from "@mantine/core";
 import { useMemo } from "react";
 import { MousePointer2, StickyNote } from "lucide-react";
 import { useSelector } from "@xstate/react";
-import { useGearProjectStore } from "./store";
+import { useEditorMachineSend, useGearProjectStore } from "./store";
 
 enum Tool {
   Selecting = 'Selecting',
@@ -12,7 +12,7 @@ enum Tool {
 export const ToolsPanel = () => {
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
   const state = useSelector(editorMachineActor, (state) => state);
-  const { send } = editorMachineActor;
+  const send = useEditorMachineSend();
   const value = useMemo(() => {
     if (state.matches('Selecting')) return Tool.Selecting;
     if (state.matches('ViewportSetting')) return Tool.ViewportSetting;
