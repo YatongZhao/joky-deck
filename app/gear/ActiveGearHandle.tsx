@@ -27,6 +27,7 @@ export const ActiveGearHandle = () => {
   const lastGearPositionInfoRef = useRef<{ teeth: number, positionAngle: number }>({ teeth: activeGear?.teeth ?? 0, positionAngle: activeGear?.positionAngle ?? 0 });
 
   const [isCtrlPressed, setIsCtrlPressed] = useState(false);
+  const startTeethRef = useRef(activeGear?.teeth ?? 0);
 
   useEffect(() => {
     const subscription = fromEvent<KeyboardEvent>(document, 'keydown').subscribe((event) => {
@@ -63,6 +64,9 @@ export const ActiveGearHandle = () => {
         const angle = Math.atan2(position[1] - parentGearSvgPosition[1], position[0] - parentGearSvgPosition[0]);
         const projectedDistance = Math.abs(distance * Math.cos(angle - activeGear?.positionAngle / 180 * Math.PI));
         let teeth = Math.round(projectedDistance / gearProject.module - (parentGear?.teeth ?? 0) / 2) * 2;
+        if (activeGearId === rootGearId) {
+          teeth = startTeethRef.current + teeth * (Math.cos(angle - activeGear?.positionAngle / 180 * Math.PI) > 0 ? 1 : -1);
+        }
         teeth = Math.max(teeth, 3);
         setGear(activeGearId, { teeth });
         return;
@@ -97,6 +101,7 @@ export const ActiveGearHandle = () => {
 
   const handleDragStart = useCallback(() => {
     setIsDragging(true);
+    startTeethRef.current = activeGear?.teeth ?? 0;
     lastGearPositionInfoRef.current = { teeth: activeGear?.teeth ?? 0, positionAngle: activeGear?.positionAngle ?? 0 };
   }, [activeGear]);
 
