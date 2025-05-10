@@ -43,6 +43,10 @@ const themeConf: ReturnType<typeof createTheme> = {
     colors: {
         gameMain: gameMains[2],
     },
+    primaryColor: 'gameMain',
+    spacing: {
+        xs: '0.3rem',
+    }
 } as const;
 export const theme = createTheme(themeConf);
 

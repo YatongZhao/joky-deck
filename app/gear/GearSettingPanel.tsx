@@ -39,6 +39,8 @@ export const GearSettingPanel = () => {
   const positionAngle = activeGear?.positionAngle || 0;
   const color = activeGear?.color || '';
 
+  if (!activeGearId) return null;
+
   return (
     <Paper pos="fixed" p="xs" right={10} top={10} shadow="md" fz="xs" style={{ zIndex: 1000 }}>
       settings

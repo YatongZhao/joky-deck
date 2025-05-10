@@ -5,7 +5,7 @@ import { finalMatrix$, svgMatrix$ } from "./store";
 import { BehaviorSubject } from "rxjs";
 import { getScale } from "./core/coordinate";
 
-const BASE_RADIUS = 8;
+const BASE_RADIUS = 6;
 const getRectPath = (radius: number) => `M ${radius} ${radius} L ${radius} -${radius} L -${radius} -${radius} L -${radius} ${radius} Z`;
 const getCirclePath = (radius: number) => `M ${0}, ${radius} A ${radius} ${radius} 0 0 1 ${0} ${-radius} A ${radius} ${radius} 0 0 1 ${0} ${radius} Z`;
 
@@ -26,7 +26,7 @@ export const DragHandle: React.FC<{
       if (!ref.current) return;
       const target = ref.current;
       target.setAttribute('d', shape === "circle" ? getCirclePath(radius) : getRectPath(radius));
-      target.setAttribute('stroke-width', `${2 / scale[0]}`);
+      target.setAttribute('stroke-width', `${1 / scale[0]}`);
     });
     return () => subscription.unsubscribe();
   }, [shape, ref]);

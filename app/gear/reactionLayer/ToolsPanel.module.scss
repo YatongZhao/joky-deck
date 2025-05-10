@@ -1,0 +1,17 @@
+.toolsPanel {
+  border-width: 0.1px;
+}
+.toolItem {
+  width: calc(var(--mantine-scale) * 2rem);
+  height: calc(var(--mantine-scale) * 2rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  &:hover {
+    background-color: var(--mantine-primary-color-light-hover);
+  }
+  border-radius: var(--mantine-radius-md);
+  &.active {
+    background-color: var(--mantine-primary-color-1);
+  }
+}

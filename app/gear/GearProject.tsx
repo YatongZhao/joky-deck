@@ -10,7 +10,7 @@ import { CrossHair } from "./CrossHair";
 import { ExportViewBoxController } from "./ExportViewBoxController";
 import { mat3, vec2 } from "gl-matrix";
 import { getScale } from "./core/coordinate";
-import { ToolsPanel } from "./ToolsPanel";
+import { ToolsPanel } from "./reactionLayer/ToolsPanel";
 import { DragHandle } from "./DragHandle";
 import { BehaviorSubject } from "rxjs";
 import { useDrag } from "./hooks/useDrag";
