@@ -127,6 +127,18 @@ const setEditorMachineActor = (editorMachineSnapshot: Snapshot<typeof editorMach
   });
 }
 
+const resetUndoRedoManager = (set: SetGearProjectStore) => {
+  set(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { displayMatrix, ...gearProjectWithoutDisplayMatrix } = getGearProjectSnapshot();
+    return {
+      undoRedoManager: createUndoRedoManager({
+        description: "",
+        gearProject: gearProjectWithoutDisplayMatrix,
+      }),
+    }
+  });
+}
 const setGearProjectWithoutDisplayMatrix = (gearProject: Omit<GearProjectData, 'displayMatrix'>, set: SetGearProjectStore) => {
   const { viewBox, editorMachineState, ...gearProjectWithoutViewBox } = gearProject;
   set({ gearProject: gearProjectWithoutViewBox });
@@ -139,9 +151,10 @@ const setGearProject = (gearProject: GearProjectData, set: SetGearProjectStore) 
   const { displayMatrix, ...gearProjectWithoutDisplayMatrix } = gearProject;
   setGearProjectWithoutDisplayMatrix(gearProjectWithoutDisplayMatrix, set);
   svgMatrix$.next(mat3.clone(displayMatrix));
+  resetUndoRedoManager(set);
 }
 
-const setUndoRedoManager = (
+const setUndoRedoToSnapshot = (
   undoRedoManager: UndoRedoManager<UndoRedoState>,
   set: SetGearProjectStore,
   get: GetGearProjectStore
@@ -230,23 +243,12 @@ export const useGearProjectStore = create(
       }));
     },
     undo: () => {
-      setUndoRedoManager(undoUndoRedoNode(get().undoRedoManager), set, get);
+      setUndoRedoToSnapshot(undoUndoRedoNode(get().undoRedoManager), set, get);
     },
     redo: () => {
-      setUndoRedoManager(redoUndoRedoNode(get().undoRedoManager), set, get);
+      setUndoRedoToSnapshot(redoUndoRedoNode(get().undoRedoManager), set, get);
     },
-    resetUndoRedoManager: () => {
-      set(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { displayMatrix, ...gearProjectWithoutDisplayMatrix } = getGearProjectSnapshot();
-        return {
-          undoRedoManager: createUndoRedoManager({
-            description: "",
-            gearProject: gearProjectWithoutDisplayMatrix,
-          }),
-        }
-      });
-    },
+    resetUndoRedoManager: () => resetUndoRedoManager(set),
     setEditorMachineActor: (editorMachineSnapshot: Snapshot<typeof editorMachine>) => setEditorMachineActor(editorMachineSnapshot, set),
   }))
 );

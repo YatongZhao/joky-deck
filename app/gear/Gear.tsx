@@ -71,11 +71,12 @@ export const Gear = forwardRef<SVGPathElement, {
   
   const duration = durationUnit * teeth;
   const begin = useMemo(() => {
-    let result = -(currentInitAngle) / 360 * duration * currentDirection - duration;
+    let result = (-(currentInitAngle) / 360 * duration * currentDirection) % duration;
     if (result > 0) {
-      result = result % duration - duration;
+      result = result - duration;
     }
-    return result;
+    // 0.1 is a hack to avoid the bug that the animation is not working when the begin is 0
+    return result + 0.1;
   }, [currentInitAngle, currentDirection, duration]);
 
   return <g id={id} transform={transform}>

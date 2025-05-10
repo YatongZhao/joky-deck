@@ -43,7 +43,7 @@ export const GearSettingPanel = () => {
   if (!activeGearId) return null;
 
   return (
-    <Paper pos="fixed" p="md" right={REACTION_LAYER_OFFSET} top={REACTION_LAYER_OFFSET} shadow="md" fz="xs" style={{ zIndex: 1000 }}>
+    <Paper pos="fixed" p="md" left={REACTION_LAYER_OFFSET} top={REACTION_LAYER_OFFSET + 100} shadow="md" fz="xs" style={{ zIndex: 10 }} w={180}>
       <Stack gap="md">
         <AngleSlider
           size={150}

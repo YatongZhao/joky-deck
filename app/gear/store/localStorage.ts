@@ -8,3 +8,7 @@ export const getGearProjectDataFromLocalStorage = () => {
 export const setGearProjectDataToLocalStorage = (gearProjectData: GearProjectData) => {
   localStorage.setItem('gearProjectData', JSON.stringify(gearProjectData));
 };
+
+export const removeGearProjectDataFromLocalStorage = () => {
+  localStorage.removeItem('gearProjectData');
+};

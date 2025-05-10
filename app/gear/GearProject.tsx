@@ -88,14 +88,12 @@ const useZoom = () => {
 
 const useInitializeGearProject = () => {
   const setGearProject = useGearProjectStore((state) => state.setGearProject);
-  const resetUndoRedoManager = useGearProjectStore((state) => state.resetUndoRedoManager);
   useEffect(() => {
     const localStorageGearProjectData = getGearProjectDataFromLocalStorage();
     if (localStorageGearProjectData) {
       setGearProject(localStorageGearProjectData);
-      resetUndoRedoManager();
     }
-  }, [setGearProject, resetUndoRedoManager]);
+  }, [setGearProject]);
 }
 
 export const GearProject: React.FC = () => {
@@ -154,7 +152,6 @@ export const GearProject: React.FC = () => {
     }
   }
   const setGearProject = useGearProjectStore((state) => state.setGearProject);
-  const resetUndoRedoManager = useGearProjectStore((state) => state.resetUndoRedoManager);
   const pushUndo = useGearProjectStore((state) => state.pushUndo);
 
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
@@ -166,7 +163,6 @@ export const GearProject: React.FC = () => {
 
   const handleLoadProject = (gearProject: GearProjectData) => {
     setGearProject(gearProject);
-    resetUndoRedoManager();
   }
 
   const handleExportViewBoxDragHandleDragEnd = useCallback(() => {
