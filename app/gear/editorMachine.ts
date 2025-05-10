@@ -5,6 +5,7 @@ export const editorMachine = setup({
     context: {} as { selectedGearId: string | null },
     events: {} as
       | { type: "selectGear"; gearId: string }
+      | { type: 'unselectGear'}
       | { type: "enterAddingMode" }
       | { type: "enterViewPortSetting" }
       | { type: "enterSelecting" }
@@ -19,8 +20,8 @@ export const editorMachine = setup({
     }),
   },
   guards: {
-    isNewGear: ({ context }, event: { gearId: string }) => {
-      return context.selectedGearId !== event.gearId;
+    notNewGear: ({ context }, event: { gearId: string | null }) => {
+      return context.selectedGearId === event.gearId;
     },
   },
 }).createMachine({
@@ -40,18 +41,6 @@ export const editorMachine = setup({
       states: {
         NoGearSelected: {
           on: {
-            selectGear: {
-              target: "GearSelected",
-              actions: {
-                type: "assignGearId",
-                params: ({ event }) => ({ gearId: event.gearId }),
-              },
-            },
-          },
-        },
-        GearSelected: {
-          initial: "Default",
-          on: {
             selectGear: [
               {
                 target: "GearSelected",
@@ -59,15 +48,36 @@ export const editorMachine = setup({
                   type: "assignGearId",
                   params: ({ event }) => ({ gearId: event.gearId }),
                 },
+              }
+            ],
+          },
+        },
+        GearSelected: {
+          initial: "Default",
+          on: {
+            selectGear: [
+              {
+                target: "NoGearSelected",
                 guard: {
-                  type: "isNewGear",
+                  type: "notNewGear",
                   params: ({ event }) => ({ gearId: event.gearId }),
                 },
               },
               {
-                target: "NoGearSelected",
+                target: "GearSelected",
+                actions: {
+                  type: "assignGearId",
+                  params: ({ event }) => ({ gearId: event.gearId }),
+                },
               }
             ],
+            unselectGear: {
+              target: "NoGearSelected",
+              actions: {
+                type: 'assignGearId',
+                params: { gearId: null },
+              },
+            },
           },
           exit: {
             type: 'assignGearId',

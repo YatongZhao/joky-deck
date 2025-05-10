@@ -5,8 +5,10 @@ import { BehaviorSubject } from "rxjs";
 type UseDragProps = {
   middleButton?: boolean;
   onDragEnd?: () => void;
+  onDragStart?: () => void;
+  disabled?: boolean;
 }
-export const useDrag = <T extends SVGElement>({ middleButton = false, onDragEnd }: UseDragProps = {}) => {
+export const useDrag = <T extends SVGElement>({ middleButton = false, onDragEnd, onDragStart, disabled = false }: UseDragProps = {}) => {
   const ref = useRef<T>(null);
   const [dragState, setDragState] = useState<DragState>({ isDragging: false });
   const [deltaMatrix$] = useState(new BehaviorSubject<mat3>(mat3.create()));
@@ -25,11 +27,13 @@ export const useDrag = <T extends SVGElement>({ middleButton = false, onDragEnd 
     if (!ref.current) return;
     const target = ref.current;
     const handleMouseDown = (event: MouseEvent) => {
+      if (disabled) return;
       if (middleButton && event.button !== 1) return;
       if (!middleButton && event.button !== 0) return;
       event.preventDefault();
       setDragState({ isDragging: true });
       translate([0, 0]);
+      onDragStart?.();
     }
 
     const handleMouseMove = (event: MouseEvent) => {
@@ -52,7 +56,7 @@ export const useDrag = <T extends SVGElement>({ middleButton = false, onDragEnd 
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [middleButton, translate, ref, onDragEnd, dragState.isDragging]);
+  }, [middleButton, translate, ref, onDragEnd, onDragStart, dragState.isDragging, disabled]);
 
   return {
     dragState,

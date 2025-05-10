@@ -3,11 +3,12 @@ import { GearData } from "./core/types";
 import { Gear } from "./Gear";
 import { useEffect, useRef, useState } from "react";
 import { combineLatest, debounceTime, fromEvent } from "rxjs";
-import { useGearProjectStore, useGear, useGearChildren, svgMatrix$ } from "./store";
+import { useGearProjectStore, useGear, useGearChildren, svgMatrix$, useEditorMachineSend } from "./store";
 import { getScale } from "./core/coordinate";
 import { useSelector } from "@xstate/react";
+import { vec2 } from "gl-matrix";
 
-export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
+export const GearProjectItem: React.FC<{ gearId: string; rootPosition?: vec2; }> = ({ gearId, rootPosition }) => {
   const ref = useRef<SVGPathElement>(null);
   const gearProject = useGearProjectStore((state) => state.gearProject);
   const addGear = useGearProjectStore((state) => state.addGear);
@@ -15,7 +16,7 @@ export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
   const gearData = useGear(gearId);
   const gearChildren = useGearChildren(gearId);
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
-  const { send } = editorMachineActor;
+  const send = useEditorMachineSend();
   const state = useSelector(editorMachineActor, (state) => state);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const [virtualGearChild, setVirtualGearChild] = useState<GearData>({
@@ -59,6 +60,7 @@ export const GearProjectItem: React.FC<{ gearId: string; }> = ({ gearId }) => {
 
   return <Gear
     id={gearData.id}
+    rootPosition={rootPosition}
     ref={ref}
     key={`${gearData.id}-${gearData.teeth}-${gearData.positionAngle}`}
     teeth={gearData.teeth}

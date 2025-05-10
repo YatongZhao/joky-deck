@@ -1,7 +1,7 @@
 import { create, StateCreator } from "zustand";
 import { combine } from "zustand/middleware";
-import { GearData, GearProjectData, mockGearProject } from "../core/types";
-import { useMemo } from "react";
+import { GearData, GearProjectData, initialGearProject } from "../core/types";
+import { useCallback, useMemo } from "react";
 import { BehaviorSubject, combineLatest, debounceTime, fromEvent, merge, of, skip } from "rxjs";
 import { mat3, vec2 } from "gl-matrix";
 import { getGearTransformVector } from "../core/gear";
@@ -9,7 +9,9 @@ import { createUndoRedoManager, pushUndoRedoNode, UndoRedoManager, undoUndoRedoN
 import { editorMachine } from "../editorMachine";
 import { Actor, createActor, Snapshot } from "xstate";
 import { setGearProjectDataToLocalStorage } from "./localStorage";
-const { viewBox, ...mockGearProjectWithoutViewBox } = mockGearProject;
+import { useSelector } from "@xstate/react";
+import { v4 as uuidV4 } from 'uuid';
+const { viewBox, ...initialGearProjectWithoutViewBox } = initialGearProject;
 
 export const viewBoxA$ = new BehaviorSubject<vec2>(viewBox.a);
 export const viewBoxB$ = new BehaviorSubject<vec2>(viewBox.b);
@@ -50,7 +52,7 @@ viewBoxD$.subscribe((value) => {
   }
 });
 
-export const svgMatrix$ = new BehaviorSubject<mat3>(mockGearProject.displayMatrix);
+export const svgMatrix$ = new BehaviorSubject<mat3>(initialGearProject.displayMatrix);
 
 export const translateMatrix$ = new BehaviorSubject<mat3>(mat3.create());
 export const useInitialTranslateMatrix$ = () => {
@@ -89,6 +91,7 @@ const initialEditorMachineSnapshot = initEditorMachineActor.getPersistedSnapshot
 type UndoRedoState = { gearProject: Omit<GearProjectData, 'displayMatrix'>; description: string };
 
 type GearProjectStoreState = {
+  __internal_gear_project_id__: string;
   gearProject: Omit<GearProjectData, 'viewBox' | 'displayMatrix' | 'editorMachineState'>;
   undoRedoManager: UndoRedoManager<UndoRedoState>;
   editorMachineActor: Actor<typeof editorMachine>;
@@ -97,8 +100,11 @@ type GearProjectStoreState = {
 type GearProjectStoreActions = {
   addGear: (gear: GearData) => void;
   setGearProject: (gearProject: GearProjectData) => void;
+  setRootGearPosition: (rootGearPosition: vec2) => void;
+  setGear: (gearId: string, partialGear: Partial<GearData>) => void;
   setGearPositionAngle: (gearId: string, positionAngle: number) => void;
   setGearColor: (gearId: string, color: string) => boolean; // return true if the color is changed
+  setGearTeeth: (gearId: string, teeth: number) => boolean; // return true if the teeth is changed
   pushUndo: (description: string) => void;
   undo: () => void;
   redo: () => void;
@@ -149,13 +155,14 @@ const setUndoRedoManager = (
 export const useGearProjectStore = create(
   combine<GearProjectStoreState, GearProjectStoreActions>(
     {
-      gearProject: mockGearProjectWithoutViewBox,
+      __internal_gear_project_id__: uuidV4(),
+      gearProject: initialGearProjectWithoutViewBox,
       undoRedoManager: createUndoRedoManager({
         description: "",
         gearProject: {
-          ...mockGearProject,
-          viewBox: { a: vec2.clone(mockGearProject.viewBox.a), b: vec2.clone(mockGearProject.viewBox.b) },
-          displayMatrix: mat3.clone(mockGearProject.displayMatrix),
+          ...initialGearProject,
+          viewBox: { a: vec2.clone(initialGearProject.viewBox.a), b: vec2.clone(initialGearProject.viewBox.b) },
+          displayMatrix: mat3.clone(initialGearProject.displayMatrix),
         },
         editorMachine: initialEditorMachineSnapshot,
       }),
@@ -167,6 +174,22 @@ export const useGearProjectStore = create(
         gearProject: {
           ...state.gearProject,
           gears: [...state.gearProject.gears, gearData],
+        },
+      }));
+    },
+    setRootGearPosition: (rootGearPosition: vec2) => {
+      set((state) => ({
+        gearProject: {
+          ...state.gearProject,
+          rootGearPosition,
+        },
+      }));
+    },
+    setGear: (gearId: string, partialGear: Partial<GearData>) => {
+      set((state) => ({
+        gearProject: {
+          ...state.gearProject,
+          gears: state.gearProject.gears.map((gear) => gear.id === gearId ? { ...gear, ...partialGear } : gear),
         },
       }));
     },
@@ -184,6 +207,16 @@ export const useGearProjectStore = create(
         gearProject: {
           ...state.gearProject,
           gears: state.gearProject.gears.map((gear) => gear.id === gearId ? { ...gear, color } : gear),
+        },
+      }));
+      return true;
+    },
+    setGearTeeth: (gearId: string, teeth: number) => {
+      if (get().gearProject.gears.find((gear) => gear.id === gearId)?.teeth === teeth) return false;
+      set((state) => ({
+        gearProject: {
+          ...state.gearProject,
+          gears: state.gearProject.gears.map((gear) => gear.id === gearId ? { ...gear, teeth } : gear),
         },
       }));
       return true;
@@ -218,9 +251,9 @@ export const useGearProjectStore = create(
   }))
 );
 
-const getGear = (gears: GearData[], gearId: string | null) => gears.find((gear) => gear.id === gearId);
+const getGear = (gears: GearData[], gearId?: string | null) => gearId ? gears.find((gear) => gear.id === gearId) : null;
 
-export const useGear = (gearId: string | null) => {
+export const useGear = (gearId?: string | null) => {
   const gears = useGearProjectStore((state) => state.gearProject.gears);
   return useMemo(() => getGear(gears, gearId), [gears, gearId]);
 }
@@ -230,12 +263,18 @@ export const useGearChildren = (gearId: string) => {
   return useMemo(() => gearProject.gears.filter((gear) => gear.parentId === gearId), [gearProject.gears, gearId]);
 }
 
-export const useGearPosition = (gearId: string | null) => {
+export const useGearSvgPosition = (gearId?: string | null) => {
   const gears = useGearProjectStore((state) => state.gearProject.gears);
   const gearModule = useGearProjectStore((state) => state.gearProject.module);
   const targetGear = useGear(gearId);
+  const rootGearId = useGearProjectStore((state) => state.gearProject.rootGearId);
+  const rootGearPosition = useGearProjectStore((state) => state.gearProject.rootGearPosition);
 
   const gearPosition = useMemo(() => {
+    if (gearId === rootGearId) {
+      return rootGearPosition;
+    }
+
     let currentGear = targetGear;
     const globalTransformMatrix = mat3.create();
   
@@ -248,10 +287,29 @@ export const useGearPosition = (gearId: string | null) => {
       currentGear = parentGear;
     }
   
-    return vec2.transformMat3(vec2.create(), vec2.create(), globalTransformMatrix);
-  }, [gears, gearModule, targetGear])
+    return vec2.transformMat3(vec2.create(), rootGearPosition, globalTransformMatrix);
+  }, [gears, gearModule, targetGear, rootGearId, rootGearPosition, gearId])
 
   return gearPosition;
+}
+
+export const useEditorMachineSend = () => {
+  const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
+  const send = editorMachineActor.send;
+  const state = useSelector(editorMachineActor, (state) => state);
+  type Event = Parameters<typeof editorMachineActor.send>[0];
+  /**
+   * This function is used to send events to the editor machine.
+   * @returns true if the event is sent, false if the event is not sent because the state does not allow it.
+   */
+  const safeSend = useCallback((event: Event) => {
+    if (state.can(event)) {
+      send(event);
+      return true;
+    }
+    return false;
+  }, [send, state]);
+  return safeSend;
 }
 
 export function getGearProjectSnapshot(): GearProjectData {

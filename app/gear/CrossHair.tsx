@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { rotatePoint } from "./core/gear";
-import { useGearPosition, useGearProjectStore } from "./store";
+import { useGearSvgPosition, useGearProjectStore } from "./store";
 import { useSelector } from "@xstate/react";
 
 const drawCrossHair = (radius: number) => {
@@ -24,7 +24,7 @@ export const CrossHair: React.FC<{ radius: number }> = ({ radius }) => {
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const gRef = useRef<SVGGElement>(null);
-  const activeGearPosition = useGearPosition(activeGearId);
+  const activeGearPosition = useGearSvgPosition(activeGearId);
 
   useEffect(() => {
     if (!gRef.current) return;

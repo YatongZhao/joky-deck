@@ -1,4 +1,4 @@
-import { AngleSlider, ColorInput, DEFAULT_THEME, Paper } from "@mantine/core"
+import { AngleSlider, ColorInput, DEFAULT_THEME, NumberInput, Paper } from "@mantine/core"
 import { useGear } from "./store";
 import { useGearProjectStore } from "./store";
 import { useSelector } from "@xstate/react";
@@ -9,6 +9,7 @@ export const GearSettingPanel = () => {
   const activeGear = useGear(activeGearId);
   const setGearPositionAngle = useGearProjectStore((state) => state.setGearPositionAngle);
   const setGearColor = useGearProjectStore((state) => state.setGearColor);
+  const setGearTeeth = useGearProjectStore((state) => state.setGearTeeth);
   const pushUndo = useGearProjectStore((state) => state.pushUndo);
   
   const handlePositionAngleChange = (value: number) => {
@@ -22,6 +23,15 @@ export const GearSettingPanel = () => {
       const isColorChanged = setGearColor(activeGearId, value);
       if (isColorChanged) {
         pushUndo("Change Gear Color");
+      }
+    }
+  }
+
+  const handleTeethChange = (value: number | string) => {
+    if (activeGearId) {
+      const isTeethChanged = setGearTeeth(activeGearId, Number(value));
+      if (isTeethChanged) {
+        pushUndo("Change Gear Teeth");
       }
     }
   }
@@ -54,6 +64,11 @@ export const GearSettingPanel = () => {
               ...DEFAULT_THEME.colors.blue,
             ]}
           /> 
+          <NumberInput
+            size="xs"
+            value={activeGear?.teeth}
+            onChange={handleTeethChange}
+          />
         </>)}
     </Paper>
   )
