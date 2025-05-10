@@ -1,25 +1,29 @@
 "use client"
 import { useEffect, useState, useRef, useCallback } from "react";
 import { GearProjectData } from "./core/types";
-import { useGear, useGearProjectStore, svgMatrix$, translateMatrix$, finalMatrix$, viewBoxA$, viewBoxB$, viewBoxC$, viewBoxD$, useInitialTranslateMatrix$ } from "./store";
+import { useGear, useGearProjectStore, svgMatrix$, finalMatrix$, viewBoxA$, viewBoxB$, viewBoxC$, viewBoxD$, useInitialTranslateMatrix$ } from "./store";
 import { GearProjectItem } from "./GearProjectItem";
-import { ReactionPanel } from "./ReactionPanel";
 import { DropZoneContainer } from "./DropZoneContainer";
 import { GearSettingPanel } from "./GearSettingPanel";
 import { useModeHotKeys } from "./hooks/useMode";
 import { CrossHair } from "./CrossHair";
 import { ExportViewBoxController } from "./ExportViewBoxController";
 import { mat3, vec2 } from "gl-matrix";
-import { getScale, scaleAtPoint } from "./core/coordinate";
+import { getScale } from "./core/coordinate";
 import { ToolsPanel } from "./ToolsPanel";
 import { DragHandle } from "./DragHandle";
 import { BehaviorSubject } from "rxjs";
 import { useDrag } from "./hooks/useDrag";
 import { useMergedRef } from "@mantine/hooks";
-import { useTheme } from "./theme";
+// import { useTheme } from "./theme";
 import { useSelector } from "@xstate/react";
 import { getGearProjectDataFromLocalStorage } from "./store/localStorage";
 import { ActiveGearHandle } from "./ActiveGearHandle";
+import { GearProjectMenu } from "./reactionLayer/GearProjectMenu";
+import { Controller } from "./reactionLayer/Controller";
+import { MAX_SCALE, scaleSvgAtGlobalPoint } from "./reactionLayer/hooks/useScaleController";
+import { MIN_SCALE } from "./reactionLayer/hooks/useScaleController";
+
 const useWheelDrag = () => {
   const ref = useRef<SVGSVGElement>(null);
   const [deltaMatrix$] = useState(new BehaviorSubject<mat3>(mat3.create()));
@@ -49,13 +53,10 @@ const useWheelDrag = () => {
 }
 
 const useZoom = () => {
-  const MIN_SCALE = 0.05;
-  const MAX_SCALE = 30;
   const ZOOM_SPEED = 0.1;
   const lastEventTimeRef = useRef<number>(0);
   const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
     if (!event.ctrlKey) return;
-    const translateMatrix = translateMatrix$.getValue();
     const currentTime = Date.now();
     const timeSinceLastEvent = currentTime - lastEventTimeRef.current;
     lastEventTimeRef.current = currentTime;
@@ -67,14 +68,8 @@ const useZoom = () => {
     // Calculate new total scale with limits
     const scaleFactor = 1 - event.deltaY * zoomSpeed;
     const oldScale = getScale(matrix)[0];
-    const newTotalScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, oldScale * scaleFactor));
-    
-    // Calculate the scale change
-    const newScale = newTotalScale / oldScale;
-    const scaleMatrix = mat3.create();
-    scaleAtPoint(scaleMatrix, vec2.transformMat3(vec2.create(), vec2.fromValues(event.clientX, event.clientY), mat3.invert(mat3.create(), translateMatrix)), newScale);
-    mat3.multiply(matrix, scaleMatrix, matrix);
-    svgMatrix$.next(matrix);
+    const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, oldScale * scaleFactor));
+    scaleSvgAtGlobalPoint(vec2.fromValues(event.clientX, event.clientY), newScale);
   };
 
   useEffect(() => {
@@ -107,6 +102,7 @@ export const GearProject: React.FC = () => {
   useInitializeGearProject();
   useInitialTranslateMatrix$();
 
+  const __internal_gear_project_id__ = useGearProjectStore((state) => state.__internal_gear_project_id__);
   const gearProject = useGearProjectStore((state) => state.gearProject);
   const { ref: wheelDragRef, deltaMatrix$ } = useWheelDrag();
   const { ref: dragHandleRef, deltaMatrix$: dragHandleDeltaMatrix$, dragState } = useDrag({ middleButton: true });
@@ -167,7 +163,6 @@ export const GearProject: React.FC = () => {
 
   const activeGear = useGear(activeGearId);
   useModeHotKeys();
-  const theme = useTheme();
 
   const handleLoadProject = (gearProject: GearProjectData) => {
     setGearProject(gearProject);
@@ -182,6 +177,7 @@ export const GearProject: React.FC = () => {
     <>
       <DropZoneContainer<GearProjectData> onJsonLoad={handleLoadProject} title="Drop a gear project here">
         <svg 
+          id={__internal_gear_project_id__}
           ref={ref}
           onWheel={handleWheel}
           width='100vw'
@@ -191,7 +187,7 @@ export const GearProject: React.FC = () => {
             cursor: dragState.isDragging ? 'grabbing' : 'default',
             overflow: 'hidden',
             position: 'fixed',
-            background: theme.colors.gameMain[2],
+            // background: theme.colors.gameMain[2],
             top: 0,
             left: 0,
           }}
@@ -209,9 +205,10 @@ export const GearProject: React.FC = () => {
           {activeGearId && <ActiveGearHandle />}
         </svg>
       </DropZoneContainer>
-      <ReactionPanel svgRef={svgRef} />
       <GearSettingPanel />
       <ToolsPanel />
+      <GearProjectMenu />
+      <Controller />
     </>
   )
 }

@@ -1,0 +1,8 @@
+.button {
+  &:disabled,
+  &[data-disabled] {
+    background-color: var(--mantine-color-gray-1);
+    color: var(--mantine-color-gray-6) !important;
+    cursor: initial;
+  }
+}
