@@ -1,11 +1,15 @@
 import { useCallback, useEffect } from "react";
-import { finalMatrix$, useGearProjectStore, viewBoxA$, viewBoxB$ } from "./store";
+import { finalMatrix$, svgMatrix$, useGearProjectStore, viewBoxA$, viewBoxB$ } from "./store";
 import { combineLatest } from "rxjs";
 import { useSelector } from "@xstate/react";
 import { useDrag } from "./hooks/useDrag";
 import { vec2, mat3 } from "gl-matrix";
 import { useEditorMachineSend } from "./store";
+import { useMantineTheme } from "@mantine/core";
+import { getScale } from "./core/coordinate";
+
 export const ExportViewBoxController = ({ id }: { id?: string }) => {
+  const theme = useMantineTheme();
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
   const send = useEditorMachineSend();
   const state = useSelector(editorMachineActor, (state) => state);
@@ -43,6 +47,17 @@ export const ExportViewBoxController = ({ id }: { id?: string }) => {
     return () => subscription.unsubscribe();
   }, [deltaMatrix$, isViewportSetting]);
 
+  useEffect(() => {
+    const subscription = svgMatrix$.subscribe((matrix) => {
+      const scale = getScale(matrix);
+      if (!ref.current) return;
+      const target = ref.current;
+      target.setAttribute('stroke-width', `${1 / scale[0]}`);
+      target.setAttribute('stroke-dasharray', isViewportSetting ? `${2 / scale[0]} ${2 / scale[0]}` : "none");
+    });
+    return () => subscription.unsubscribe();
+  }, [ref, isViewportSetting]);
+
   return (
     <path
       id={id}
@@ -53,9 +68,7 @@ export const ExportViewBoxController = ({ id }: { id?: string }) => {
         send({ type: 'unselectGear' });
       }}
       ref={ref}
-      stroke={isViewportSetting ? "black" : "none"}
-      strokeDasharray="2 2"
-      strokeWidth="1"
+      stroke={isViewportSetting ? "black" : theme.colors.gray[4]}
       fill={isViewportSetting ? "rgba(255, 255, 255, 0)" : "white"}
       filter="drop-shadow(0 0 10px rgba(0, 0, 0, 0.1))"
     />
