@@ -2,6 +2,7 @@ import { ActionIcon, Menu } from "@mantine/core";
 import { Download, ImagePlay, MenuIcon, Trash2 } from "lucide-react";
 import { useExportProject } from "./hooks/useExportProject";
 import { useExportSvg } from "./hooks/useExportSvg";
+import { REACTION_LAYER_OFFSET } from "../constant";
 
 export const GearProjectMenu: React.FC = () => {
   const handleExportProject = useExportProject();
@@ -10,7 +11,7 @@ export const GearProjectMenu: React.FC = () => {
   return (
     <Menu>
       <Menu.Target>
-        <ActionIcon pos="fixed" top={16} left={16} variant="filled">
+        <ActionIcon pos="fixed" top={REACTION_LAYER_OFFSET} left={REACTION_LAYER_OFFSET} variant="filled">
           <MenuIcon size={16} /> 
         </ActionIcon>
       </Menu.Target>

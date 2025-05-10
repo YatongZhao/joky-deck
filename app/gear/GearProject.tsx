@@ -4,7 +4,7 @@ import { GearProjectData } from "./core/types";
 import { useGear, useGearProjectStore, svgMatrix$, finalMatrix$, viewBoxA$, viewBoxB$, viewBoxC$, viewBoxD$, useInitialTranslateMatrix$ } from "./store";
 import { GearProjectItem } from "./GearProjectItem";
 import { DropZoneContainer } from "./DropZoneContainer";
-import { GearSettingPanel } from "./GearSettingPanel";
+import { GearSettingPanel } from "./reactionLayer/GearSettingPanel";
 import { useModeHotKeys } from "./hooks/useMode";
 import { CrossHair } from "./CrossHair";
 import { ExportViewBoxController } from "./ExportViewBoxController";

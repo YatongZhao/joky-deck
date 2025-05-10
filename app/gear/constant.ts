@@ -1,0 +1,1 @@
+export const REACTION_LAYER_OFFSET = 16;

@@ -1,7 +1,8 @@
-import { AngleSlider, ColorInput, DEFAULT_THEME, NumberInput, Paper } from "@mantine/core"
-import { useGear } from "./store";
-import { useGearProjectStore } from "./store";
+import { AngleSlider, ColorInput, DEFAULT_THEME, NumberInput, Paper, Stack } from "@mantine/core"
+import { useGear } from "../store";
+import { useGearProjectStore } from "../store";
 import { useSelector } from "@xstate/react";
+import { REACTION_LAYER_OFFSET } from "../constant";
 
 export const GearSettingPanel = () => {
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
@@ -42,36 +43,34 @@ export const GearSettingPanel = () => {
   if (!activeGearId) return null;
 
   return (
-    <Paper pos="fixed" p="xs" right={10} top={10} shadow="md" fz="xs" style={{ zIndex: 1000 }}>
-      settings
-      {activeGearId && (
-        <>
-          <AngleSlider
-            size={60}
-            thumbSize={8}
-            value={positionAngle + 90}
-            onChange={handlePositionAngleChange}
-            onChangeEnd={() => pushUndo("Change Gear Position Angle")}
-            formatLabel={(value) => `${(value - 90 + 360) % 360}`}
-          />
-          <ColorInput
-            closeOnColorSwatchClick
-            size="xs"
-            value={color}
-            onChange={handleColorChange}
-            placeholder="Click color swatch"
-            swatches={[
-              ...DEFAULT_THEME.colors.red,
-              ...DEFAULT_THEME.colors.green,
-              ...DEFAULT_THEME.colors.blue,
-            ]}
-          /> 
-          <NumberInput
-            size="xs"
-            value={activeGear?.teeth}
-            onChange={handleTeethChange}
-          />
-        </>)}
+    <Paper pos="fixed" p="md" right={REACTION_LAYER_OFFSET} top={REACTION_LAYER_OFFSET} shadow="md" fz="xs" style={{ zIndex: 1000 }}>
+      <Stack gap="md">
+        <AngleSlider
+          size={150}
+          thumbSize={8}
+          value={positionAngle + 90}
+          onChange={handlePositionAngleChange}
+          onChangeEnd={() => pushUndo("Change Gear Position Angle")}
+          formatLabel={(value) => `${((value - 90 + 360) % 360).toFixed(0)}`}
+        />
+        <ColorInput
+        closeOnColorSwatchClick
+          size="xs"
+          value={color}
+          onChange={handleColorChange}
+          placeholder="Click color swatch"
+          swatches={[
+            ...DEFAULT_THEME.colors.red,
+            ...DEFAULT_THEME.colors.green,
+            ...DEFAULT_THEME.colors.blue,
+          ]}
+        /> 
+        <NumberInput
+          size="xs"
+          value={activeGear?.teeth}
+          onChange={handleTeethChange}
+        />
+      </Stack>
     </Paper>
   )
 }

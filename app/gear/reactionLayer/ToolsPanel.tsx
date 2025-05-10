@@ -6,6 +6,7 @@ import { useEditorMachineSend } from "../store"
 import { useSelector } from "@xstate/react"
 import { useGearProjectStore } from "../store"
 import { useMemo } from "react"
+import { REACTION_LAYER_OFFSET } from "../constant"
 // import { useTheme } from "@/app/gear/theme"
 
 enum Tool {
@@ -36,7 +37,7 @@ export const ToolsPanel = () => {
   }
 
   return (
-    <Paper pos="fixed" top={10} right="50%" style={{ transform: 'translateX(50%)' }} withBorder
+    <Paper pos="fixed" top={REACTION_LAYER_OFFSET - 6} right="50%" style={{ transform: 'translateX(50%)' }} withBorder
       p="xs" radius="md" className={classes.toolsPanel}
     >
       <Group gap="xs">
