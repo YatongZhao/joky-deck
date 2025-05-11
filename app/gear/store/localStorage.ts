@@ -12,3 +12,5 @@ export const setGearProjectDataToLocalStorage = (gearProjectData: GearProjectDat
 export const removeGearProjectDataFromLocalStorage = () => {
   localStorage.removeItem('gearProjectData');
 };
+
+removeGearProjectDataFromLocalStorage();
