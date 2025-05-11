@@ -26,6 +26,7 @@ import { Controller } from "./reactionLayer/Controller";
 import { MAX_SCALE, scaleSvgAtGlobalPoint } from "./reactionLayer/hooks/useScaleController";
 import { MIN_SCALE } from "./reactionLayer/hooks/useScaleController";
 import { ExportViewBoxFilter } from "./ExportViewBoxFilter";
+import { GlobalViewBoxBackground } from "./GlobalViewBoxBackground";
 
 const useWheelDrag = () => {
   const ref = useRef<SVGSVGElement>(null);
@@ -190,6 +191,7 @@ export const GearProject: React.FC = () => {
           <defs>
             <ExportViewBoxFilter filterId={exportViewBoxFilterId.filterId} maskId={exportViewBoxFilterId.maskId} />
           </defs>
+          <GlobalViewBoxBackground />
           {!state.matches('ViewportSetting') && <ExportViewBoxController key="export-view-box-controller" id="export-view-box-controller" />}
           <g filter={`url(#${exportViewBoxFilterId.filterId})`} mask={`url(#${exportViewBoxFilterId.maskId})`}>
             <GearProjectItem gearId={gearProject.rootGearId} rootPosition={gearProject.rootGearPosition} />
