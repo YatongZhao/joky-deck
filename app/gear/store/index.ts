@@ -55,23 +55,45 @@ viewBoxD$.subscribe((value) => {
 export const svgMatrix$ = new BehaviorSubject<mat3>(initialGearProject.displayMatrix);
 
 export const translateMatrix$ = new BehaviorSubject<mat3>(mat3.create());
-export const useInitialTranslateMatrix$ = () => {
-  const subscription = merge(of(null), fromEvent(window, 'resize')).subscribe(() => {
-    const windowInnerWidth = window.innerWidth;
-    const windowInnerHeight = window.innerHeight;
-    const translateVector = vec2.fromValues(windowInnerWidth / 2, windowInnerHeight / 2);
-    const translateMatrix = mat3.create();
-    mat3.translate(translateMatrix, translateMatrix, translateVector);
-    translateMatrix$.next(translateMatrix);
-  });
-  return () => subscription.unsubscribe();
-}
+merge(of(null), fromEvent(window, 'resize')).subscribe(() => {
+  const windowInnerWidth = window.innerWidth;
+  const windowInnerHeight = window.innerHeight;
+  const translateVector = vec2.fromValues(windowInnerWidth / 2, windowInnerHeight / 2);
+  const translateMatrix = mat3.create();
+  mat3.translate(translateMatrix, translateMatrix, translateVector);
+  translateMatrix$.next(translateMatrix);
+});
 
 export const finalMatrix$ = new BehaviorSubject<mat3>(mat3.create());
 combineLatest([svgMatrix$, translateMatrix$]).subscribe(([svgMatrix, translateMatrix]) => {
   const finalMatrix = mat3.create();
   mat3.multiply(finalMatrix, translateMatrix, svgMatrix);
   finalMatrix$.next(finalMatrix);
+});
+
+const calculateViewBox = (finalMatrix: mat3) => {
+  const windowInnerWidth = window.innerWidth;
+  const windowInnerHeight = window.innerHeight;
+  const inverseFinalMatrix = mat3.create();
+  mat3.invert(inverseFinalMatrix, finalMatrix);
+  const leftTopPoint = vec2.transformMat3(vec2.create(), vec2.fromValues(0, 0), inverseFinalMatrix);
+  const rightBottomPoint = vec2.transformMat3(vec2.create(), vec2.fromValues(windowInnerWidth, windowInnerHeight), inverseFinalMatrix);
+  return {
+    x: leftTopPoint[0],
+    y: leftTopPoint[1],
+    width: rightBottomPoint[0] - leftTopPoint[0],
+    height: rightBottomPoint[1] - leftTopPoint[1],
+  }
+}
+export type ViewBox = {
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+}
+export const globalViewBox$ = new BehaviorSubject<ViewBox>(calculateViewBox(finalMatrix$.getValue()));
+finalMatrix$.subscribe((finalMatrix) => {
+  globalViewBox$.next(calculateViewBox(finalMatrix));
 });
 
 function createEditorMachineActor(editorMachineSnapshot?: Snapshot<typeof editorMachine> | null) {
