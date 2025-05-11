@@ -1,7 +1,6 @@
 "use client"
 import { useEffect, useState, useRef, useCallback } from "react";
 import { GearProjectData } from "./core/types";
-import { v4 as uuidV4 } from "uuid";
 import { useGear, useGearProjectStore, svgMatrix$, globalViewBox$, viewBoxA$, viewBoxB$, viewBoxC$, viewBoxD$ } from "./store";
 import { ViewBox } from "./store";
 import { GearProjectItem } from "./GearProjectItem";
@@ -27,6 +26,7 @@ import { MAX_SCALE, scaleSvgAtGlobalPoint } from "./reactionLayer/hooks/useScale
 import { MIN_SCALE } from "./reactionLayer/hooks/useScaleController";
 import { ExportViewBoxFilter } from "./ExportViewBoxFilter";
 import { GlobalViewBoxBackground } from "./GlobalViewBoxBackground";
+import { __internal_gear_project_id__, __internal_view_box_controller_id__, __internal_export_view_box_filter_filter_id__, __internal_export_view_box_filter_mask_id__ } from "./constant";
 
 const useWheelDrag = () => {
   const ref = useRef<SVGSVGElement>(null);
@@ -103,7 +103,6 @@ const useInitializeGearProject = () => {
 export const GearProject: React.FC = () => {
   useInitializeGearProject();
 
-  const __internal_gear_project_id__ = useGearProjectStore((state) => state.__internal_gear_project_id__);
   const gearProject = useGearProjectStore((state) => state.gearProject);
   const { ref: wheelDragRef, deltaMatrix$ } = useWheelDrag();
   const { ref: dragHandleRef, deltaMatrix$: dragHandleDeltaMatrix$, dragState } = useDrag({ middleButton: true });
@@ -164,11 +163,6 @@ export const GearProject: React.FC = () => {
     pushUndo('Export View Box Changed');
   }, [pushUndo]);
 
-  const [exportViewBoxFilterId] = useState({
-    filterId: uuidV4(),
-    maskId: uuidV4(),
-  });
-
   return (
     <>
       <DropZoneContainer<GearProjectData> onJsonLoad={handleLoadProject} title="Drop a gear project here">
@@ -189,15 +183,15 @@ export const GearProject: React.FC = () => {
           }}
         >
           <defs>
-            <ExportViewBoxFilter filterId={exportViewBoxFilterId.filterId} maskId={exportViewBoxFilterId.maskId} />
+            <ExportViewBoxFilter filterId={__internal_export_view_box_filter_filter_id__} maskId={__internal_export_view_box_filter_mask_id__} />
           </defs>
           <GlobalViewBoxBackground />
-          {!state.matches('ViewportSetting') && <ExportViewBoxController key="export-view-box-controller" id="export-view-box-controller" />}
-          <g filter={`url(#${exportViewBoxFilterId.filterId})`} mask={`url(#${exportViewBoxFilterId.maskId})`}>
+          {!state.matches('ViewportSetting') && <ExportViewBoxController key={__internal_view_box_controller_id__} id={__internal_view_box_controller_id__} />}
+          <g filter={`url(#${__internal_export_view_box_filter_filter_id__})`} mask={`url(#${__internal_export_view_box_filter_mask_id__})`}>
             <GearProjectItem gearId={gearProject.rootGearId} rootPosition={gearProject.rootGearPosition} />
           </g>
           {activeGear && <CrossHair radius={activeGear.teeth * gearProject.module / 2} />}
-          {state.matches('ViewportSetting') && <ExportViewBoxController key="export-view-box-controller" id="export-view-box-controller" />}
+          {state.matches('ViewportSetting') && <ExportViewBoxController key={__internal_view_box_controller_id__} id={__internal_view_box_controller_id__} />}
           {state.matches('ViewportSetting') && <>
             <DragHandle targetSvgPosition$={viewBoxA$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
             <DragHandle targetSvgPosition$={viewBoxB$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />

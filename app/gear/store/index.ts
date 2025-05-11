@@ -10,7 +10,7 @@ import { editorMachine } from "../editorMachine";
 import { Actor, createActor, Snapshot } from "xstate";
 import { setGearProjectDataToLocalStorage } from "./localStorage";
 import { useSelector } from "@xstate/react";
-import { v4 as uuidV4 } from 'uuid';
+
 const { viewBox, ...initialGearProjectWithoutViewBox } = initialGearProject;
 
 export const viewBoxA$ = new BehaviorSubject<vec2>(viewBox.a);
@@ -113,7 +113,6 @@ const initialEditorMachineSnapshot = initEditorMachineActor.getPersistedSnapshot
 type UndoRedoState = { gearProject: Omit<GearProjectData, 'displayMatrix'>; description: string };
 
 type GearProjectStoreState = {
-  __internal_gear_project_id__: string;
   gearProject: Omit<GearProjectData, 'viewBox' | 'displayMatrix' | 'editorMachineState'>;
   undoRedoManager: UndoRedoManager<UndoRedoState>;
   editorMachineActor: Actor<typeof editorMachine>;
@@ -190,7 +189,6 @@ const setUndoRedoToSnapshot = (
 export const useGearProjectStore = create(
   combine<GearProjectStoreState, GearProjectStoreActions>(
     {
-      __internal_gear_project_id__: uuidV4(),
       gearProject: initialGearProjectWithoutViewBox,
       undoRedoManager: createUndoRedoManager({
         description: "",
