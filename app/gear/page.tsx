@@ -1,10 +1,15 @@
 "use client"
 import dynamic from "next/dynamic";
-import VConsole from "vconsole";
 
 const GearProject = dynamic(() => import("./GearProject").then(mod => mod.GearProject), { ssr: false });
 
-new VConsole();
+function init() {
+  const VConsole = import("vconsole");
+  VConsole.then(mod => {
+    new mod.default();
+  });
+}
+init();
 
 export default function Home() {
   return <GearProject />
