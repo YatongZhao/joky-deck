@@ -14,6 +14,7 @@ export type GearData = {
   teeth: number;
   positionAngle: number;
   position: vec2;
+  speed: number;
   color?: string;
 }
 
@@ -53,6 +54,7 @@ export const initialGearProject: GearProjectData = {
       parentId: null,
       positionAngle: 0,
       position: vec2.create(),
+      speed: 6, // degree per millisecond
     },
   ],
   editorMachineState: null,

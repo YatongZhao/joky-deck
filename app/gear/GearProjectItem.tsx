@@ -26,6 +26,7 @@ export const GearProjectItem: React.FC<{ gearId: string; rootPosition?: vec2; }>
     parentId: gearId,
     positionAngle: 0,
     position: vec2.create(),
+    speed: 0,
   });
 
   const active = gearData?.id === activeGearId;
