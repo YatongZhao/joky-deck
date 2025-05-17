@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react";
 import { rotatePoint } from "./core/gear";
-import { useGearSvgPosition, useGearProjectStore } from "./store";
+import { useGear, useGearProjectStore } from "./store";
 import { useSelector } from "@xstate/react";
+import { getGearPosition } from "./GearParser";
+import { gsap } from "gsap";
 
 const drawCrossHair = (radius: number) => {
   let path = '';
@@ -24,12 +26,19 @@ export const CrossHair: React.FC<{ radius: number }> = ({ radius }) => {
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const gRef = useRef<SVGGElement>(null);
-  const activeGearPosition = useGearSvgPosition(activeGearId);
+  const activeGear = useGear(activeGearId);
+  const gearProjectModule = useGearProjectStore(state => state.gearProject.module);
+  const gears = useGearProjectStore(state => state.gearProject.gears);
 
   useEffect(() => {
-    if (!gRef.current) return;
-    gRef.current.setAttribute('transform', `translate(${activeGearPosition[0]}, ${activeGearPosition[1]})`);
-  }, [activeGearPosition]);
+    const tickerCallback = () => {
+      if (!gRef.current) return;
+      const position = getGearPosition(activeGear, gears, gsap.ticker.time, gearProjectModule);
+      gRef.current.setAttribute('transform', `translate(${position[0]}, ${position[1]})`);
+    }
+    gsap.ticker.add(tickerCallback);
+    return () => gsap.ticker.remove(tickerCallback);
+  }, [activeGear, gears, gearProjectModule]);
   return (
     <g ref={gRef}>
       <path d={drawCrossHair(radius)}>

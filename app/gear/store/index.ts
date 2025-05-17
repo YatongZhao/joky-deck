@@ -4,7 +4,6 @@ import { GearData, GearProjectData, initialGearProject } from "../core/types";
 import { useCallback, useMemo } from "react";
 import { BehaviorSubject, combineLatest, debounceTime, fromEvent, merge, of, skip } from "rxjs";
 import { mat3, vec2 } from "gl-matrix";
-import { getGearTransformVector } from "../core/gear";
 import { createUndoRedoManager, pushUndoRedoNode, UndoRedoManager, undoUndoRedoNode, redoUndoRedoNode, getUndoRedoNode } from "./undoRedoManager";
 import { editorMachine } from "../editorMachine";
 import { Actor, createActor, Snapshot } from "xstate";
@@ -283,36 +282,6 @@ export const useGear = (gearId?: string | null) => {
 export const useGearChildren = (gearId: string) => {
   const gearProject = useGearProjectStore((state) => state.gearProject);
   return useMemo(() => gearProject.gears.filter((gear) => gear.parentId === gearId), [gearProject.gears, gearId]);
-}
-
-export const useGearSvgPosition = (gearId?: string | null) => {
-  const gears = useGearProjectStore((state) => state.gearProject.gears);
-  const gearModule = useGearProjectStore((state) => state.gearProject.module);
-  const targetGear = useGear(gearId);
-  const rootGearId = useGearProjectStore((state) => state.gearProject.rootGearId);
-  const rootGearPosition = useGearProjectStore((state) => state.gearProject.rootGearPosition);
-
-  const gearPosition = useMemo(() => {
-    if (gearId === rootGearId) {
-      return rootGearPosition;
-    }
-
-    let currentGear = targetGear;
-    const globalTransformMatrix = mat3.create();
-  
-    if (!currentGear) return vec2.create();
-  
-    let parentGear;
-    while (currentGear.parentId !== null) {
-      parentGear = getGear(gears, currentGear.parentId)!;
-      mat3.translate(globalTransformMatrix, globalTransformMatrix, getGearTransformVector(currentGear.positionAngle, currentGear.teeth, parentGear.teeth, gearModule))
-      currentGear = parentGear;
-    }
-  
-    return vec2.transformMat3(vec2.create(), rootGearPosition, globalTransformMatrix);
-  }, [gears, gearModule, targetGear, rootGearId, rootGearPosition, gearId])
-
-  return gearPosition;
 }
 
 export const useEditorMachineSend = () => {

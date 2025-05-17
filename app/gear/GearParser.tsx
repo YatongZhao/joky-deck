@@ -1,7 +1,7 @@
 import { GearData } from "./core/types";
 import { useSelector } from "@xstate/react";
 import { GearEntity } from "./GearEntity";
-import { finalMatrix$, useEditorMachineSend, useGear, useGearProjectStore, useGearSvgPosition } from "./store";
+import { finalMatrix$, useEditorMachineSend, useGear, useGearProjectStore } from "./store";
 import { useTheme } from "./theme";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 } from "uuid";
@@ -9,7 +9,7 @@ import { GearType } from "./core/types";
 import { mat3, vec2 } from "gl-matrix";
 import { getGearTransformVector } from "./core/gear";
 import { debounceTime } from "rxjs/operators";
-import { fromEvent } from "rxjs";
+import { fromEvent, BehaviorSubject } from "rxjs";
 import { combineLatest } from "rxjs";
 import { gsap } from "gsap";
 
@@ -20,7 +20,7 @@ import { gsap } from "gsap";
  * @param time milliseconds
  * @returns 
  */
-const getGearPosition = (gear: GearData | null | undefined, gears: GearData[], time: number, gearProjectModule: number): vec2 => {
+export const getGearPosition = (gear: GearData | null | undefined, gears: GearData[], time: number, gearProjectModule: number): vec2 => {
   if (!gear) return vec2.create();
   const parentGear = gears.find(g => g.id === gear.parentId);
 
@@ -132,12 +132,20 @@ export const GearToAdd = () => {
     position: vec2.create(),
     speed: 0,
   });
-  const activeGearSvgPosition = useGearSvgPosition(activeGearId);
   const activeGear = useGear(activeGearId);
   const gears = useGearProjectStore(state => state.gearProject.gears);
   const { angle } = getGearAngle(virtualGearChild, gears);
   const pushUndo = useGearProjectStore(state => state.pushUndo);
   const speed = getGearSpeed(virtualGearChild, gears);
+  const [activeGearSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(getGearPosition(activeGear, gears, gsap.ticker.time, gearProjectModule)));
+
+  useEffect(() => {
+    const tickerCallback = () => {
+      activeGearSvgPosition$.next(getGearPosition(activeGear, gears, gsap.ticker.time, gearProjectModule));
+    }
+    gsap.ticker.add(tickerCallback);
+    return () => gsap.ticker.remove(tickerCallback);
+  }, [activeGear, gears, gearProjectModule, activeGearSvgPosition$]);
 
   useEffect(() => {
     const tickerCallback = (time: number) => {
@@ -151,7 +159,7 @@ export const GearToAdd = () => {
   }, [angle, speed, virtualGearChild, gears, gearProjectModule]);
 
   useEffect(() => {
-    const subscription = combineLatest([fromEvent<MouseEvent>(window, 'mousemove'), finalMatrix$]).pipe(debounceTime(5)).subscribe(([event, matrix]) => {
+    const subscription = combineLatest([fromEvent<MouseEvent>(window, 'mousemove'), finalMatrix$, activeGearSvgPosition$]).pipe(debounceTime(5)).subscribe(([event, matrix, activeGearSvgPosition]) => {
       const mouseGlobalPosition = vec2.fromValues(event.clientX, event.clientY);
       const reverseMatrix = mat3.create();
       mat3.invert(reverseMatrix, matrix);
@@ -169,7 +177,7 @@ export const GearToAdd = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [gearProjectModule, activeGear?.teeth, activeGearSvgPosition]);
+  }, [gearProjectModule, activeGear, gears, virtualGearChild, activeGearSvgPosition$]);
 
   const handleClick = useCallback(() => {
     addGear(virtualGearChild);

@@ -14,17 +14,13 @@ export type GearData = {
   teeth: number;
   positionAngle: number;
   position: vec2;
-  speed: number;
+  speed: number; // degree per millisecond
   color?: string;
 }
 
 export type GearProjectData = {
   version: string;
   displayMatrix: mat3;
-  // deprecated
-  rootGearId: string;
-  // deprecated
-  rootGearPosition: vec2;
   gears: GearData[];
   module: number;
   durationUnit: number;
@@ -38,8 +34,6 @@ export type GearProjectData = {
 export const initialGearProject: GearProjectData = {
   version: '1.0.0',
   displayMatrix: mat3.create(),
-  rootGearId: '1',
-  rootGearPosition: vec2.create(),
   module: 5,
   durationUnit: 1,
   viewBox: {
