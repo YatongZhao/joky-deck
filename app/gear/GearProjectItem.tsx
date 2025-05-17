@@ -1,5 +1,5 @@
 import { v4 } from "uuid";
-import { GearData } from "./core/types";
+import { GearData, GearType } from "./core/types";
 import { Gear } from "./Gear";
 import { useEffect, useRef, useState } from "react";
 import { combineLatest, debounceTime, fromEvent } from "rxjs";
@@ -21,6 +21,7 @@ export const GearProjectItem: React.FC<{ gearId: string; rootPosition?: vec2; }>
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const [virtualGearChild, setVirtualGearChild] = useState<GearData>({
     id: v4(),
+    type: GearType.Relative,
     teeth: 1,
     parentId: gearId,
     positionAngle: 0,
@@ -62,6 +63,7 @@ export const GearProjectItem: React.FC<{ gearId: string; rootPosition?: vec2; }>
     id={gearData.id}
     rootPosition={rootPosition}
     ref={ref}
+    active={active}
     key={`${gearData.id}-${gearData.teeth}-${gearData.positionAngle}`}
     teeth={gearData.teeth}
     positionAngle={gearData.positionAngle}

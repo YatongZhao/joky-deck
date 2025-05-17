@@ -22,6 +22,8 @@ export const Gear = forwardRef<SVGPathElement, {
   direction?: 1 | -1;
   module: number;
   durationUnit: number;
+
+  active?: boolean;
   
   rootPosition?: vec2;
 
@@ -39,6 +41,7 @@ export const Gear = forwardRef<SVGPathElement, {
   durationUnit,
   onClick,
   virtual = false,
+  active = false,
   color,
   rootPosition,
 }, ref) {
@@ -84,8 +87,8 @@ export const Gear = forwardRef<SVGPathElement, {
         ref={ref}
         d={`${memorizedGearPath(calculateGearInfo(teeth, module))} ${virtual ? '' : memorizedGearHolePath(teeth, module, 0.03)}`}
         fill={virtual ? theme.colors.blue[4] : fillColor}
-        stroke={hovered || virtual ? 'black' : 'none'}
-        strokeWidth={hovered || virtual ? 1 : 0}
+        stroke={hovered || virtual || active ? theme.colors.dark[9] : 'none'}
+        strokeWidth={1}
         style={{ cursor: 'pointer' }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}

@@ -2,18 +2,27 @@ import { vec2, mat3 } from "gl-matrix";
 import { editorMachine } from "../editorMachine";
 import { Snapshot } from "xstate";
 
+export enum GearType {
+  Relative = 'relative',
+  Absolute = 'absolute',
+}
+
 export type GearData = {
   id: string;
-  parentId: string | null;
+  type: GearType;
+  parentId?: string | null;
   teeth: number;
   positionAngle: number;
+  position?: vec2;
   color?: string;
 }
 
 export type GearProjectData = {
   version: string;
   displayMatrix: mat3;
+  // deprecated
   rootGearId: string;
+  // deprecated
   rootGearPosition: vec2;
   gears: GearData[];
   module: number;
@@ -39,9 +48,11 @@ export const initialGearProject: GearProjectData = {
   gears: [
     {
       id: '1',
-      parentId: null,
+      type: GearType.Absolute,
       teeth: 91,
+      parentId: null,
       positionAngle: 0,
+      position: vec2.create(),
     },
   ],
   editorMachineState: null,
