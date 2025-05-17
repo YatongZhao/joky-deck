@@ -125,6 +125,7 @@ type GearProjectStoreActions = {
   setGearPositionAngle: (gearId: string, positionAngle: number) => void;
   setGearColor: (gearId: string, color: string) => boolean; // return true if the color is changed
   setGearTeeth: (gearId: string, teeth: number) => boolean; // return true if the teeth is changed
+  setGearSpeed: (gearId: string, speed: number) => boolean; // return true if the speed is changed
   pushUndo: (description: string) => void;
   undo: () => void;
   redo: () => void;
@@ -249,6 +250,16 @@ export const useGearProjectStore = create(
         gearProject: {
           ...state.gearProject,
           gears: state.gearProject.gears.map((gear) => gear.id === gearId ? { ...gear, teeth } : gear),
+        },
+      }));
+      return true;
+    },
+    setGearSpeed: (gearId: string, speed: number) => {
+      if (get().gearProject.gears.find((gear) => gear.id === gearId)?.speed === speed) return false;
+      set((state) => ({
+        gearProject: {
+          ...state.gearProject,
+          gears: state.gearProject.gears.map((gear) => gear.id === gearId ? { ...gear, speed } : gear),
         },
       }));
       return true;

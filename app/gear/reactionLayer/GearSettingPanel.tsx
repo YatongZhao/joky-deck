@@ -11,6 +11,7 @@ export const GearSettingPanel = () => {
   const setGearPositionAngle = useGearProjectStore((state) => state.setGearPositionAngle);
   const setGearColor = useGearProjectStore((state) => state.setGearColor);
   const setGearTeeth = useGearProjectStore((state) => state.setGearTeeth);
+  const setGearSpeed = useGearProjectStore((state) => state.setGearSpeed);
   const pushUndo = useGearProjectStore((state) => state.pushUndo);
   
   const handlePositionAngleChange = (value: number) => {
@@ -33,6 +34,15 @@ export const GearSettingPanel = () => {
       const isTeethChanged = setGearTeeth(activeGearId, Number(value));
       if (isTeethChanged) {
         pushUndo("Change Gear Teeth");
+      }
+    }
+  }
+
+  const handleSpeedChange = (value: number | string) => {
+    if (activeGearId) {
+      const isSpeedChanged = setGearSpeed(activeGearId, Number(value));
+      if (isSpeedChanged) {
+        pushUndo("Change Gear Speed");
       }
     }
   }
@@ -69,6 +79,11 @@ export const GearSettingPanel = () => {
           size="xs"
           value={activeGear?.teeth}
           onChange={handleTeethChange}
+        />
+        <NumberInput
+          size="xs"
+          value={activeGear?.speed}
+          onChange={handleSpeedChange}
         />
       </Stack>
     </Paper>

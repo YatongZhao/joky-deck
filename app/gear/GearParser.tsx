@@ -40,17 +40,19 @@ export const getGearPosition = (gear: GearData | null | undefined, gears: GearDa
   return vec2.transformMat3(position, parentGearPosition, transformMatrix);
 }
 
-const getGearAngle = (gear: GearData | null | undefined, gears: GearData[]): { angle: number, direction: 1 | -1 } => {
+const getGearAngle = (gear: GearData | null | undefined, gears: GearData[], time: number): { angle: number, direction: 1 | -1 } => {
   if (!gear) return { angle: 0, direction: 1 };
   const parentGear = gears.find(g => g.id === gear.parentId);
-  const parentGearAngle = getGearAngle(parentGear, gears);
-  const positionAngle = gear.positionAngle;
+  const parentGearAngle = getGearAngle(parentGear, gears, time);
+  const deltaPositionAngle = parentGear ? gear.speed * time / (parentGear.teeth ?? 1) * gear.teeth : 0;
+  const positionAngle = gear.positionAngle + deltaPositionAngle;
   const teeth = gear.teeth;
   const parentTeeth = parentGear?.teeth ?? 0;
   const direction = -parentGearAngle.direction as 1 | -1;
   
   // Calculate the total angle based on parent gear's angle and position
-  const angle = -parentGearAngle.angle * parentTeeth / teeth + direction * (180) % (360 / teeth) + 180 / teeth + positionAngle * (parentTeeth + teeth) / teeth;
+  const angleBase = -parentGearAngle.angle * parentTeeth / teeth + direction * (180) % (360 / teeth) + 180 / teeth + positionAngle * (parentTeeth + teeth) / teeth;
+  const angle = angleBase + gear.speed * time - deltaPositionAngle / gear.teeth * (parentGear?.teeth ?? 1);
 
   return { angle: angle % 360, direction };
 };
@@ -79,7 +81,7 @@ export const GearParser = ({ gearId }: GearParserProps) => {
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const send = useEditorMachineSend();
   const gears = useGearProjectStore(state => state.gearProject.gears);
-  const { angle } = getGearAngle(gearData, gears);
+  // const { angle } = getGearAngle(gearData, gears);
   const speed = getGearSpeed(gearData, gears);
 
   const handleClick = useCallback(() => {
@@ -92,13 +94,14 @@ export const GearParser = ({ gearId }: GearParserProps) => {
   useEffect(() => {
     const tickerCallback = (time: number) => {
       if (ref.current) {
+        const { angle } = getGearAngle(gearData, gears, time);
         const position = getGearPosition(gearData, gears, time, gearProjectModule);
-        ref.current.setAttribute('transform', `translate(${position[0]}, ${position[1]}) rotate(${angle + speed * time})`);
+        ref.current.setAttribute('transform', `translate(${position[0]}, ${position[1]}) rotate(${angle})`);
       }
     };
     gsap.ticker.add(tickerCallback);
     return () => gsap.ticker.remove(tickerCallback);
-  }, [angle, speed, gearData, gears, gearProjectModule]);
+  }, [speed, gearData, gears, gearProjectModule]);
 
   if (!gearData) {
     return null;
@@ -134,7 +137,7 @@ export const GearToAdd = () => {
   });
   const activeGear = useGear(activeGearId);
   const gears = useGearProjectStore(state => state.gearProject.gears);
-  const { angle } = getGearAngle(virtualGearChild, gears);
+  // const { angle } = getGearAngle(virtualGearChild, gears);
   const pushUndo = useGearProjectStore(state => state.pushUndo);
   const speed = getGearSpeed(virtualGearChild, gears);
   const [activeGearSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(getGearPosition(activeGear, gears, gsap.ticker.time, gearProjectModule)));
@@ -150,13 +153,14 @@ export const GearToAdd = () => {
   useEffect(() => {
     const tickerCallback = (time: number) => {
       if (ref.current) {
+        const { angle } = getGearAngle(virtualGearChild, gears, time);
         const position = getGearPosition(virtualGearChild, gears, time, gearProjectModule);
-        ref.current.setAttribute('transform', `translate(${position[0]}, ${position[1]}) rotate(${angle + speed * time})`);
+        ref.current.setAttribute('transform', `translate(${position[0]}, ${position[1]}) rotate(${angle})`);
       }
     };
     gsap.ticker.add(tickerCallback);
     return () => gsap.ticker.remove(tickerCallback);
-  }, [angle, speed, virtualGearChild, gears, gearProjectModule]);
+  }, [speed, virtualGearChild, gears, gearProjectModule]);
 
   useEffect(() => {
     const subscription = combineLatest([fromEvent<MouseEvent>(window, 'mousemove'), finalMatrix$, activeGearSvgPosition$]).pipe(debounceTime(5)).subscribe(([event, matrix, activeGearSvgPosition]) => {
