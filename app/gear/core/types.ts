@@ -13,7 +13,7 @@ export type GearData = {
   parentId?: string | null;
   teeth: number;
   positionAngle: number;
-  position?: vec2;
+  position: vec2;
   color?: string;
 }
 

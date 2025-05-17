@@ -3,7 +3,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { GearProjectData } from "./core/types";
 import { useGear, useGearProjectStore, svgMatrix$, globalViewBox$, viewBoxA$, viewBoxB$, viewBoxC$, viewBoxD$ } from "./store";
 import { ViewBox } from "./store";
-import { GearProjectItem } from "./GearProjectItem";
+// import { GearProjectItem } from "./GearProjectItem";
 import { DropZoneContainer } from "./DropZoneContainer";
 import { GearSettingPanel } from "./reactionLayer/GearSettingPanel";
 import { useModeHotKeys } from "./hooks/useMode";
@@ -27,6 +27,7 @@ import { MIN_SCALE } from "./reactionLayer/hooks/useScaleController";
 import { ExportViewBoxFilter } from "./ExportViewBoxFilter";
 import { GlobalViewBoxBackground } from "./GlobalViewBoxBackground";
 import { __internal_gear_project_id__, __internal_view_box_controller_id__, __internal_export_view_box_filter_filter_id__, __internal_export_view_box_filter_mask_id__ } from "./constant";
+import { GearParser, GearToAdd } from "./GearParser";
 
 const useWheelDrag = () => {
   const ref = useRef<SVGSVGElement>(null);
@@ -188,7 +189,9 @@ export const GearProject: React.FC = () => {
           <GlobalViewBoxBackground />
           {!state.matches('ViewportSetting') && <ExportViewBoxController key={__internal_view_box_controller_id__} id={__internal_view_box_controller_id__} />}
           <g filter={`url(#${__internal_export_view_box_filter_filter_id__})`} mask={`url(#${__internal_export_view_box_filter_mask_id__})`}>
-            <GearProjectItem gearId={gearProject.rootGearId} rootPosition={gearProject.rootGearPosition} />
+            {/* <GearProjectItem gearId={gearProject.rootGearId} rootPosition={gearProject.rootGearPosition} /> */}
+            {gearProject.gears.map(gear => <GearParser key={gear.id} gearId={gear.id} />)}
+            {state.matches({ Selecting: { GearSelected: "AddingGear" } }) && <GearToAdd />}
           </g>
           {activeGear && <CrossHair radius={activeGear.teeth * gearProject.module / 2} />}
           {state.matches('ViewportSetting') && <ExportViewBoxController key={__internal_view_box_controller_id__} id={__internal_view_box_controller_id__} />}
