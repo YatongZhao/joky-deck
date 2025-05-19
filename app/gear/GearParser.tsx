@@ -12,6 +12,10 @@ import { debounceTime } from "rxjs/operators";
 import { fromEvent, BehaviorSubject } from "rxjs";
 import { combineLatest } from "rxjs";
 import { gsap } from "gsap";
+import { useAppDispatch, useAppSelector } from "./store/redux";
+import { addGear as addGearToReduxStore } from "./store/redux/slices/gearsSlice";
+import { vec2ToPosition } from "./utils";
+import { editorMachineSendSelector } from "./store/redux/slices/editorMachineSlice";
 
 /**
  * 
@@ -80,6 +84,7 @@ export const GearParser = ({ gearId }: GearParserProps) => {
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const send = useEditorMachineSend();
+  const editorMachineSend = useAppSelector(editorMachineSendSelector);
   const gears = useGearProjectStore(state => state.gearProject.gears);
   // const { angle } = getGearAngle(gearData, gears);
   const speed = getGearSpeed(gearData, gears);
@@ -89,7 +94,8 @@ export const GearParser = ({ gearId }: GearParserProps) => {
       type: 'selectGear',
       gearId,
     });
-  }, [send, gearId]);
+    editorMachineSend({ type: 'selectGear', gearId });
+  }, [send, gearId, editorMachineSend]);
 
   useEffect(() => {
     const tickerCallback = (time: number) => {
@@ -119,9 +125,11 @@ export const GearParser = ({ gearId }: GearParserProps) => {
 }
 
 export const GearToAdd = () => {
+  const dispatch = useAppDispatch();
   const ref = useRef<SVGPathElement>(null);
   const theme = useTheme();
   const send = useEditorMachineSend();
+  const editorMachineSend = useAppSelector(editorMachineSendSelector);
   const addGear = useGearProjectStore(state => state.addGear);
   const gearProjectModule = useGearProjectStore(state => state.gearProject.module);
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
@@ -132,7 +140,7 @@ export const GearToAdd = () => {
     teeth: 3,
     parentId: activeGearId,
     positionAngle: 0,
-    position: vec2.create(),
+    position: vec2ToPosition(vec2.create()),
     speed: 0,
   });
   const activeGear = useGear(activeGearId);
@@ -185,6 +193,7 @@ export const GearToAdd = () => {
 
   const handleClick = useCallback(() => {
     addGear(virtualGearChild);
+    dispatch(addGearToReduxStore(virtualGearChild));
     setVirtualGearChild({
       ...virtualGearChild,
       id: v4(),
@@ -194,9 +203,10 @@ export const GearToAdd = () => {
         type: 'selectGear',
         gearId: activeGearId,
       });
+      editorMachineSend({ type: 'selectGear', gearId: activeGearId });
     }
     pushUndo("Add Gear");
-  }, [virtualGearChild, addGear, send, activeGearId, pushUndo]);
+  }, [virtualGearChild, addGear, send, activeGearId, pushUndo, dispatch, editorMachineSend]);
 
   return <GearEntity
     ref={ref}

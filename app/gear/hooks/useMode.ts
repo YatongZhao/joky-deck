@@ -1,19 +1,21 @@
 import { useHotkeys } from "react-hotkeys-hook";
 import { useEffect } from "react";
-import { useGearProjectStore, useEditorMachineSend } from "../store";
-import { useSelector } from "@xstate/react";
+import { useEditorMachineSend } from "../store";
+import { useAppSelector } from "../store/redux";
+import { editorMachineSendSelector } from "../store/redux/slices/editorMachineSlice";
 
 export const useModeHotKeys = () => {
-  const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
-  const state = useSelector(editorMachineActor, (state) => state);
   const send = useEditorMachineSend();
+  const editorMachineSend = useAppSelector(editorMachineSendSelector);
 
   useHotkeys('a', () => {
     send({ type: 'enterAddingMode' });
+    editorMachineSend({ type: 'enterAddingMode' });
   });
 
   useHotkeys('esc', () => {
     send({ type: 'esc' });
+    editorMachineSend({ type: 'esc' });
   });
 
   useEffect(() => {
@@ -21,8 +23,11 @@ export const useModeHotKeys = () => {
       if (send({ type: 'esc' })) {
         event.preventDefault();
       }
+      if (editorMachineSend({ type: 'esc' })) {
+        event.preventDefault();
+      }
     }
     window.addEventListener('contextmenu', handleContextMenu);
     return () => window.removeEventListener('contextmenu', handleContextMenu);
-  }, [send, state]);
+  }, [send, editorMachineSend]);
 }

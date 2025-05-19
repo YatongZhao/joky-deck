@@ -9,6 +9,7 @@ import { DragHandle } from "./DragHandle";
 import { GearType } from "./core/types";
 import { getGearPosition } from "./GearParser";
 import { gsap } from "gsap";
+import { vec2ToPosition } from "./utils";
 
 export const ActiveGearHandle = () => {
   const gearProject = useGearProjectStore((state) => state.gearProject);
@@ -91,7 +92,7 @@ export const ActiveGearHandle = () => {
       }
 
       if (isAbsoluteGear) {
-        setGear(activeGearId, { position: vec2.clone(position) });
+        setGear(activeGearId, { position: vec2ToPosition(position) });
       } else {
         const angle = Math.atan2(position[1] - maybeParentGearSvgPosition[1], position[0] - maybeParentGearSvgPosition[0]);
         const distance = Math.hypot(position[0] - maybeParentGearSvgPosition[0], position[1] - maybeParentGearSvgPosition[1]);

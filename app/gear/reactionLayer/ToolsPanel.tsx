@@ -7,6 +7,8 @@ import { useSelector } from "@xstate/react"
 import { useGearProjectStore } from "../store"
 import { useMemo } from "react"
 import { REACTION_LAYER_OFFSET } from "../constant"
+import { useAppSelector } from "../store/redux"
+import { editorMachineSendSelector } from "../store/redux/slices/editorMachineSlice"
 // import { useTheme } from "@/app/gear/theme"
 
 enum Tool {
@@ -19,6 +21,7 @@ export const ToolsPanel = () => {
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
   const state = useSelector(editorMachineActor, (state) => state);
   const send = useEditorMachineSend();
+  const editorMachineSend = useAppSelector(editorMachineSendSelector);
   const value = useMemo(() => {
     if (state.matches('Selecting')) return Tool.Selecting;
     if (state.matches('ViewportSetting')) return Tool.ViewportSetting;
@@ -29,9 +32,11 @@ export const ToolsPanel = () => {
     switch (tool) {
       case Tool.Selecting:
         send({ type: 'enterSelecting' });
+        editorMachineSend({ type: 'enterSelecting' });
         break;
       case Tool.ViewportSetting:
         send({ type: 'enterViewPortSetting' });
+        editorMachineSend({ type: 'enterViewPortSetting' });
         break;
     }
   }

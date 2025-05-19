@@ -1,10 +1,8 @@
 "use client"
 import { useEffect, useState, useRef, useCallback } from "react";
-import { GearProjectData } from "./core/types";
 import { useGear, useGearProjectStore, svgMatrix$, globalViewBox$, viewBoxA$, viewBoxB$, viewBoxC$, viewBoxD$ } from "./store";
 import { ViewBox } from "./store";
 // import { GearProjectItem } from "./GearProjectItem";
-import { DropZoneContainer } from "./DropZoneContainer";
 import { GearSettingPanel } from "./reactionLayer/GearSettingPanel";
 import { useModeHotKeys } from "./hooks/useMode";
 import { CrossHair } from "./CrossHair";
@@ -18,7 +16,6 @@ import { useDrag } from "./hooks/useDrag";
 import { useMergedRef } from "@mantine/hooks";
 // import { useTheme } from "./theme";
 import { useSelector } from "@xstate/react";
-import { getGearProjectDataFromLocalStorage } from "./store/localStorage";
 import { ActiveGearHandle } from "./ActiveGearHandle";
 import { GearProjectMenu } from "./reactionLayer/GearProjectMenu";
 import { Controller } from "./reactionLayer/Controller";
@@ -91,19 +88,7 @@ const useZoom = () => {
   return { handleWheel };
 };
 
-const useInitializeGearProject = () => {
-  const setGearProject = useGearProjectStore((state) => state.setGearProject);
-  useEffect(() => {
-    const localStorageGearProjectData = getGearProjectDataFromLocalStorage();
-    if (localStorageGearProjectData) {
-      setGearProject(localStorageGearProjectData);
-    }
-  }, [setGearProject]);
-}
-
 export const GearProject: React.FC = () => {
-  useInitializeGearProject();
-
   const gearProject = useGearProjectStore((state) => state.gearProject);
   const { ref: wheelDragRef, deltaMatrix$ } = useWheelDrag();
   const { ref: dragHandleRef, deltaMatrix$: dragHandleDeltaMatrix$, dragState } = useDrag({ middleButton: true });
@@ -146,7 +131,6 @@ export const GearProject: React.FC = () => {
       handleZoomWheel(event);
     }
   }
-  const setGearProject = useGearProjectStore((state) => state.setGearProject);
   const pushUndo = useGearProjectStore((state) => state.pushUndo);
 
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
@@ -156,54 +140,48 @@ export const GearProject: React.FC = () => {
   const activeGear = useGear(activeGearId);
   useModeHotKeys();
 
-  const handleLoadProject = (gearProject: GearProjectData) => {
-    setGearProject(gearProject);
-  }
-
   const handleExportViewBoxDragHandleDragEnd = useCallback(() => {
     pushUndo('Export View Box Changed');
   }, [pushUndo]);
 
   return (
     <>
-      <DropZoneContainer<GearProjectData> onJsonLoad={handleLoadProject} title="Drop a gear project here">
-        <svg 
-          id={__internal_gear_project_id__}
-          ref={ref}
-          onWheel={handleWheel}
-          width='100vw'
-          height='100vh'
-          xmlns="http://www.w3.org/2000/svg" 
-          style={{
-            cursor: dragState.isDragging ? 'grabbing' : 'default',
-            overflow: 'hidden',
-            position: 'fixed',
-            // background: theme.colors.gameMain[2],
-            top: 0,
-            left: 0,
-          }}
-        >
-          <defs>
-            <ExportViewBoxFilter filterId={__internal_export_view_box_filter_filter_id__} maskId={__internal_export_view_box_filter_mask_id__} />
-          </defs>
-          <GlobalViewBoxBackground />
-          {!state.matches('ViewportSetting') && <ExportViewBoxController key={__internal_view_box_controller_id__} id={__internal_view_box_controller_id__} />}
-          <g filter={`url(#${__internal_export_view_box_filter_filter_id__})`} mask={`url(#${__internal_export_view_box_filter_mask_id__})`}>
-            {/* <GearProjectItem gearId={gearProject.rootGearId} rootPosition={gearProject.rootGearPosition} /> */}
-            {gearProject.gears.map(gear => <GearParser key={gear.id} gearId={gear.id} />)}
-            {state.matches({ Selecting: { GearSelected: "AddingGear" } }) && <GearToAdd />}
-          </g>
-          {activeGear && <CrossHair radius={activeGear.teeth * gearProject.module / 2} />}
-          {state.matches('ViewportSetting') && <ExportViewBoxController key={__internal_view_box_controller_id__} id={__internal_view_box_controller_id__} />}
-          {state.matches('ViewportSetting') && <>
-            <DragHandle targetSvgPosition$={viewBoxA$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
-            <DragHandle targetSvgPosition$={viewBoxB$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
-            <DragHandle targetSvgPosition$={viewBoxC$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
-            <DragHandle targetSvgPosition$={viewBoxD$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
-          </>}
-          {activeGearId && <ActiveGearHandle />}
-        </svg>
-      </DropZoneContainer>
+      <svg 
+        id={__internal_gear_project_id__}
+        ref={ref}
+        onWheel={handleWheel}
+        width='100vw'
+        height='100vh'
+        xmlns="http://www.w3.org/2000/svg" 
+        style={{
+          cursor: dragState.isDragging ? 'grabbing' : 'default',
+          overflow: 'hidden',
+          position: 'fixed',
+          // background: theme.colors.gameMain[2],
+          top: 0,
+          left: 0,
+        }}
+      >
+        <defs>
+          <ExportViewBoxFilter filterId={__internal_export_view_box_filter_filter_id__} maskId={__internal_export_view_box_filter_mask_id__} />
+        </defs>
+        <GlobalViewBoxBackground />
+        {!state.matches('ViewportSetting') && <ExportViewBoxController key={__internal_view_box_controller_id__} id={__internal_view_box_controller_id__} />}
+        <g filter={`url(#${__internal_export_view_box_filter_filter_id__})`} mask={`url(#${__internal_export_view_box_filter_mask_id__})`}>
+          {/* <GearProjectItem gearId={gearProject.rootGearId} rootPosition={gearProject.rootGearPosition} /> */}
+          {gearProject.gears.map(gear => <GearParser key={gear.id} gearId={gear.id} />)}
+          {state.matches({ Selecting: { GearSelected: "AddingGear" } }) && <GearToAdd />}
+        </g>
+        {activeGear && <CrossHair radius={activeGear.teeth * gearProject.module / 2} />}
+        {state.matches('ViewportSetting') && <ExportViewBoxController key={__internal_view_box_controller_id__} id={__internal_view_box_controller_id__} />}
+        {state.matches('ViewportSetting') && <>
+          <DragHandle targetSvgPosition$={viewBoxA$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+          <DragHandle targetSvgPosition$={viewBoxB$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+          <DragHandle targetSvgPosition$={viewBoxC$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+          <DragHandle targetSvgPosition$={viewBoxD$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+        </>}
+        {activeGearId && <ActiveGearHandle />}
+      </svg>
       <GearSettingPanel />
       <ToolsPanel />
       <GearProjectMenu />

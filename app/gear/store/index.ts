@@ -9,6 +9,7 @@ import { editorMachine } from "../editorMachine";
 import { Actor, createActor, Snapshot } from "xstate";
 import { setGearProjectDataToLocalStorage } from "./localStorage";
 import { useSelector } from "@xstate/react";
+import { vec2ToPosition, mat3ToMatrix, matrixToMat3 } from "../utils";
 
 const { viewBox, ...initialGearProjectWithoutViewBox } = initialGearProject;
 
@@ -51,7 +52,7 @@ viewBoxD$.subscribe((value) => {
   }
 });
 
-export const svgMatrix$ = new BehaviorSubject<mat3>(initialGearProject.displayMatrix);
+export const svgMatrix$ = new BehaviorSubject<mat3>(matrixToMat3(initialGearProject.displayMatrix));
 
 export const translateMatrix$ = new BehaviorSubject<mat3>(mat3.create());
 merge(of(null), fromEvent(window, 'resize')).subscribe(() => {
@@ -171,7 +172,7 @@ const setGearProjectWithoutDisplayMatrix = (gearProject: Omit<GearProjectData, '
 const setGearProject = (gearProject: GearProjectData, set: SetGearProjectStore) => {
   const { displayMatrix, ...gearProjectWithoutDisplayMatrix } = gearProject;
   setGearProjectWithoutDisplayMatrix(gearProjectWithoutDisplayMatrix, set);
-  svgMatrix$.next(mat3.clone(displayMatrix));
+  svgMatrix$.next(matrixToMat3(displayMatrix));
   resetUndoRedoManager(set);
 }
 
@@ -194,8 +195,8 @@ export const useGearProjectStore = create(
         description: "",
         gearProject: {
           ...initialGearProject,
-          viewBox: { a: vec2.clone(initialGearProject.viewBox.a), b: vec2.clone(initialGearProject.viewBox.b) },
-          displayMatrix: mat3.clone(initialGearProject.displayMatrix),
+          viewBox: { a: vec2ToPosition(initialGearProject.viewBox.a), b: vec2ToPosition(initialGearProject.viewBox.b) },
+          displayMatrix: mat3ToMatrix(initialGearProject.displayMatrix),
         },
         editorMachine: initialEditorMachineSnapshot,
       }),
@@ -318,8 +319,8 @@ export function getGearProjectSnapshot(): GearProjectData {
   const state =useGearProjectStore.getState();
   return {
     ...state.gearProject,
-    viewBox: { a: vec2.clone(viewBoxA$.getValue()), b: vec2.clone(viewBoxB$.getValue()) },
-    displayMatrix: mat3.clone(svgMatrix$.getValue()),
+    viewBox: { a: vec2ToPosition(vec2.clone(viewBoxA$.getValue())), b: vec2ToPosition(vec2.clone(viewBoxB$.getValue())) },
+    displayMatrix: mat3ToMatrix(svgMatrix$.getValue()),
     editorMachineState: state.editorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>,
   };
 }

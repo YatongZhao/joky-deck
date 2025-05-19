@@ -7,11 +7,14 @@ import { vec2, mat3 } from "gl-matrix";
 import { useEditorMachineSend } from "./store";
 import { useMantineTheme } from "@mantine/core";
 import { getScale } from "./core/coordinate";
+import { useAppSelector } from "./store/redux";
+import { editorMachineSendSelector } from "./store/redux/slices/editorMachineSlice";
 
 export const ExportViewBoxController = ({ id }: { id?: string }) => {
   const theme = useMantineTheme();
   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
   const send = useEditorMachineSend();
+  const editorMachineSend = useAppSelector(editorMachineSendSelector);
   const state = useSelector(editorMachineActor, (state) => state);
   const isViewportSetting = state.matches("ViewportSetting");
   const pushUndo = useGearProjectStore((state) => state.pushUndo);
@@ -66,6 +69,7 @@ export const ExportViewBoxController = ({ id }: { id?: string }) => {
       }}
       onClick={() => {
         send({ type: 'unselectGear' });
+        editorMachineSend({ type: 'unselectGear' });
       }}
       ref={ref}
       stroke={isViewportSetting ? "black" : theme.colors.gray[4]}
