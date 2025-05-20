@@ -1,4 +1,4 @@
-import { initialGearProject, Position } from "@/app/gear/core/types";
+import { GearProjectData, initialGearProject, Position } from "@/app/gear/core/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 type ViewBoxState = {
@@ -6,11 +6,13 @@ type ViewBoxState = {
   b: Position;
 }
 
-const initialState: ViewBoxState = initialGearProject.viewBox;
+export const initializeViewBoxState = (gearProject: GearProjectData): ViewBoxState => {
+  return gearProject.viewBox;
+}
 
 const viewBoxSlice = createSlice({
   name: 'viewBox',
-  initialState,
+  initialState: initializeViewBoxState(initialGearProject),
   reducers: {
     setViewBoxAPoint: (state, action: PayloadAction<Position>) => {
       state.a = action.payload;

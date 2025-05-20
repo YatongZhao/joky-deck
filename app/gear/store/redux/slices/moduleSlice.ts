@@ -1,9 +1,13 @@
-import { initialGearProject } from "@/app/gear/core/types";
+import { GearProjectData, initialGearProject } from "@/app/gear/core/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+
+export const initializeModuleState = (gearProject: GearProjectData) => {
+  return { value: gearProject.module };
+}
 
 const moduleSlice = createSlice({
   name: 'module',
-  initialState: { value: initialGearProject.module },
+  initialState: initializeModuleState(initialGearProject),
   reducers: {
     setModule: (state, action: PayloadAction<number>) => {
       state.value = action.payload;

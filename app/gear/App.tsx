@@ -3,7 +3,7 @@ import { GearProject } from "./GearProject";
 import { store, useAppDispatch } from "./store/redux";
 import { Suspense, useCallback, useEffect } from "react";
 import { getGearProjectDataFromLocalStorage } from "./store/localStorage";
-import { initializeStore } from "./store/redux/persist";
+import { loadStore } from "./store/redux/persist";
 import { initialGearProject, GearProjectData } from "./core/types";
 import { DropZoneContainer } from "./DropZoneContainer";
 import { useGearProjectStore } from "./store";
@@ -14,13 +14,13 @@ const PersistenceManager = () => {
 
   const handleLoadProject = useCallback((gearProject: GearProjectData) => {
     setGearProject(gearProject);
-    dispatch(initializeStore(gearProject));
+    dispatch(loadStore(gearProject));
   }, [dispatch, setGearProject]);
 
   useEffect(() => {
     const localStorageGearProjectData = getGearProjectDataFromLocalStorage();
-    handleLoadProject(localStorageGearProjectData || initialGearProject);
-  }, [handleLoadProject]);
+    setGearProject(localStorageGearProjectData || initialGearProject);
+  }, [setGearProject]);
 
   return <DropZoneContainer<GearProjectData> onJsonLoad={handleLoadProject}>
     <GearProject />

@@ -7,8 +7,11 @@ import displayMatrixReducer from './slices/displayMatrixSlice';
 import viewBoxReducer from './slices/viewBoxSlice';
 import undoManagerReducer from './slices/undoManagerSlice';
 import editorMachineReducer from './slices/editorMachineSlice';
-import { persistStore } from './persist';
+import { gearProjectDataToRootState, persistStore } from './persist';
+import { getGearProjectDataFromLocalStorage } from '../localStorage';
+import { initialGearProject } from '../../core/types';
 
+const gearProjectData = getGearProjectDataFromLocalStorage();
 export const store = configureStore({
   reducer: {
     gears: gearsReducer,
@@ -18,7 +21,7 @@ export const store = configureStore({
     undoManager: undoManagerReducer,
     editorMachine: editorMachineReducer,
   },
-  preloadedState: {},
+  preloadedState: gearProjectDataToRootState(gearProjectData ?? initialGearProject),
 });
 persistStore(store);
 

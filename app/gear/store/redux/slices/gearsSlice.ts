@@ -1,12 +1,16 @@
 import { createEntityAdapter, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { GearData, initialGearProject, Position } from "../../../core/types";
+import { GearData, GearProjectData, initialGearProject, Position } from "../../../core/types";
 import { RootState } from "../index";
 
 const gearsAdapter = createEntityAdapter<GearData>();
 
+export const initializeGearsState = (gearProject: GearProjectData) => {
+  return gearsAdapter.getInitialState(gearProject.gears);
+}
+
 const gearsSlice = createSlice({
   name: 'gears',
-  initialState: gearsAdapter.getInitialState(initialGearProject.gears),
+  initialState: initializeGearsState(initialGearProject),
   reducers: {
     resetGears: gearsAdapter.setAll,
     addGear: gearsAdapter.addOne,

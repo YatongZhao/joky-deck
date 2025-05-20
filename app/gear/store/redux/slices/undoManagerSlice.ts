@@ -5,13 +5,14 @@ import { editorMachine } from "@/app/gear/editorMachine";
 import { Actor, Snapshot } from "xstate";
 import { AppThunk } from "..";
 import { selectAllGears } from "./gearsSlice";
-import { initializeStore } from "../persist";
+import { loadStore } from "../persist";
 
-const initialState: UndoRedoManager<GearProjectData> = createUndoRedoManager(initialGearProject);
-
+export const initializeUndoManagerState = (gearProject: GearProjectData) => {
+  return createUndoRedoManager(gearProject);
+}
 const undoManagerSlice = createSlice({
   name: "undoManager",
-  initialState,
+  initialState: initializeUndoManagerState(initialGearProject),
   reducers: {
     setUndoManager: (state, action: PayloadAction<UndoRedoManager<GearProjectData>>) => action.payload,
     pushUndo: (state, action: PayloadAction<UndoRedoManager<GearProjectData>>) => action.payload,
@@ -46,7 +47,7 @@ export const undo = (): AppThunk => (dispatch, getState) => {
   const newUndoManager = undoUndoRedoNode(currentUndoManager);
   if (newUndoManager === currentUndoManager) return;
   const data = newUndoManager.current.value;
-  dispatch(initializeStore(data));
+  dispatch(loadStore(data));
   dispatch(_undo(newUndoManager));
 }
 
@@ -56,7 +57,7 @@ export const redo = (): AppThunk => (dispatch, getState) => {
   const newUndoManager = redoUndoRedoNode(currentUndoManager);
   if (newUndoManager === currentUndoManager) return;
   const data = newUndoManager.current.value;
-  dispatch(initializeStore(data));
+  dispatch(loadStore(data));
   dispatch(_redo(newUndoManager));
 }
 
