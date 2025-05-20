@@ -4,19 +4,16 @@ import { combineLatest } from "rxjs";
 import { useSelector } from "@xstate/react";
 import { useDrag } from "./hooks/useDrag";
 import { vec2, mat3 } from "gl-matrix";
-import { useEditorMachineSend } from "./store";
 import { useMantineTheme } from "@mantine/core";
 import { getScale } from "./core/coordinate";
 import { useAppSelector } from "./store/redux";
-import { editorMachineSendSelector } from "./store/redux/slices/editorMachineSlice";
+import { editorMachineSelector, editorMachineSendSelector } from "./store/redux/slices/editorMachineSlice";
 
 export const ExportViewBoxController = ({ id }: { id?: string }) => {
   const theme = useMantineTheme();
-  const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
-  const send = useEditorMachineSend();
+  const editorMachineActor = useAppSelector(editorMachineSelector);
   const editorMachineSend = useAppSelector(editorMachineSendSelector);
-  const state = useSelector(editorMachineActor, (state) => state);
-  const isViewportSetting = state.matches("ViewportSetting");
+  const isViewportSetting = useSelector(editorMachineActor, (state) => state.matches("ViewportSetting"));
   const pushUndo = useGearProjectStore((state) => state.pushUndo);
   const handleDragEnd = useCallback(() => {
     pushUndo("Export ViewBox Change");
@@ -68,7 +65,6 @@ export const ExportViewBoxController = ({ id }: { id?: string }) => {
         cursor: isViewportSetting ? "grab" : "default",
       }}
       onClick={() => {
-        send({ type: 'unselectGear' });
         editorMachineSend({ type: 'unselectGear' });
       }}
       ref={ref}

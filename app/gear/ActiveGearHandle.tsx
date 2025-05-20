@@ -10,12 +10,14 @@ import { GearType } from "./core/types";
 import { getGearPosition } from "./GearParser";
 import { gsap } from "gsap";
 import { vec2ToPosition } from "./utils";
+import { useAppSelector } from "./store/redux";
+import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
 
 export const ActiveGearHandle = () => {
   const gearProject = useGearProjectStore((state) => state.gearProject);
   const setGear = useGearProjectStore((state) => state.setGear);
   const pushUndo = useGearProjectStore((state) => state.pushUndo);
-  const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
+  const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const activeGear = useGear(activeGearId);
   const parentGearId = activeGear?.parentId;

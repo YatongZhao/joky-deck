@@ -1,7 +1,7 @@
 import { GearData } from "./core/types";
 import { useSelector } from "@xstate/react";
 import { GearEntity } from "./GearEntity";
-import { finalMatrix$, useEditorMachineSend, useGear, useGearProjectStore } from "./store";
+import { finalMatrix$, useGear, useGearProjectStore } from "./store";
 import { useTheme } from "./theme";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 } from "uuid";
@@ -15,7 +15,7 @@ import { gsap } from "gsap";
 import { useAppDispatch, useAppSelector } from "./store/redux";
 import { addGear as addGearToReduxStore } from "./store/redux/slices/gearsSlice";
 import { vec2ToPosition } from "./utils";
-import { editorMachineSendSelector } from "./store/redux/slices/editorMachineSlice";
+import { editorMachineSelector, editorMachineSendSelector } from "./store/redux/slices/editorMachineSlice";
 
 /**
  * 
@@ -81,21 +81,19 @@ export const GearParser = ({ gearId }: GearParserProps) => {
   const theme = useTheme();
   const gearData = useGear(gearId);
   const gearProjectModule = useGearProjectStore(state => state.gearProject.module);
-  const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
+  const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
-  const send = useEditorMachineSend();
   const editorMachineSend = useAppSelector(editorMachineSendSelector);
   const gears = useGearProjectStore(state => state.gearProject.gears);
   // const { angle } = getGearAngle(gearData, gears);
   const speed = getGearSpeed(gearData, gears);
 
   const handleClick = useCallback(() => {
-    send({
+    editorMachineSend({
       type: 'selectGear',
       gearId,
     });
-    editorMachineSend({ type: 'selectGear', gearId });
-  }, [send, gearId, editorMachineSend]);
+  }, [gearId, editorMachineSend]);
 
   useEffect(() => {
     const tickerCallback = (time: number) => {
@@ -128,11 +126,10 @@ export const GearToAdd = () => {
   const dispatch = useAppDispatch();
   const ref = useRef<SVGPathElement>(null);
   const theme = useTheme();
-  const send = useEditorMachineSend();
   const editorMachineSend = useAppSelector(editorMachineSendSelector);
   const addGear = useGearProjectStore(state => state.addGear);
   const gearProjectModule = useGearProjectStore(state => state.gearProject.module);
-  const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
+  const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const [virtualGearChild, setVirtualGearChild] = useState<GearData>({
     id: v4(),
@@ -199,14 +196,13 @@ export const GearToAdd = () => {
       id: v4(),
     });
     if (activeGearId) {
-      send({
+      editorMachineSend({
         type: 'selectGear',
         gearId: activeGearId,
       });
-      editorMachineSend({ type: 'selectGear', gearId: activeGearId });
     }
     pushUndo("Add Gear");
-  }, [virtualGearChild, addGear, send, activeGearId, pushUndo, dispatch, editorMachineSend]);
+  }, [virtualGearChild, addGear, activeGearId, pushUndo, dispatch, editorMachineSend]);
 
   return <GearEntity
     ref={ref}

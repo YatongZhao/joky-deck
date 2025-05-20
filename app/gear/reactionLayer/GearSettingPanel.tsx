@@ -3,9 +3,11 @@ import { useGear } from "../store";
 import { useGearProjectStore } from "../store";
 import { useSelector } from "@xstate/react";
 import { REACTION_LAYER_OFFSET } from "../constant";
+import { useAppSelector } from "../store/redux";
+import { editorMachineSelector } from "../store/redux/slices/editorMachineSlice";
 
 export const GearSettingPanel = () => {
-  const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
+  const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const activeGear = useGear(activeGearId);
   const setGearPositionAngle = useGearProjectStore((state) => state.setGearPositionAngle);

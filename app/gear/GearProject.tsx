@@ -25,6 +25,8 @@ import { ExportViewBoxFilter } from "./ExportViewBoxFilter";
 import { GlobalViewBoxBackground } from "./GlobalViewBoxBackground";
 import { __internal_gear_project_id__, __internal_view_box_controller_id__, __internal_export_view_box_filter_filter_id__, __internal_export_view_box_filter_mask_id__ } from "./constant";
 import { GearParser, GearToAdd } from "./GearParser";
+import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
+import { useAppSelector } from "./store/redux";
 
 const useWheelDrag = () => {
   const ref = useRef<SVGSVGElement>(null);
@@ -133,7 +135,7 @@ export const GearProject: React.FC = () => {
   }
   const pushUndo = useGearProjectStore((state) => state.pushUndo);
 
-  const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
+  const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const state = useSelector(editorMachineActor, (state) => state);
 

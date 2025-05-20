@@ -1,14 +1,13 @@
 import { create, StateCreator } from "zustand";
 import { combine } from "zustand/middleware";
 import { GearData, GearProjectData, initialGearProject } from "../core/types";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { BehaviorSubject, combineLatest, debounceTime, fromEvent, merge, of, skip } from "rxjs";
 import { mat3, vec2 } from "gl-matrix";
 import { createUndoRedoManager, pushUndoRedoNode, UndoRedoManager, undoUndoRedoNode, redoUndoRedoNode, getUndoRedoNode } from "./undoRedoManager";
-import { editorMachine } from "../editorMachine";
-import { Actor, createActor, Snapshot } from "xstate";
+// import { editorMachine } from "../editorMachine";
+// import { createActor, Snapshot } from "xstate";
 import { setGearProjectDataToLocalStorage } from "./localStorage";
-import { useSelector } from "@xstate/react";
 import { vec2ToPosition, mat3ToMatrix, matrixToMat3 } from "../utils";
 
 const { viewBox, ...initialGearProjectWithoutViewBox } = initialGearProject;
@@ -96,16 +95,16 @@ finalMatrix$.subscribe((finalMatrix) => {
   globalViewBox$.next(calculateViewBox(finalMatrix));
 });
 
-function createEditorMachineActor(editorMachineSnapshot?: Snapshot<typeof editorMachine> | null) {
-  const editorMachineActor = createActor(editorMachine, { snapshot: editorMachineSnapshot ?? undefined }).start();
-  editorMachineActor.subscribe(trySaveGearProjectToLocalStorage);
-  editorMachineActor.subscribe(() => useGearProjectStore.getState().pushUndo('editor state changed'));
-  return editorMachineActor;
-}
+// function createEditorMachineActor(editorMachineSnapshot?: Snapshot<typeof editorMachine> | null) {
+//   const editorMachineActor = createActor(editorMachine, { snapshot: editorMachineSnapshot ?? undefined }).start();
+//   editorMachineActor.subscribe(trySaveGearProjectToLocalStorage);
+//   editorMachineActor.subscribe(() => useGearProjectStore.getState().pushUndo('editor state changed'));
+//   return editorMachineActor;
+// }
 
-const initEditorMachineActor = createEditorMachineActor();
+// const initEditorMachineActor = createEditorMachineActor();
 
-const initialEditorMachineSnapshot = initEditorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>;
+// const initialEditorMachineSnapshot = initEditorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>;
 
 // UndoRedoState is the state of the undo/redo manager
 // It is the state of the gear project without the display matrix
@@ -115,7 +114,7 @@ type UndoRedoState = { gearProject: Omit<GearProjectData, 'displayMatrix'>; desc
 type GearProjectStoreState = {
   gearProject: Omit<GearProjectData, 'viewBox' | 'displayMatrix' | 'editorMachineState'>;
   undoRedoManager: UndoRedoManager<UndoRedoState>;
-  editorMachineActor: Actor<typeof editorMachine>;
+  // editorMachineActor: Actor<typeof editorMachine>;
 }
 
 type GearProjectStoreActions = {
@@ -132,22 +131,22 @@ type GearProjectStoreActions = {
   redo: () => void;
   // Anytime we start a new project, we need to reset the undo/redo manager
   resetUndoRedoManager: () => void;
-  setEditorMachineActor: (editorMachineSnapshot: Snapshot<typeof editorMachine>) => void;
+  // setEditorMachineActor: (editorMachineSnapshot: Snapshot<typeof editorMachine>) => void;
 }
 
 type AdditionalGearProjectStateCreator = StateCreator<GearProjectStoreState, [], [], GearProjectStoreActions>;
 type SetGearProjectStore = Parameters<AdditionalGearProjectStateCreator>[0];
 type GetGearProjectStore = Parameters<AdditionalGearProjectStateCreator>[1];
 
-const setEditorMachineActor = (editorMachineSnapshot: Snapshot<typeof editorMachine> | null, set: SetGearProjectStore) => {
-  set((state) => {
-    state.editorMachineActor.stop();
-    const editorMachineActor = createEditorMachineActor(editorMachineSnapshot);
-    return {
-      editorMachineActor,
-    }
-  });
-}
+// const setEditorMachineActor = (editorMachineSnapshot: Snapshot<typeof editorMachine> | null, set: SetGearProjectStore) => {
+//   set((state) => {
+//     state.editorMachineActor.stop();
+//     const editorMachineActor = createEditorMachineActor(editorMachineSnapshot);
+//     return {
+//       editorMachineActor,
+//     }
+//   });
+// }
 
 const resetUndoRedoManager = (set: SetGearProjectStore) => {
   set(() => {
@@ -162,11 +161,11 @@ const resetUndoRedoManager = (set: SetGearProjectStore) => {
   });
 }
 const setGearProjectWithoutDisplayMatrix = (gearProject: Omit<GearProjectData, 'displayMatrix'>, set: SetGearProjectStore) => {
-  const { viewBox, editorMachineState, ...gearProjectWithoutViewBox } = gearProject;
+  const { viewBox, ...gearProjectWithoutViewBox } = gearProject;
   set({ gearProject: gearProjectWithoutViewBox });
   viewBoxA$.next(vec2.clone(viewBox.a));
   viewBoxB$.next(vec2.clone(viewBox.b));
-  setEditorMachineActor(editorMachineState, set);
+  // setEditorMachineActor(editorMachineState, set);
 }
 
 const setGearProject = (gearProject: GearProjectData, set: SetGearProjectStore) => {
@@ -198,9 +197,9 @@ export const useGearProjectStore = create(
           viewBox: { a: vec2ToPosition(initialGearProject.viewBox.a), b: vec2ToPosition(initialGearProject.viewBox.b) },
           displayMatrix: mat3ToMatrix(initialGearProject.displayMatrix),
         },
-        editorMachine: initialEditorMachineSnapshot,
+        // editorMachine: initialEditorMachineSnapshot,
       }),
-      editorMachineActor: initEditorMachineActor,
+      // editorMachineActor: initEditorMachineActor,
     }, (set, get) => ({
     setGearProject: (gearProject: GearProjectData) => setGearProject(gearProject, set),
     addGear: (gearData: GearData) => {
@@ -280,7 +279,7 @@ export const useGearProjectStore = create(
       setUndoRedoToSnapshot(redoUndoRedoNode(get().undoRedoManager), set, get);
     },
     resetUndoRedoManager: () => resetUndoRedoManager(set),
-    setEditorMachineActor: (editorMachineSnapshot: Snapshot<typeof editorMachine>) => setEditorMachineActor(editorMachineSnapshot, set),
+    // setEditorMachineActor: (editorMachineSnapshot: Snapshot<typeof editorMachine>) => setEditorMachineActor(editorMachineSnapshot, set),
   }))
 );
 
@@ -296,24 +295,24 @@ export const useGearChildren = (gearId: string) => {
   return useMemo(() => gearProject.gears.filter((gear) => gear.parentId === gearId), [gearProject.gears, gearId]);
 }
 
-export const useEditorMachineSend = () => {
-  const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
-  const send = editorMachineActor.send;
-  const state = useSelector(editorMachineActor, (state) => state);
-  type Event = Parameters<typeof editorMachineActor.send>[0];
-  /**
-   * This function is used to send events to the editor machine.
-   * @returns true if the event is sent, false if the event is not sent because the state does not allow it.
-   */
-  const safeSend = useCallback((event: Event) => {
-    if (state.can(event)) {
-      send(event);
-      return true;
-    }
-    return false;
-  }, [send, state]);
-  return safeSend;
-}
+// export const useEditorMachineSend = () => {
+//   const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
+//   const send = editorMachineActor.send;
+//   const state = useSelector(editorMachineActor, (state) => state);
+//   type Event = Parameters<typeof editorMachineActor.send>[0];
+//   /**
+//    * This function is used to send events to the editor machine.
+//    * @returns true if the event is sent, false if the event is not sent because the state does not allow it.
+//    */
+//   const safeSend = useCallback((event: Event) => {
+//     if (state.can(event)) {
+//       send(event);
+//       return true;
+//     }
+//     return false;
+//   }, [send, state]);
+//   return safeSend;
+// }
 
 export function getGearProjectSnapshot(): GearProjectData {
   const state =useGearProjectStore.getState();
@@ -321,7 +320,8 @@ export function getGearProjectSnapshot(): GearProjectData {
     ...state.gearProject,
     viewBox: { a: vec2ToPosition(vec2.clone(viewBoxA$.getValue())), b: vec2ToPosition(vec2.clone(viewBoxB$.getValue())) },
     displayMatrix: mat3ToMatrix(svgMatrix$.getValue()),
-    editorMachineState: state.editorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>,
+    // editorMachineState: state.editorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>,
+    editorMachineState: null,
   };
 }
 

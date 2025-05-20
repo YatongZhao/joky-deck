@@ -2,13 +2,11 @@ import { Group, Paper, UnstyledButton } from "@mantine/core"
 import { MousePointer2, StickyNote } from "lucide-react"
 import classes from "./ToolsPanel.module.scss"
 import classNames from "classnames"
-import { useEditorMachineSend } from "../store"
 import { useSelector } from "@xstate/react"
-import { useGearProjectStore } from "../store"
 import { useMemo } from "react"
 import { REACTION_LAYER_OFFSET } from "../constant"
 import { useAppSelector } from "../store/redux"
-import { editorMachineSendSelector } from "../store/redux/slices/editorMachineSlice"
+import { editorMachineSelector, editorMachineSendSelector } from "../store/redux/slices/editorMachineSlice"
 // import { useTheme } from "@/app/gear/theme"
 
 enum Tool {
@@ -18,9 +16,9 @@ enum Tool {
 
 export const ToolsPanel = () => {
   // const theme = useTheme();
-  const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
+  // const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
+  const editorMachineActor = useAppSelector(editorMachineSelector);
   const state = useSelector(editorMachineActor, (state) => state);
-  const send = useEditorMachineSend();
   const editorMachineSend = useAppSelector(editorMachineSendSelector);
   const value = useMemo(() => {
     if (state.matches('Selecting')) return Tool.Selecting;
@@ -31,11 +29,9 @@ export const ToolsPanel = () => {
   const handleChange = (tool: Tool) => {
     switch (tool) {
       case Tool.Selecting:
-        send({ type: 'enterSelecting' });
         editorMachineSend({ type: 'enterSelecting' });
         break;
       case Tool.ViewportSetting:
-        send({ type: 'enterViewPortSetting' });
         editorMachineSend({ type: 'enterViewPortSetting' });
         break;
     }

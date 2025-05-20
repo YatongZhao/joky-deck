@@ -3,6 +3,7 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Actor, createActor, Snapshot } from "xstate";
 import { AppThunk, RootState, store } from "..";
 import { GearProjectData, initialGearProject } from "@/app/gear/core/types";
+import { pushUndo } from "./undoManagerSlice";
 
 const editorMachineMap = new Map<string, Actor<typeof editorMachine>>();
 
@@ -18,6 +19,7 @@ const createEditorMachine = (currentId: string, snapshot?: Snapshot<typeof edito
   editorMachineMap.set(editorMachineActor.id, editorMachineActor);
   editorMachineActor.subscribe(() => {
     store.dispatch(editorMachineSlice.actions.setEditorMachineSnapshot(editorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>));
+    store.dispatch(pushUndo(editorMachineActor, 'editor state changed'));
   });
   return editorMachineActor;
 }

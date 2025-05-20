@@ -4,6 +4,8 @@ import { useGear, useGearProjectStore } from "./store";
 import { useSelector } from "@xstate/react";
 import { getGearPosition } from "./GearParser";
 import { gsap } from "gsap";
+import { useAppSelector } from "./store/redux";
+import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
 
 const drawCrossHair = (radius: number) => {
   let path = '';
@@ -23,7 +25,7 @@ const drawCrossHair = (radius: number) => {
 }
 
 export const CrossHair: React.FC<{ radius: number }> = ({ radius }) => {
-  const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
+  const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const gRef = useRef<SVGGElement>(null);
   const activeGear = useGear(activeGearId);
