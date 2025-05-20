@@ -1,23 +1,24 @@
 import { useCallback, useEffect } from "react";
-import { finalMatrix$, svgMatrix$, useGearProjectStore, viewBoxA$, viewBoxB$ } from "./store";
+import { finalMatrix$, svgMatrix$, viewBoxA$, viewBoxB$ } from "./store";
 import { combineLatest } from "rxjs";
 import { useSelector } from "@xstate/react";
 import { useDrag } from "./hooks/useDrag";
 import { vec2, mat3 } from "gl-matrix";
 import { useMantineTheme } from "@mantine/core";
 import { getScale } from "./core/coordinate";
-import { useAppSelector } from "./store/redux";
+import { useAppSelector, useAppDispatch } from "./store/redux";
 import { editorMachineSelector, editorMachineSendSelector } from "./store/redux/slices/editorMachineSlice";
+import { pushUndo } from "./store/redux/slices/undoManagerSlice";
 
 export const ExportViewBoxController = ({ id }: { id?: string }) => {
   const theme = useMantineTheme();
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const editorMachineSend = useAppSelector(editorMachineSendSelector);
   const isViewportSetting = useSelector(editorMachineActor, (state) => state.matches("ViewportSetting"));
-  const pushUndo = useGearProjectStore((state) => state.pushUndo);
+  const dispatch = useAppDispatch();
   const handleDragEnd = useCallback(() => {
-    pushUndo("Export ViewBox Change");
-  }, [pushUndo]);
+    dispatch(pushUndo("Export ViewBox Change"));
+  }, [dispatch]);
   const { ref, deltaMatrix$ } = useDrag<SVGPathElement>({ onDragEnd: handleDragEnd, disabled: !isViewportSetting });
   
   useEffect(() => {

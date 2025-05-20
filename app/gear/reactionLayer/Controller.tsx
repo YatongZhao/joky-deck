@@ -1,12 +1,12 @@
 import { ActionIcon, Button, Group, NumberFormatter } from "@mantine/core"
 import { Minus, Plus, Redo, Undo } from "lucide-react"
-import { useUndoRedoController } from "./hooks/useUndoRedoController";
 import classes from "./Controller.module.scss";
 import { useScaleController } from "./hooks/useScaleController";
 import { REACTION_LAYER_OFFSET } from "../constant";
+import { useUndoController } from "./hooks/useUndoController";
 
 export const Controller = () => {
-  const { undo, redo, canUndo, canRedo } = useUndoRedoController();
+  const { undo, redo, canUndo, canRedo } = useUndoController();
   const { scale, increaseScaleBy10, decreaseScaleBy10, resetScale } = useScaleController();
 
   return (

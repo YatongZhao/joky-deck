@@ -3,10 +3,12 @@ import { useGear } from "../store";
 import { useGearProjectStore } from "../store";
 import { useSelector } from "@xstate/react";
 import { REACTION_LAYER_OFFSET } from "../constant";
-import { useAppSelector } from "../store/redux";
+import { useAppDispatch, useAppSelector } from "../store/redux";
 import { editorMachineSelector } from "../store/redux/slices/editorMachineSlice";
+import { pushUndo } from "../store/redux/slices/undoManagerSlice";
 
 export const GearSettingPanel = () => {
+  const dispatch = useAppDispatch();
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const activeGear = useGear(activeGearId);
@@ -14,7 +16,6 @@ export const GearSettingPanel = () => {
   const setGearColor = useGearProjectStore((state) => state.setGearColor);
   const setGearTeeth = useGearProjectStore((state) => state.setGearTeeth);
   const setGearSpeed = useGearProjectStore((state) => state.setGearSpeed);
-  const pushUndo = useGearProjectStore((state) => state.pushUndo);
   
   const handlePositionAngleChange = (value: number) => {
     if (activeGearId) {
@@ -26,7 +27,7 @@ export const GearSettingPanel = () => {
     if (activeGearId) {
       const isColorChanged = setGearColor(activeGearId, value);
       if (isColorChanged) {
-        pushUndo("Change Gear Color");
+        dispatch(pushUndo("Change Gear Color"));
       }
     }
   }
@@ -35,7 +36,7 @@ export const GearSettingPanel = () => {
     if (activeGearId) {
       const isTeethChanged = setGearTeeth(activeGearId, Number(value));
       if (isTeethChanged) {
-        pushUndo("Change Gear Teeth");
+        dispatch(pushUndo("Change Gear Teeth"));
       }
     }
   }
@@ -44,7 +45,7 @@ export const GearSettingPanel = () => {
     if (activeGearId) {
       const isSpeedChanged = setGearSpeed(activeGearId, Number(value));
       if (isSpeedChanged) {
-        pushUndo("Change Gear Speed");
+        dispatch(pushUndo("Change Gear Speed"));
       }
     }
   }
@@ -62,7 +63,7 @@ export const GearSettingPanel = () => {
           thumbSize={8}
           value={positionAngle + 90}
           onChange={handlePositionAngleChange}
-          onChangeEnd={() => pushUndo("Change Gear Position Angle")}
+          onChangeEnd={() => dispatch(pushUndo("Change Gear Position Angle"))}
           formatLabel={(value) => `${((value - 90 + 360) % 360).toFixed(0)}`}
         />
         <ColorInput

@@ -4,7 +4,7 @@ import { GearData, GearProjectData, initialGearProject } from "../core/types";
 import { useMemo } from "react";
 import { BehaviorSubject, combineLatest, debounceTime, fromEvent, merge, of, skip } from "rxjs";
 import { mat3, vec2 } from "gl-matrix";
-import { createUndoRedoManager, pushUndoRedoNode, UndoRedoManager, undoUndoRedoNode, redoUndoRedoNode, getUndoRedoNode } from "./undoRedoManager";
+// import { createUndoRedoManager, UndoRedoManager, undoUndoRedoNode, redoUndoRedoNode, getUndoRedoNode } from "./undoRedoManager";
 // import { editorMachine } from "../editorMachine";
 // import { createActor, Snapshot } from "xstate";
 import { setGearProjectDataToLocalStorage } from "./localStorage";
@@ -109,11 +109,11 @@ finalMatrix$.subscribe((finalMatrix) => {
 // UndoRedoState is the state of the undo/redo manager
 // It is the state of the gear project without the display matrix
 // because the display matrix is not part of the undo/redo history
-type UndoRedoState = { gearProject: Omit<GearProjectData, 'displayMatrix'>; description: string };
+// type UndoRedoState = { gearProject: Omit<GearProjectData, 'displayMatrix'>; description: string };
 
 type GearProjectStoreState = {
   gearProject: Omit<GearProjectData, 'viewBox' | 'displayMatrix' | 'editorMachineState'>;
-  undoRedoManager: UndoRedoManager<UndoRedoState>;
+  // undoRedoManager: UndoRedoManager<UndoRedoState>;
   // editorMachineActor: Actor<typeof editorMachine>;
 }
 
@@ -126,17 +126,17 @@ type GearProjectStoreActions = {
   setGearColor: (gearId: string, color: string) => boolean; // return true if the color is changed
   setGearTeeth: (gearId: string, teeth: number) => boolean; // return true if the teeth is changed
   setGearSpeed: (gearId: string, speed: number) => boolean; // return true if the speed is changed
-  pushUndo: (description: string) => void;
-  undo: () => void;
-  redo: () => void;
+  // pushUndo: (description: string) => void;
+  // undo: () => void;
+  // redo: () => void;
   // Anytime we start a new project, we need to reset the undo/redo manager
-  resetUndoRedoManager: () => void;
+  // resetUndoRedoManager: () => void;
   // setEditorMachineActor: (editorMachineSnapshot: Snapshot<typeof editorMachine>) => void;
 }
 
 type AdditionalGearProjectStateCreator = StateCreator<GearProjectStoreState, [], [], GearProjectStoreActions>;
 type SetGearProjectStore = Parameters<AdditionalGearProjectStateCreator>[0];
-type GetGearProjectStore = Parameters<AdditionalGearProjectStateCreator>[1];
+// type GetGearProjectStore = Parameters<AdditionalGearProjectStateCreator>[1];
 
 // const setEditorMachineActor = (editorMachineSnapshot: Snapshot<typeof editorMachine> | null, set: SetGearProjectStore) => {
 //   set((state) => {
@@ -148,18 +148,18 @@ type GetGearProjectStore = Parameters<AdditionalGearProjectStateCreator>[1];
 //   });
 // }
 
-const resetUndoRedoManager = (set: SetGearProjectStore) => {
-  set(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { displayMatrix, ...gearProjectWithoutDisplayMatrix } = getGearProjectSnapshot();
-    return {
-      undoRedoManager: createUndoRedoManager({
-        description: "",
-        gearProject: gearProjectWithoutDisplayMatrix,
-      }),
-    }
-  });
-}
+// const resetUndoRedoManager = (set: SetGearProjectStore) => {
+//   set(() => {
+//     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+//     const { displayMatrix, ...gearProjectWithoutDisplayMatrix } = getGearProjectSnapshot();
+//     return {
+//       undoRedoManager: createUndoRedoManager({
+//         description: "",
+//         gearProject: gearProjectWithoutDisplayMatrix,
+//       }),
+//     }
+//   });
+// }
 const setGearProjectWithoutDisplayMatrix = (gearProject: Omit<GearProjectData, 'displayMatrix'>, set: SetGearProjectStore) => {
   const { viewBox, ...gearProjectWithoutViewBox } = gearProject;
   set({ gearProject: gearProjectWithoutViewBox });
@@ -172,33 +172,33 @@ const setGearProject = (gearProject: GearProjectData, set: SetGearProjectStore) 
   const { displayMatrix, ...gearProjectWithoutDisplayMatrix } = gearProject;
   setGearProjectWithoutDisplayMatrix(gearProjectWithoutDisplayMatrix, set);
   svgMatrix$.next(matrixToMat3(displayMatrix));
-  resetUndoRedoManager(set);
+  // resetUndoRedoManager(set);
 }
 
-const setUndoRedoToSnapshot = (
-  undoRedoManager: UndoRedoManager<UndoRedoState>,
-  set: SetGearProjectStore,
-  get: GetGearProjectStore
-) => {
-  if (undoRedoManager === get().undoRedoManager) return;
-  const { gearProject } = getUndoRedoNode(undoRedoManager);
-  setGearProjectWithoutDisplayMatrix(gearProject, set);
-  set({ undoRedoManager });
-}
+// const setUndoRedoToSnapshot = (
+//   undoRedoManager: UndoRedoManager<UndoRedoState>,
+//   set: SetGearProjectStore,
+//   get: GetGearProjectStore
+// ) => {
+//   if (undoRedoManager === get().undoRedoManager) return;
+//   const { gearProject } = getUndoRedoNode(undoRedoManager);
+//   setGearProjectWithoutDisplayMatrix(gearProject, set);
+//   set({ undoRedoManager });
+// }
 
 export const useGearProjectStore = create(
   combine<GearProjectStoreState, GearProjectStoreActions>(
     {
       gearProject: initialGearProjectWithoutViewBox,
-      undoRedoManager: createUndoRedoManager({
-        description: "",
-        gearProject: {
-          ...initialGearProject,
-          viewBox: { a: vec2ToPosition(initialGearProject.viewBox.a), b: vec2ToPosition(initialGearProject.viewBox.b) },
-          displayMatrix: mat3ToMatrix(initialGearProject.displayMatrix),
-        },
-        // editorMachine: initialEditorMachineSnapshot,
-      }),
+      // undoRedoManager: createUndoRedoManager({
+      //   description: "",
+      //   gearProject: {
+      //     ...initialGearProject,
+      //     viewBox: { a: vec2ToPosition(initialGearProject.viewBox.a), b: vec2ToPosition(initialGearProject.viewBox.b) },
+      //     displayMatrix: mat3ToMatrix(initialGearProject.displayMatrix),
+      //   },
+      //   // editorMachine: initialEditorMachineSnapshot,
+      // }),
       // editorMachineActor: initEditorMachineActor,
     }, (set, get) => ({
     setGearProject: (gearProject: GearProjectData) => setGearProject(gearProject, set),
@@ -264,21 +264,21 @@ export const useGearProjectStore = create(
       }));
       return true;
     },
-    pushUndo: (description: string) => {
-      set((state) => ({
-        undoRedoManager: pushUndoRedoNode(state.undoRedoManager, {
-          gearProject: getGearProjectSnapshot(),
-          description,
-        }),
-      }));
-    },
-    undo: () => {
-      setUndoRedoToSnapshot(undoUndoRedoNode(get().undoRedoManager), set, get);
-    },
-    redo: () => {
-      setUndoRedoToSnapshot(redoUndoRedoNode(get().undoRedoManager), set, get);
-    },
-    resetUndoRedoManager: () => resetUndoRedoManager(set),
+    // pushUndo: (description: string) => {
+    //   set((state) => ({
+    //     undoRedoManager: pushUndoRedoNode(state.undoRedoManager, {
+    //       gearProject: getGearProjectSnapshot(),
+    //       description,
+    //     }),
+    //   }));
+    // },
+    // undo: () => {
+    //   setUndoRedoToSnapshot(undoUndoRedoNode(get().undoRedoManager), set, get);
+    // },
+    // redo: () => {
+    //   setUndoRedoToSnapshot(redoUndoRedoNode(get().undoRedoManager), set, get);
+    // },
+    // resetUndoRedoManager: () => resetUndoRedoManager(set),
     // setEditorMachineActor: (editorMachineSnapshot: Snapshot<typeof editorMachine>) => setEditorMachineActor(editorMachineSnapshot, set),
   }))
 );

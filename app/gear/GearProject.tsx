@@ -26,7 +26,8 @@ import { GlobalViewBoxBackground } from "./GlobalViewBoxBackground";
 import { __internal_gear_project_id__, __internal_view_box_controller_id__, __internal_export_view_box_filter_filter_id__, __internal_export_view_box_filter_mask_id__ } from "./constant";
 import { GearParser, GearToAdd } from "./GearParser";
 import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
-import { useAppSelector } from "./store/redux";
+import { useAppDispatch, useAppSelector } from "./store/redux";
+import { pushUndo } from "./store/redux/slices/undoManagerSlice";
 
 const useWheelDrag = () => {
   const ref = useRef<SVGSVGElement>(null);
@@ -133,7 +134,7 @@ export const GearProject: React.FC = () => {
       handleZoomWheel(event);
     }
   }
-  const pushUndo = useGearProjectStore((state) => state.pushUndo);
+  const dispatch = useAppDispatch();
 
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
@@ -143,8 +144,8 @@ export const GearProject: React.FC = () => {
   useModeHotKeys();
 
   const handleExportViewBoxDragHandleDragEnd = useCallback(() => {
-    pushUndo('Export View Box Changed');
-  }, [pushUndo]);
+    dispatch(pushUndo('Export View Box Changed'));
+  }, [dispatch]);
 
   return (
     <>

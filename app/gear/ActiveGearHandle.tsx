@@ -10,13 +10,15 @@ import { GearType } from "./core/types";
 import { getGearPosition } from "./GearParser";
 import { gsap } from "gsap";
 import { vec2ToPosition } from "./utils";
-import { useAppSelector } from "./store/redux";
+import { useAppDispatch, useAppSelector } from "./store/redux";
 import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
+import { pushUndo } from "./store/redux/slices/undoManagerSlice";
 
 export const ActiveGearHandle = () => {
+  const dispatch = useAppDispatch();
   const gearProject = useGearProjectStore((state) => state.gearProject);
   const setGear = useGearProjectStore((state) => state.setGear);
-  const pushUndo = useGearProjectStore((state) => state.pushUndo);
+  // const pushUndo = useGearProjectStore((state) => state.pushUndo);
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const activeGear = useGear(activeGearId);
@@ -108,16 +110,16 @@ export const ActiveGearHandle = () => {
   }, [
     targetSvgPosition$,
     isDragging, maybeParentGearSvgPosition$, parentGear?.teeth, gearProject.module,
-    setGear, activeGearId, pushUndo,
+    setGear, activeGearId,
     isCtrlPressed, activeGear,
   ]);
 
   const handleDragEnd = useCallback(() => {
     setIsDragging(false);
     if (activeGear?.teeth !== lastGearPositionInfoRef.current.teeth || activeGear?.positionAngle !== lastGearPositionInfoRef.current.positionAngle) {
-      pushUndo(`Active Gear Handle Changed`);
+      dispatch(pushUndo(`Active Gear Handle Changed`));
     }
-  }, [activeGear?.teeth, activeGear?.positionAngle, pushUndo]);
+  }, [activeGear?.teeth, activeGear?.positionAngle, dispatch]);
 
   const handleDragStart = useCallback(() => {
     setIsDragging(true);

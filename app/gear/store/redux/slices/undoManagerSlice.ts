@@ -1,19 +1,15 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { createUndoRedoManager, UndoRedoManager, pushUndoRedoNode, undoUndoRedoNode, redoUndoRedoNode } from "../../undoRedoManager";
 import { GearProjectData, initialGearProject } from "@/app/gear/core/types";
-import { editorMachine } from "@/app/gear/editorMachine";
-import { Actor, Snapshot } from "xstate";
 import { AppThunk } from "..";
-import { selectAllGears } from "./gearsSlice";
-import { loadStore } from "../persist";
-
-type UndoManagerState = {
+import { loadGearProjectData, rootStateToGearProjectData } from "../persist";
+import UndoManager, { UndoManagerState } from "../../undoManager";
+type UndoData = {
   gearProject: GearProjectData;
   description: string;
 }
 
-export const initializeUndoManagerState = (gearProject: GearProjectData): UndoRedoManager<UndoManagerState> => {
-  return createUndoRedoManager({
+export const initializeUndoManagerState = (gearProject: GearProjectData): UndoManagerState<UndoData> => {
+  return UndoManager.createUndoManager({
     gearProject,
     description: 'initial',
   });
@@ -22,54 +18,46 @@ const undoManagerSlice = createSlice({
   name: "undoManager",
   initialState: initializeUndoManagerState(initialGearProject),
   reducers: {
-    setUndoManager: (state, action: PayloadAction<UndoRedoManager<UndoManagerState>>) => action.payload,
-    pushUndo: (state, action: PayloadAction<UndoRedoManager<UndoManagerState>>) => action.payload,
-    undo: (state, action: PayloadAction<UndoRedoManager<UndoManagerState>>) => action.payload,
-    redo: (state, action: PayloadAction<UndoRedoManager<UndoManagerState>>) => action.payload,
+    setUndoManager: (state, action: PayloadAction<GearProjectData>) => {
+      return initializeUndoManagerState(action.payload);
+    },
+    _pushUndo: (state, action: PayloadAction<UndoData>) => UndoManager.pushState<UndoData>(state as unknown as UndoManagerState<UndoData>, action.payload),
+    _undo: (state) => UndoManager.undo(state as unknown as UndoManagerState<UndoData>),
+    _redo: (state) => UndoManager.redo(state as unknown as UndoManagerState<UndoData>),
   },
 });
 
-const { setUndoManager, pushUndo: _pushUndo, undo: _undo, redo: _redo } = undoManagerSlice.actions;
+const { setUndoManager, _pushUndo, _undo, _redo } = undoManagerSlice.actions;
 export { setUndoManager };
 
-export const pushUndo = (editorMachineActor: Actor<typeof editorMachine>, description: string): AppThunk => (dispatch, getState) => {
+export const pushUndo = (description: string): AppThunk => (dispatch, getState) => {
   const currentState = getState();
-  const currentUndoManager = currentState.undoManager;
-  const newUndoManager = pushUndoRedoNode(currentUndoManager, {
-    gearProject: {
-      version: '1.0.0',
-      displayMatrix: currentState.displayMatrix.value,
-      gears: selectAllGears(currentState),
-      module: currentState.module.value,
-      viewBox: {
-        a: currentState.viewBox.a,
-        b: currentState.viewBox.b,
-      },
-      editorMachineState: editorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>,
-    },
+  dispatch(_pushUndo({
+    gearProject: rootStateToGearProjectData(currentState),
     description,
-  });
-  dispatch(_pushUndo(newUndoManager));
+  }));
 }
 
 export const undo = (): AppThunk => (dispatch, getState) => {
   const currentState = getState();
   const currentUndoManager = currentState.undoManager;
-  const newUndoManager = undoUndoRedoNode(currentUndoManager);
-  if (newUndoManager === currentUndoManager) return;
-  const data = newUndoManager.current.value.gearProject;
-  dispatch(loadStore(data));
-  dispatch(_undo(newUndoManager));
+  if (UndoManager.canUndo(currentUndoManager)) {
+    const newUndoManager = UndoManager.undo(currentUndoManager);
+    const data = newUndoManager.present.gearProject;
+    dispatch(loadGearProjectData(data));
+    dispatch(_undo());
+  }
 }
 
 export const redo = (): AppThunk => (dispatch, getState) => {
   const currentState = getState();
   const currentUndoManager = currentState.undoManager;
-  const newUndoManager = redoUndoRedoNode(currentUndoManager);
-  if (newUndoManager === currentUndoManager) return;
-  const data = newUndoManager.current.value.gearProject;
-  dispatch(loadStore(data));
-  dispatch(_redo(newUndoManager));
+  if (UndoManager.canRedo(currentUndoManager)) {
+    const newUndoManager = UndoManager.redo(currentUndoManager);
+    const data = newUndoManager.present.gearProject;
+    dispatch(loadGearProjectData(data));
+    dispatch(_redo());
+  }
 }
 
 export default undoManagerSlice.reducer;

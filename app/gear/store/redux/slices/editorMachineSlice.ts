@@ -19,7 +19,7 @@ const createEditorMachine = (currentId: string, snapshot?: Snapshot<typeof edito
   editorMachineMap.set(editorMachineActor.id, editorMachineActor);
   editorMachineActor.subscribe(() => {
     store.dispatch(editorMachineSlice.actions.setEditorMachineSnapshot(editorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>));
-    store.dispatch(pushUndo(editorMachineActor, 'editor state changed'));
+    store.dispatch(pushUndo('editor state changed'));
   });
   return editorMachineActor;
 }

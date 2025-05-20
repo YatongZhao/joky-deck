@@ -16,6 +16,7 @@ import { useAppDispatch, useAppSelector } from "./store/redux";
 import { addGear as addGearToReduxStore } from "./store/redux/slices/gearsSlice";
 import { vec2ToPosition } from "./utils";
 import { editorMachineSelector, editorMachineSendSelector } from "./store/redux/slices/editorMachineSlice";
+import { pushUndo } from "./store/redux/slices/undoManagerSlice";
 
 /**
  * 
@@ -143,7 +144,6 @@ export const GearToAdd = () => {
   const activeGear = useGear(activeGearId);
   const gears = useGearProjectStore(state => state.gearProject.gears);
   // const { angle } = getGearAngle(virtualGearChild, gears);
-  const pushUndo = useGearProjectStore(state => state.pushUndo);
   const speed = getGearSpeed(virtualGearChild, gears);
   const [activeGearSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(getGearPosition(activeGear, gears, gsap.ticker.time, gearProjectModule)));
 
@@ -201,8 +201,8 @@ export const GearToAdd = () => {
         gearId: activeGearId,
       });
     }
-    pushUndo("Add Gear");
-  }, [virtualGearChild, addGear, activeGearId, pushUndo, dispatch, editorMachineSend]);
+    dispatch(pushUndo("Add Gear"));
+  }, [virtualGearChild, addGear, activeGearId, dispatch, editorMachineSend]);
 
   return <GearEntity
     ref={ref}
