@@ -32,7 +32,7 @@ const rootStateToGearProjectData = (state: RootState): GearProjectData => {
   }
 }
 
-export const gearProjectDataToRootState = (gearProject: GearProjectData) => {
+export const gearProjectDataToRootState = (gearProject: GearProjectData): RootState => {
   return {
     gears: initializeGearsState(gearProject),
     module: initializeModuleState(gearProject),

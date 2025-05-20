@@ -12,6 +12,8 @@ import { getGearProjectDataFromLocalStorage } from '../localStorage';
 import { initialGearProject } from '../../core/types';
 
 const gearProjectData = getGearProjectDataFromLocalStorage();
+const preloadedState = gearProjectDataToRootState(gearProjectData ?? initialGearProject) as unknown;
+
 export const store = configureStore({
   reducer: {
     gears: gearsReducer,
@@ -21,7 +23,7 @@ export const store = configureStore({
     undoManager: undoManagerReducer,
     editorMachine: editorMachineReducer,
   },
-  preloadedState: gearProjectDataToRootState(gearProjectData ?? initialGearProject),
+  preloadedState,
 });
 persistStore(store);
 
