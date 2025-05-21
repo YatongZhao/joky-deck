@@ -16,7 +16,6 @@ enum Tool {
 
 export const ToolsPanel = () => {
   // const theme = useTheme();
-  // const editorMachineActor = useGearProjectStore((state) => state.editorMachineActor);
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const state = useSelector(editorMachineActor, (state) => state);
   const editorMachineSend = useAppSelector(editorMachineSendSelector);
@@ -43,12 +42,12 @@ export const ToolsPanel = () => {
     >
       <Group gap="xs">
         <UnstyledButton className={classNames(classes.toolItem, {
-          [classes.active]: value === Tool.Selecting,
+          [classes.active!]: value === Tool.Selecting,
         })} onClick={() => handleChange(Tool.Selecting)}>
           <MousePointer2 size={18} strokeWidth={1} fill={value === Tool.Selecting ? 'black' : 'none'} />
         </UnstyledButton>
         <UnstyledButton className={classNames(classes.toolItem, {
-          [classes.active]: value === Tool.ViewportSetting,
+          [classes.active!]: value === Tool.ViewportSetting,
         })} onClick={() => handleChange(Tool.ViewportSetting)}>
           <StickyNote size={18} strokeWidth={1} fill={value === Tool.ViewportSetting ? 'black' : 'none'} />
         </UnstyledButton>

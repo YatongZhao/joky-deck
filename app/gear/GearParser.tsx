@@ -1,7 +1,7 @@
 import { GearData } from "./core/types";
 import { useSelector } from "@xstate/react";
 import { GearEntity } from "./GearEntity";
-import { finalMatrix$, useGear, useGearProjectStore } from "./store";
+import { finalMatrix$ } from "./store";
 import { useTheme } from "./theme";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 } from "uuid";
@@ -13,7 +13,7 @@ import { fromEvent, BehaviorSubject } from "rxjs";
 import { combineLatest } from "rxjs";
 import { gsap } from "gsap";
 import { useAppDispatch, useAppSelector } from "./store/redux";
-import { addGear as addGearToReduxStore } from "./store/redux/slices/gearsSlice";
+import { addGear, selectAllGears, selectGearById } from "./store/redux/slices/gearsSlice";
 import { vec2ToPosition } from "./utils";
 import { editorMachineSelector, editorMachineSendSelector } from "./store/redux/slices/editorMachineSlice";
 import { pushUndo } from "./store/redux/slices/undoManagerSlice";
@@ -80,12 +80,12 @@ export type GearParserProps = {
 export const GearParser = ({ gearId }: GearParserProps) => {
   const ref = useRef<SVGPathElement>(null);
   const theme = useTheme();
-  const gearData = useGear(gearId);
-  const gearProjectModule = useGearProjectStore(state => state.gearProject.module);
+  const gearData = useAppSelector((state) => selectGearById(state, gearId));
+  const gearProjectModule = useAppSelector((state) => state.module.value);
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const editorMachineSend = useAppSelector(editorMachineSendSelector);
-  const gears = useGearProjectStore(state => state.gearProject.gears);
+  const gears = useAppSelector(selectAllGears);
   // const { angle } = getGearAngle(gearData, gears);
   const speed = getGearSpeed(gearData, gears);
 
@@ -128,8 +128,7 @@ export const GearToAdd = () => {
   const ref = useRef<SVGPathElement>(null);
   const theme = useTheme();
   const editorMachineSend = useAppSelector(editorMachineSendSelector);
-  const addGear = useGearProjectStore(state => state.addGear);
-  const gearProjectModule = useGearProjectStore(state => state.gearProject.module);
+  const gearProjectModule = useAppSelector((state) => state.module.value);
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const [virtualGearChild, setVirtualGearChild] = useState<GearData>({
@@ -141,8 +140,8 @@ export const GearToAdd = () => {
     position: vec2ToPosition(vec2.create()),
     speed: 0,
   });
-  const activeGear = useGear(activeGearId);
-  const gears = useGearProjectStore(state => state.gearProject.gears);
+  const activeGear = useAppSelector((state) => selectGearById(state, activeGearId ?? ''));
+  const gears = useAppSelector(selectAllGears);
   // const { angle } = getGearAngle(virtualGearChild, gears);
   const speed = getGearSpeed(virtualGearChild, gears);
   const [activeGearSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(getGearPosition(activeGear, gears, gsap.ticker.time, gearProjectModule)));
@@ -189,8 +188,7 @@ export const GearToAdd = () => {
   }, [gearProjectModule, activeGear, gears, virtualGearChild, activeGearSvgPosition$]);
 
   const handleClick = useCallback(() => {
-    addGear(virtualGearChild);
-    dispatch(addGearToReduxStore(virtualGearChild));
+    dispatch(addGear(virtualGearChild));
     setVirtualGearChild({
       ...virtualGearChild,
       id: v4(),
@@ -202,7 +200,7 @@ export const GearToAdd = () => {
       });
     }
     dispatch(pushUndo("Add Gear"));
-  }, [virtualGearChild, addGear, activeGearId, dispatch, editorMachineSend]);
+  }, [virtualGearChild, activeGearId, dispatch, editorMachineSend]);
 
   return <GearEntity
     ref={ref}

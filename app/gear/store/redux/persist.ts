@@ -5,7 +5,7 @@ import { initializeGearsState, resetGears, selectAllGears } from "./slices/gears
 import { initializeModuleState, setModule } from "./slices/moduleSlice";
 import { initializeDisplayMatrixState, setDisplayMatrix } from "./slices/displayMatrixSlice";
 import { initializeViewBoxState, setViewBoxAPoint, setViewBoxBPoint } from "./slices/viewBoxSlice";
-import { initializeUndoManagerState } from "./slices/undoManagerSlice";
+import { initializeUndoManagerState, setUndoManager } from "./slices/undoManagerSlice";
 import { setEditorMachine, editorMachineSelector, initializeEditorMachineState } from "./slices/editorMachineSlice";
 import { editorMachine } from "../../editorMachine";
 import { Snapshot } from "xstate";
@@ -17,6 +17,7 @@ export const loadGearProjectData = (gearProject: GearProjectData): AppThunk => (
   dispatch(setViewBoxAPoint(gearProject.viewBox.a));
   dispatch(setViewBoxBPoint(gearProject.viewBox.b));
   dispatch(setEditorMachine(gearProject.editorMachineState));
+  dispatch(setUndoManager(gearProject));
 }
 
 export const rootStateToGearProjectData = (state: RootState): GearProjectData => {

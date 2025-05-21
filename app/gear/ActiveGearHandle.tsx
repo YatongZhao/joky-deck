@@ -1,7 +1,4 @@
-import { useGearProjectStore, useGear } from "./store";
-
 import { useSelector } from "@xstate/react";
-// import { useGearSvgPosition } from "./store";
 import { vec2 } from "gl-matrix";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BehaviorSubject, combineLatest, fromEvent, skip } from "rxjs";
@@ -13,22 +10,22 @@ import { vec2ToPosition } from "./utils";
 import { useAppDispatch, useAppSelector } from "./store/redux";
 import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
 import { pushUndo } from "./store/redux/slices/undoManagerSlice";
+import { selectAllGears, selectGearById, updateGear } from "./store/redux/slices/gearsSlice";
 
 export const ActiveGearHandle = () => {
   const dispatch = useAppDispatch();
-  const gearProject = useGearProjectStore((state) => state.gearProject);
-  const setGear = useGearProjectStore((state) => state.setGear);
-  // const pushUndo = useGearProjectStore((state) => state.pushUndo);
+  const gears = useAppSelector(selectAllGears);
+  const gearProjectModule = useAppSelector((state) => state.module.value);
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
-  const activeGear = useGear(activeGearId);
+  const activeGear = useAppSelector((state) => selectGearById(state, activeGearId ?? ''));
   const parentGearId = activeGear?.parentId;
-  const parentGear = useGear(parentGearId);
+  const parentGear = useAppSelector((state) => selectGearById(state, parentGearId ?? ''));
   const [activeGearSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(
-    getGearPosition(activeGear, gearProject.gears, gsap.ticker.time, gearProject.module)
+    getGearPosition(activeGear, gears, gsap.ticker.time, gearProjectModule)
   ));
   const [maybeParentGearSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(
-    getGearPosition(parentGear, gearProject.gears, gsap.ticker.time, gearProject.module)
+    getGearPosition(parentGear, gears, gsap.ticker.time, gearProjectModule)
   ));
   const [targetSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(vec2.create()));
   const [handleSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(vec2.create()));
@@ -54,13 +51,13 @@ export const ActiveGearHandle = () => {
 
   useEffect(() => {
     const tickerCallback = () => {
-      const activeGearSvgPosition = getGearPosition(activeGear, gearProject.gears, gsap.ticker.time, gearProject.module);
+      const activeGearSvgPosition = getGearPosition(activeGear, gears, gsap.ticker.time, gearProjectModule);
       activeGearSvgPosition$.next(vec2.clone(activeGearSvgPosition));
       handleSvgPosition$.next(vec2.clone(activeGearSvgPosition));
     }
     gsap.ticker.add(tickerCallback);
     return () => gsap.ticker.remove(tickerCallback);
-  }, [activeGear, gearProject.gears, gearProject.module, activeGearSvgPosition$, handleSvgPosition$]);
+  }, [activeGear, gears, gearProjectModule, activeGearSvgPosition$, handleSvgPosition$]);
 
   useEffect(() => {
     const subscription = activeGearSvgPosition$.pipe(skip(1)).subscribe((position) => {
@@ -86,31 +83,31 @@ export const ActiveGearHandle = () => {
         // project the distance onto the position angle of the active gear
         const angle = Math.atan2(position[1] - parentGearSvgPosition[1], position[0] - parentGearSvgPosition[0]);
         const projectedDistance = Math.abs(distance * Math.cos(angle - activeGear?.positionAngle / 180 * Math.PI));
-        let teeth = Math.round(projectedDistance / gearProject.module - (parentGear?.teeth ?? 0) / 2) * 2;
+        let teeth = Math.round(projectedDistance / gearProjectModule - (parentGear?.teeth ?? 0) / 2) * 2;
         if (isAbsoluteGear) {
           teeth = startTeethRef.current + teeth * (Math.cos(angle - activeGear?.positionAngle / 180 * Math.PI) > 0 ? 1 : -1);
         }
         teeth = Math.max(teeth, 3);
-        setGear(activeGearId, { teeth });
+        dispatch(updateGear(activeGearId, { teeth }));
         return;
       }
 
       if (isAbsoluteGear) {
-        setGear(activeGearId, { position: vec2ToPosition(position) });
+        dispatch(updateGear(activeGearId, { position: vec2ToPosition(position) }));
       } else {
         const angle = Math.atan2(position[1] - maybeParentGearSvgPosition[1], position[0] - maybeParentGearSvgPosition[0]);
         const distance = Math.hypot(position[0] - maybeParentGearSvgPosition[0], position[1] - maybeParentGearSvgPosition[1]);
-        let teeth = Math.round(distance / gearProject.module - (parentGear?.teeth ?? 0) / 2) * 2;
+        let teeth = Math.round(distance / gearProjectModule - (parentGear?.teeth ?? 0) / 2) * 2;
         teeth = Math.max(teeth, 3);
-        setGear(activeGearId, { teeth, positionAngle: 360 * angle / (2 * Math.PI) });
+        dispatch(updateGear(activeGearId, { teeth, positionAngle: 360 * angle / (2 * Math.PI) }));
       }
     });
 
     return () => subscription.unsubscribe();
   }, [
     targetSvgPosition$,
-    isDragging, maybeParentGearSvgPosition$, parentGear?.teeth, gearProject.module,
-    setGear, activeGearId,
+    isDragging, maybeParentGearSvgPosition$, parentGear?.teeth, gearProjectModule,
+    dispatch, activeGearId,
     isCtrlPressed, activeGear,
   ]);
 

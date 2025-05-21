@@ -1,52 +1,38 @@
 import { AngleSlider, ColorInput, DEFAULT_THEME, NumberInput, Paper, Stack } from "@mantine/core"
-import { useGear } from "../store";
-import { useGearProjectStore } from "../store";
 import { useSelector } from "@xstate/react";
 import { REACTION_LAYER_OFFSET } from "../constant";
 import { useAppDispatch, useAppSelector } from "../store/redux";
 import { editorMachineSelector } from "../store/redux/slices/editorMachineSlice";
 import { pushUndo } from "../store/redux/slices/undoManagerSlice";
+import { selectGearById, updateGearColor, updateGearPositionAngle, updateGearTeeth, updateGearSpeed } from "../store/redux/slices/gearsSlice";
 
 export const GearSettingPanel = () => {
   const dispatch = useAppDispatch();
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
-  const activeGear = useGear(activeGearId);
-  const setGearPositionAngle = useGearProjectStore((state) => state.setGearPositionAngle);
-  const setGearColor = useGearProjectStore((state) => state.setGearColor);
-  const setGearTeeth = useGearProjectStore((state) => state.setGearTeeth);
-  const setGearSpeed = useGearProjectStore((state) => state.setGearSpeed);
+  const activeGear = useAppSelector((state) => selectGearById(state, activeGearId ?? ''));
   
   const handlePositionAngleChange = (value: number) => {
     if (activeGearId) {
-      setGearPositionAngle(activeGearId, (value - 90 + 360) % 360);
+      dispatch(updateGearPositionAngle(activeGearId, (value - 90 + 360) % 360));
     }
   }
 
   const handleColorChange = (value: string) => {
     if (activeGearId) {
-      const isColorChanged = setGearColor(activeGearId, value);
-      if (isColorChanged) {
-        dispatch(pushUndo("Change Gear Color"));
-      }
+      dispatch(updateGearColor(activeGearId, value));
     }
   }
 
   const handleTeethChange = (value: number | string) => {
     if (activeGearId) {
-      const isTeethChanged = setGearTeeth(activeGearId, Number(value));
-      if (isTeethChanged) {
-        dispatch(pushUndo("Change Gear Teeth"));
-      }
+      dispatch(updateGearTeeth(activeGearId, Number(value)));
     }
   }
 
   const handleSpeedChange = (value: number | string) => {
     if (activeGearId) {
-      const isSpeedChanged = setGearSpeed(activeGearId, Number(value));
-      if (isSpeedChanged) {
-        dispatch(pushUndo("Change Gear Speed"));
-      }
+      dispatch(updateGearSpeed(activeGearId, Number(value)));
     }
   }
 

@@ -1,11 +1,11 @@
 import { useEffect, useRef } from "react";
 import { rotatePoint } from "./core/gear";
-import { useGear, useGearProjectStore } from "./store";
 import { useSelector } from "@xstate/react";
 import { getGearPosition } from "./GearParser";
 import { gsap } from "gsap";
 import { useAppSelector } from "./store/redux";
 import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
+import { selectAllGears, selectGearById } from "./store/redux/slices/gearsSlice";
 
 const drawCrossHair = (radius: number) => {
   let path = '';
@@ -28,9 +28,9 @@ export const CrossHair: React.FC<{ radius: number }> = ({ radius }) => {
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const gRef = useRef<SVGGElement>(null);
-  const activeGear = useGear(activeGearId);
-  const gearProjectModule = useGearProjectStore(state => state.gearProject.module);
-  const gears = useGearProjectStore(state => state.gearProject.gears);
+  const activeGear = useAppSelector((state) => selectGearById(state, activeGearId ?? ''));
+  const gearProjectModule = useAppSelector((state) => state.module.value);
+  const gears = useAppSelector(selectAllGears);
 
   useEffect(() => {
     const tickerCallback = () => {

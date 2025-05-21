@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useGear, useGearProjectStore, svgMatrix$, globalViewBox$, viewBoxA$, viewBoxB$, viewBoxC$, viewBoxD$ } from "./store";
+import { svgMatrix$, globalViewBox$, viewBoxA$, viewBoxB$, viewBoxC$, viewBoxD$ } from "./store";
 import { ViewBox } from "./store";
 // import { GearProjectItem } from "./GearProjectItem";
 import { GearSettingPanel } from "./reactionLayer/GearSettingPanel";
@@ -28,6 +28,7 @@ import { GearParser, GearToAdd } from "./GearParser";
 import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
 import { useAppDispatch, useAppSelector } from "./store/redux";
 import { pushUndo } from "./store/redux/slices/undoManagerSlice";
+import { selectAllGears, selectGearById } from "./store/redux/slices/gearsSlice";
 
 const useWheelDrag = () => {
   const ref = useRef<SVGSVGElement>(null);
@@ -92,7 +93,8 @@ const useZoom = () => {
 };
 
 export const GearProject: React.FC = () => {
-  const gearProject = useGearProjectStore((state) => state.gearProject);
+  const gearProjectModule = useAppSelector((state) => state.module.value);
+  const gears = useAppSelector(selectAllGears);
   const { ref: wheelDragRef, deltaMatrix$ } = useWheelDrag();
   const { ref: dragHandleRef, deltaMatrix$: dragHandleDeltaMatrix$, dragState } = useDrag({ middleButton: true });
   const svgRef = useRef<SVGSVGElement>(null);
@@ -140,7 +142,8 @@ export const GearProject: React.FC = () => {
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const state = useSelector(editorMachineActor, (state) => state);
 
-  const activeGear = useGear(activeGearId);
+  // const activeGear = useGear(activeGearId);
+  const activeGear = useAppSelector((state) => activeGearId ? selectGearById(state, activeGearId) : null);
   useModeHotKeys();
 
   const handleExportViewBoxDragHandleDragEnd = useCallback(() => {
@@ -172,10 +175,11 @@ export const GearProject: React.FC = () => {
         {!state.matches('ViewportSetting') && <ExportViewBoxController key={__internal_view_box_controller_id__} id={__internal_view_box_controller_id__} />}
         <g filter={`url(#${__internal_export_view_box_filter_filter_id__})`} mask={`url(#${__internal_export_view_box_filter_mask_id__})`}>
           {/* <GearProjectItem gearId={gearProject.rootGearId} rootPosition={gearProject.rootGearPosition} /> */}
-          {gearProject.gears.map(gear => <GearParser key={gear.id} gearId={gear.id} />)}
+          {/* {gearProject.gears.map(gear => <GearParser key={gear.id} gearId={gear.id} />)} */}
+          {gears.map(gear => <GearParser key={gear.id} gearId={gear.id} />)}
           {state.matches({ Selecting: { GearSelected: "AddingGear" } }) && <GearToAdd />}
         </g>
-        {activeGear && <CrossHair radius={activeGear.teeth * gearProject.module / 2} />}
+        {activeGear && <CrossHair radius={activeGear.teeth * gearProjectModule / 2} />}
         {state.matches('ViewportSetting') && <ExportViewBoxController key={__internal_view_box_controller_id__} id={__internal_view_box_controller_id__} />}
         {state.matches('ViewportSetting') && <>
           <DragHandle targetSvgPosition$={viewBoxA$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />

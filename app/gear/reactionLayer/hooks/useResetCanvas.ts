@@ -1,10 +1,11 @@
 import { useCallback } from "react";
-import { useGearProjectStore } from "../../store";
 import { initialGearProject } from "../../core/types";
+import { loadGearProjectData } from "../../store/redux/persist";
+import { useAppDispatch } from "../../store/redux";
 
 export const useResetCanvas = () => {
-  const setGearProject = useGearProjectStore((state) => state.setGearProject);
+  const dispatch = useAppDispatch();
   return useCallback(() => {
-    setGearProject(initialGearProject);
-  }, [setGearProject]);
+    dispatch(loadGearProjectData(initialGearProject));
+  }, [dispatch]);
 }
