@@ -5,8 +5,8 @@ import { matrixToMat3 } from "../utils";
 
 const { viewBox } = initialGearProject;
 
-export const viewBoxA$ = new BehaviorSubject<vec2>(viewBox.a);
-export const viewBoxB$ = new BehaviorSubject<vec2>(viewBox.b);
+export const viewBoxA$ = new BehaviorSubject<vec2>(vec2.fromValues(viewBox.a[0], viewBox.a[1]));
+export const viewBoxB$ = new BehaviorSubject<vec2>(vec2.fromValues(viewBox.b[0], viewBox.b[1]));
 export const viewBoxC$ = new BehaviorSubject<vec2>(vec2.fromValues(viewBox.a[0], viewBox.b[1]));
 export const viewBoxD$ = new BehaviorSubject<vec2>(vec2.fromValues(viewBox.b[0], viewBox.a[1]));
 
