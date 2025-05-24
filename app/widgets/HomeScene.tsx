@@ -28,11 +28,11 @@ export const HomeScene: React.FC<{ onStart?: (config: Config) => void }> = ({ on
     const configMap = await loadConfigMap(configUrl) as ConfigMap;
     const configs = [];
     for (const config in configMap) {
-      configs.push({ name: config, config: configMap[config] });
+      configs.push({ name: config, config: configMap[config]! });
     }
     setConfigs(configs);
     if (!valueRef.current && configs.length > 0) {
-      setValue(configs[0].name);
+      setValue(configs[0]!.name);
     }
     setLoading(false);
   }, []);

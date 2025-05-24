@@ -18,7 +18,7 @@ export const RewardPanel = () => {
     <Stack
       align="center"
       w="100%"
-      bg={rgba(theme.colors.gameMain[4], 0.8)}
+      bg={rgba(theme.colors.gameMain?.[4] ?? 'white', 0.8)}
       style={{ borderRadius: 10 }}
     >
       <PanelButton onClick={handleCashOut} mt={8} w={300} h={40} buttonColor="orange.4">

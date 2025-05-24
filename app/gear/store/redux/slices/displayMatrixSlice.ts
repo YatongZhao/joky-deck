@@ -33,7 +33,6 @@ export default displayMatrixSlice.reducer;
 displayMatrix$.pipe(
   debounceTime(500),
 ).subscribe(displayMatrix => {
-  console.log('displayMatrix', displayMatrix);
   store.dispatch(setDisplayMatrix(mat3ToMatrix(displayMatrix)));
 });
 

@@ -29,7 +29,7 @@ export const PanelButton: React.FC<{
       fz={16}
       onClick={() => !disabled && onClick?.()}
       {...styleProps}
-      className={classNames(style.button, { [style.disabled]: disabled })}
+      className={classNames(style.button, { [style.disabled!]: disabled })}
       style={{
         borderRadius: 7,
         cursor: 'pointer',

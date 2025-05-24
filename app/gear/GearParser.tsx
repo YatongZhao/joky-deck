@@ -45,7 +45,7 @@ export const getGearPosition = (gear: GearData | null | undefined, gears: GearDa
   return vec2.transformMat3(position, parentGearPosition, transformMatrix);
 }
 
-const getGearAngle = (gear: GearData | null | undefined, gears: GearData[], time: number): { angle: number, direction: 1 | -1 } => {
+export const getGearAngle = (gear: GearData | null | undefined, gears: GearData[], time: number): { angle: number, direction: 1 | -1 } => {
   if (!gear) return { angle: 0, direction: 1 };
   const parentGear = gears.find(g => g.id === gear.parentId);
   const parentGearAngle = getGearAngle(parentGear, gears, time);

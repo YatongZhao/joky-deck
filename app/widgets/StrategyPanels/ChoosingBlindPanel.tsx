@@ -20,25 +20,25 @@ const BlindTab = ({ active, blind, disableSkip }: { active: boolean; blind: Blin
     game.trySkipBlind();
   }
 
-  return <Card h={260} bg={active ? theme.colors.gameMain[8] : theme.colors.gameMain[1]} pb={8}>
+  return <Card h={260} bg={active ? theme.colors.gameMain?.[8] : theme.colors.gameMain?.[1]} pb={8}>
     <Stack align="center" justify="space-between" h="100%">
       <Stack w="100%" align="center" justify="center" gap={10}>
-        <Box c={active ? "red.6" : theme.colors.gameMain[8]} fz={14} fw={900}>{blind.name}</Box>
-        <Box fz={10} ta="center" c={active ? "white" : theme.colors.gameMain[8]}>{blindDescription}</Box>
+        <Box c={active ? "red.6" : theme.colors.gameMain?.[8]} fz={14} fw={900}>{blind.name}</Box>
+        <Box fz={10} ta="center" c={active ? "white" : theme.colors.gameMain?.[8]}>{blindDescription}</Box>
       </Stack>
       <Stack w="100%" align="center">
         <Stack gap={2} w="100%" align="center">
-          <Box fz={10} lh={1} c={active ? "white" : theme.colors.gameMain[8]}>At Least</Box>
-          <Box fz={18} lh={1} c={active ? "red.6" : theme.colors.gameMain[8]}>{targetScore}</Box>
+          <Box fz={10} lh={1} c={active ? "white" : theme.colors.gameMain?.[8]}>At Least</Box>
+          <Box fz={18} lh={1} c={active ? "red.6" : theme.colors.gameMain?.[8]}>{targetScore}</Box>
         </Stack>
-        <Group gap={0} fz={12} lh={1} c={active ? "white" : theme.colors.gameMain[8]}>
+        <Group gap={0} fz={12} lh={1} c={active ? "white" : theme.colors.gameMain?.[8]}>
           Reward:
-          <Text ml={8} fz={20} lh={1} c={active ? "orange.3" : theme.colors.gameMain[8]} component="span" fw="bold">{'$'.repeat(blind.reward)}</Text>
+          <Text ml={8} fz={20} lh={1} c={active ? "orange.3" : theme.colors.gameMain?.[8]} component="span" fw="bold">{'$'.repeat(blind.reward)}</Text>
         </Group>
         <Stack h={40} gap={5} mt={10} w="100%">
           {active && <>
-            <PanelButton w="100%" fw={900} h={20} fz={10} buttonColor={theme.colors.gameMain[3]} onClick={handleSelect}>Select</PanelButton>
-            {!disableSkip && <PanelButton w="100%" fw={900} h={20} fz={10} buttonColor={theme.colors.gameMain[3]} onClick={handleSkipBlind}>Skip Blind</PanelButton>}
+            <PanelButton w="100%" fw={900} h={20} fz={10} buttonColor={theme.colors.gameMain![3]} onClick={handleSelect}>Select</PanelButton>
+            {!disableSkip && <PanelButton w="100%" fw={900} h={20} fz={10} buttonColor={theme.colors.gameMain![3]} onClick={handleSkipBlind}>Skip Blind</PanelButton>}
           </>}
         </Stack>
       </Stack>

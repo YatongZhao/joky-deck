@@ -29,7 +29,7 @@ export const FightingPanel = () => {
             onClick={(card) => round.changeSelectedCard(card)}
             active={selectedCards.includes(card)}
             card={card}
-            positionSignal={positionSignalMap[card.id]}
+            positionSignal={positionSignalMap[card.id]!}
             onDrag={(props) => handleDrag(i, props)}
           />
         ))}

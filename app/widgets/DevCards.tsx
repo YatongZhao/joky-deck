@@ -46,7 +46,7 @@ export const JokerRow = ({ jokers }: { jokers: JokerCard[] }) => {
 
   return <DraggableListContainer config={jokerListConfig} length={jokers$.value.length}>
     {jokers$.value.map((joker, i) => (
-      <JokerCardWidget key={joker.id} randomRotate={false} joker={joker} positionSignal={positionSignalMap[joker.id]} onDrag={(props) => handleDrag(i, props)} />
+      <JokerCardWidget key={joker.id} randomRotate={false} joker={joker} positionSignal={positionSignalMap[joker.id]!} onDrag={(props) => handleDrag(i, props)} />
     ))}
   </DraggableListContainer>
 }
@@ -91,7 +91,7 @@ export const DevPlayingCards = ({ game }: { game: Game }) => {
           key={card.id}
           card={card}
           randomRotate={false}
-          positionSignal={positionSignalMap[card.id]}
+          positionSignal={positionSignalMap[card.id]!}
           onDrag={(props) => handleDrag(i, props)}
         />
     ))}
@@ -128,7 +128,7 @@ const DevPlanets = ({ game, planetConfigs }: { game: Game, planetConfigs: Planet
 
   return <DraggableListContainer config={planetListConfig} length={planets$.value.length}>
     {planets$.value.map((planet, i) => (
-      <ConsumableCardWidget key={planet.id} card={planet} positionSignal={positionSignalMap[planet.id]} onDrag={(props) => handleDrag(i, props)} />
+      <ConsumableCardWidget key={planet.id} card={planet} positionSignal={positionSignalMap[planet.id]!} onDrag={(props) => handleDrag(i, props)} />
     ))}
   </DraggableListContainer>
 }

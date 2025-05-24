@@ -4,6 +4,7 @@ import { useDropzone } from "react-dropzone"
 export const DropZoneContainer = <T,>({ children, onJsonLoad, title }: { children?: React.ReactNode, onJsonLoad?: (json: T) => void, title?: string }) => {
   const handleDrop = (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
+    if (!file) return;
     const reader = new FileReader();
     reader.onload = (event) => {
       const json = JSON.parse(event.target?.result as string);

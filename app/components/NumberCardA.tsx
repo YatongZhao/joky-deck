@@ -11,7 +11,7 @@ export const NumberCardA: React.FC<{
 
   return (
     <Stack
-      bg={c || rgba(theme.colors.gameMain[4], 0.8)}
+      bg={c || rgba(theme.colors.gameMain?.[4] ?? 'white', 0.8)}
       style={{ borderRadius: 5 }}
       align="center"
       pos="relative"

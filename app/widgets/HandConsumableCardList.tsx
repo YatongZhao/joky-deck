@@ -16,7 +16,7 @@ export const HandConsumableCardList = () => {
   });
 
   return (
-    <Box h={95} style={{ borderRadius: 5 }} p={7} bg={rgba(theme.colors.gameMain[4], 0.8)}>
+    <Box h={95} style={{ borderRadius: 5 }} p={7} bg={rgba(theme.colors.gameMain?.[4] ?? 'white', 0.8)}>
       {handConsumableCards.map((card, i) => (
         <ConsumableCardWidget
           key={card.id}
@@ -24,7 +24,7 @@ export const HandConsumableCardList = () => {
           onDrag={(props) => handleDrag(i, props)}
           onUse={(card) => game.useConsumableCard(card)}
           onSell={(card) => game.sellCard(card)}
-          positionSignal={positionSignalMap[card.id]}
+          positionSignal={positionSignalMap[card.id]!}
         />
       ))}
     </Box>

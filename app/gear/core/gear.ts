@@ -72,11 +72,11 @@ export function generateGearPath({
     let endRootPoint: [number, number] = [0, 0];
       
     if (rootRadius < baseRadius) {
-      startRootPoint = rotatePoint((toothPath.leftPoints[0]).map(v => v / baseRadius * rootRadius) as [number, number], angle);
-      endRootPoint = rotatePoint((toothPath.rightPoints[toothPath.rightPoints.length - 1]).map(v => v / baseRadius * rootRadius) as [number, number], angle);
+      startRootPoint = rotatePoint((toothPath.leftPoints[0]!).map(v => v / baseRadius * rootRadius) as [number, number], angle);
+      endRootPoint = rotatePoint((toothPath.rightPoints[toothPath.rightPoints.length - 1]!).map(v => v / baseRadius * rootRadius) as [number, number], angle);
     } else {
-      startRootPoint = rotatePoint(toothPath.leftPoints[0], angle);
-      endRootPoint = rotatePoint(toothPath.rightPoints[toothPath.rightPoints.length - 1], angle);
+      startRootPoint = rotatePoint(toothPath.leftPoints[0]!, angle);
+      endRootPoint = rotatePoint(toothPath.rightPoints[toothPath.rightPoints.length - 1]!, angle);
     }
 
     if (i !== teeth - 1) {
@@ -87,7 +87,7 @@ export function generateGearPath({
 
     path += `${i === teeth - 1 ? "M" : "L"} ${startRootPoint.map((value) => `${value.toFixed(2)}`).join(",")}`;
     path += ` L ${toothPath.leftPoints.map(([x, y]) => rotatePoint([x, y], angle)).map(([x, y]) => `${x.toFixed(2)},${y.toFixed(2)}`).join(" L ")}`;
-    path += ` A ${outerRadius} ${outerRadius} 0 0 0 ${rotatePoint(toothPath.rightPoints[0], angle).map((value) => `${value.toFixed(2)}`).join(" ")}`;
+    path += ` A ${outerRadius} ${outerRadius} 0 0 0 ${rotatePoint(toothPath.rightPoints[0]!, angle).map((value) => `${value.toFixed(2)}`).join(" ")}`;
     path += ` L ${toothPath.rightPoints.map(([x, y]) => rotatePoint([x, y], angle)).map(([x, y]) => `${x.toFixed(2)},${y.toFixed(2)}`).join(" L ")}`;
     path += `L ${endRootPoint.map((value) => `${value.toFixed(2)}`).join(",")}`;
   }

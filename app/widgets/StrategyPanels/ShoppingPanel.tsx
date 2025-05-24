@@ -67,7 +67,7 @@ export const ShoppingPanel = () => {
             h={105}
             style={{ borderRadius: 10 }}
             w="100%"
-            bg={rgba(theme.colors.gameMain[4], 0.8)}
+            bg={rgba(theme.colors.gameMain?.[4] ?? 'white', 0.8)}
           >
             {goods.map((card, i) => {
               if (card.uniqueType === UniqType.Joker) {
@@ -77,7 +77,7 @@ export const ShoppingPanel = () => {
                     joker={card as JokerCard}
                     onBuy={(joker) => game.buyCard(joker)}
                     onDrag={(props) => handleDrag(i, props)}
-                    positionSignal={positionSignalMap[card.id]}
+                    positionSignal={positionSignalMap[card.id]!}
                     showPrice
                   />
                 )
@@ -88,7 +88,7 @@ export const ShoppingPanel = () => {
                     card={card as Consumable}
                     onBuy={(card) => game.buyCard(card)}
                     onDrag={(props) => handleDrag(i, props)}
-                    positionSignal={positionSignalMap[card.id]}
+                    positionSignal={positionSignalMap[card.id]!}
                     showPrice
                   />
                 )
@@ -107,7 +107,7 @@ export const ShoppingPanel = () => {
                 boosterPack={boosterPack}
                 onBuy={(boosterPack) => game.buyAndUseBoosterPack(boosterPack)}
                 onDrag={(props) => handleBoosterPackDrag(i, props)}
-                positionSignal={boosterPackPositionSignalMap[boosterPack.id]}
+                positionSignal={boosterPackPositionSignalMap[boosterPack.id]!}
                 showPrice
               />
             })}

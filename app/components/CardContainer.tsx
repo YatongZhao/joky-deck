@@ -27,7 +27,7 @@ export const CardContainer = forwardRef<
         userSelect: 'none',
         overflow: 'visible',
         borderWidth: 2,
-        borderColor: theme.colors.gameMain[7],
+        borderColor: theme.colors.gameMain?.[7],
         borderStyle: 'solid',
       }}
       radius="sm"

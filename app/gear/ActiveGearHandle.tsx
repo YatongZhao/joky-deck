@@ -1,7 +1,7 @@
 import { useSelector } from "@xstate/react";
 import { vec2 } from "gl-matrix";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BehaviorSubject, combineLatest, fromEvent, skip } from "rxjs";
+import { BehaviorSubject, fromEvent, skip } from "rxjs";
 import { DragHandle } from "./DragHandle";
 import { GearType } from "./core/types";
 import { getGearPosition } from "./GearParser";
@@ -59,7 +59,7 @@ export const ActiveGearHandle = () => {
   }, [activeGear, gears, gearProjectModule, activeGearSvgPosition$, handleSvgPosition$]);
 
   useEffect(() => {
-    const subscription = targetSvgPosition$.subscribe((position) => {
+    const subscription = targetSvgPosition$.pipe(skip(1)).subscribe((position) => {
       if (!isDragging) return;
       if (!activeGearId) return;
       if (!activeGear) return;
@@ -100,6 +100,7 @@ export const ActiveGearHandle = () => {
     isDragging, parentGear?.teeth, gearProjectModule,
     dispatch, activeGearId,
     isCtrlPressed, activeGear,
+    gears, parentGear,
   ]);
 
   const handleDragEnd = useCallback(() => {

@@ -24,7 +24,7 @@ export const useDraggableCards = <C extends {
         positionSignalMapRef.current[card.id] = new BehaviorSubject({ x: 0, y: -100 });
       }
 
-      map[card.id] = positionSignalMapRef.current[card.id];
+      map[card.id] = positionSignalMapRef.current[card.id]!;
     });
 
     for (const id in positionSignalMapRef.current) {
@@ -46,7 +46,7 @@ export const useDraggableCards = <C extends {
 
   useEffect(() => {
     cards.forEach((card, i) => {
-      positionSignalMap[card.id].next({
+      positionSignalMap[card.id]!.next({
         x: getX(i),
         y: getY(i),
       });
@@ -76,7 +76,7 @@ export const useDraggableCards = <C extends {
         newIndex = diffI > 0 ? i - 1 : i + 1;
       }
 
-      positionSignalMap[card.id].next({
+      positionSignalMap[card.id]!.next({
         x: getX(newIndex),
         y: getY(newIndex),
       });

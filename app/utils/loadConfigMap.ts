@@ -16,7 +16,7 @@ export const loadConfigMap = async (configUrl: string): Promise<ConfigMap> => {
     enhancements: Enhancements,
   });
   for (const key in configMap) {
-    const config = configMap[key];
+    const config = configMap[key]!;
     for (const joker of config.jokers) {
       joker.metadata.image = new URL(joker.metadata.image, url.toString()).toString();
     }

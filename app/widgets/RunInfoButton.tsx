@@ -21,7 +21,7 @@ export const RunInfoButton: React.FC<{ h?: MantineStyleProps['h']; onClick?: () 
 export const SideRunInfoButton: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
   const theme = useTheme();
   return <PanelButton
-    buttonColor={theme.colors.gameMain[5]}
+    buttonColor={theme.colors.gameMain![5]}
     onClick={onClick}
   >
     <Box mt={2} fw={900}>Run</Box>

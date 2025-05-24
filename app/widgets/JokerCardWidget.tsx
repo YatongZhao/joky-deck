@@ -31,7 +31,7 @@ const JokerCategoryLabel = ({ category }: { category: JokerCategory }) => {
   const theme = useTheme();
   return <Box
     pos="absolute" bottom={-1} left={-1} right={-1} fz={6} fw="bold" ta="center"
-    bg={theme.colors.gameMain[7]}
+    bg={theme.colors.gameMain?.[7]}
     c="white"
     style={{
       borderBottomLeftRadius: 6,

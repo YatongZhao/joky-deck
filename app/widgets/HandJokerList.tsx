@@ -16,14 +16,14 @@ export const HandJokerList = () => {
   });
 
   return (
-    <Box h={95} style={{ borderRadius: 5 }} p={7} bg={rgba(theme.colors.gameMain[4], 0.8)}>
+    <Box h={95} style={{ borderRadius: 5 }} p={7} bg={rgba(theme.colors.gameMain?.[4] ?? 'white', 0.8)}>
       {handJokerCards.map((joker, i) => (
         <JokerCardWidget
           key={joker.id}
           joker={joker}
           onSell={(joker) => game.sellCard(joker)}
           onDrag={(props) => handleDrag(i, props)}
-          positionSignal={positionSignalMap[joker.id]}
+          positionSignal={positionSignalMap[joker.id]!}
         />
       ))}
     </Box>

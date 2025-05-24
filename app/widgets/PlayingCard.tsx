@@ -217,7 +217,7 @@ const PlayingCardFaceJ = ({ style, ...props }: BoxProps) => {
     backgroundSize: '86px auto',
     backgroundPosition: 'center center',
     backgroundRepeat: 'no-repeat',
-    border: `0.5px solid ${theme.colors.gameMain[2]}`,
+    border: `0.5px solid ${theme.colors.gameMain?.[2]}`,
     borderRadius: 4,
     ...(style || {}),
   }} {...props} />
@@ -231,7 +231,7 @@ const PlayingCardFaceQ = ({ style, ...props }: BoxProps) => {
     backgroundSize: '86px auto',
     backgroundPosition: 'center center',
     backgroundRepeat: 'no-repeat',
-    border: `0.5px solid ${theme.colors.gameMain[2]}`,
+    border: `0.5px solid ${theme.colors.gameMain?.[2]}`,
     borderRadius: 4,
     ...(style || {}),
   }} {...props} />
@@ -245,7 +245,7 @@ const PlayingCardFaceK = ({ style, ...props }: BoxProps) => {
     backgroundSize: '86px auto',
     backgroundPosition: 'center center',
     backgroundRepeat: 'no-repeat',
-    border: `0.5px solid ${theme.colors.gameMain[1]}`,
+    border: `0.5px solid ${theme.colors.gameMain?.[1]}`,
     borderRadius: 4,
     ...(style || {}),
   }} {...props} />

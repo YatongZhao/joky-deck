@@ -37,7 +37,6 @@ export default viewBoxSlice.reducer;
 viewBox$.pipe(
   debounceTime(500),
 ).subscribe(viewBox => {
-  console.log('viewBox', viewBox);
   store.dispatch(setViewBox(viewBox));
 });
 

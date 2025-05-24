@@ -25,7 +25,7 @@ const undo = <T>(state: UndoManagerState<T>): UndoManagerState<T> => {
     return state;
   }
 
-  const previous = state.past[state.past.length - 1];
+  const previous = state.past[state.past.length - 1]!;
   const newPast = state.past.slice(0, -1);
 
   return {
@@ -40,7 +40,7 @@ const redo = <T>(state: UndoManagerState<T>): UndoManagerState<T> => {
     return state;
   }
 
-  const next = state.future[0];
+  const next = state.future[0]!;
   const newFuture = state.future.slice(1);
 
   return {

@@ -16,8 +16,8 @@ const SuitIcon = ({ suit, ...styleProps }: { suit: Suits } & MantineStyleProps) 
 
   return <Text {...styleProps}>
     {suit === 'diamond' && <Box component="span" c={theme.colors.red[7]} className={pokerFont.className}>♦</Box>}
-    {suit === 'club' && <Box component="span" c={theme.colors.gameMain[8]} className={pokerFont.className}>♣</Box>}
-    {suit === 'spade' && <Box component="span" c={theme.colors.gameMain[8]} className={pokerFont.className}>♠</Box>}
+    {suit === 'club' && <Box component="span" c={theme.colors.gameMain?.[8]} className={pokerFont.className}>♣</Box>}
+    {suit === 'spade' && <Box component="span" c={theme.colors.gameMain?.[8]} className={pokerFont.className}>♠</Box>}
     {suit === 'heart' && <Box component="span" c={theme.colors.red[7]} className={pokerFont.className}>♥</Box>}
   </Text>
 }

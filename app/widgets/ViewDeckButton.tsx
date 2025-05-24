@@ -26,7 +26,7 @@ const CardListBySuit = ({ suit }: { suit: Suits }) => {
       <CardScene
         key={card.id}
         card={card}
-        positionSignal={positionSignalMap[card.id]}
+        positionSignal={positionSignalMap[card.id]!}
         onDrag={(props) => handleDrag(i, props)}
       />
     ))}
@@ -35,7 +35,7 @@ const CardListBySuit = ({ suit }: { suit: Suits }) => {
 
 export const CardViewDeckButton: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
   const theme = useTheme();
-  return <PanelButton buttonColor={theme.colors.gameMain[5]} w={50} h={70} onClick={onClick}>
+  return <PanelButton buttonColor={theme.colors.gameMain![5]} w={50} h={70} onClick={onClick}>
     <Box fz={8}>View Deck</Box>
   </PanelButton>
 }
@@ -43,7 +43,7 @@ export const CardViewDeckButton: React.FC<{ onClick?: () => void }> = ({ onClick
 export const SideViewDeckButton: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
   const theme = useTheme();
 
-  return <PanelButton buttonColor={theme.colors.gameMain[5]} onClick={onClick}>
+  return <PanelButton buttonColor={theme.colors.gameMain![5]} onClick={onClick}>
     <Box fz={11} mt={2} fw={900}>View</Box>
     <Box fz={12} mb={4} fw={900}>Deck</Box>
   </PanelButton>

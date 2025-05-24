@@ -14,7 +14,7 @@ export const DrawerContainer: React.FC<{ children: ReactNode }> = ({ children })
       align="flex-start"
       p={3}
       fw="bold"
-      bg={theme.colors.gameMain[9]}
+      bg={theme.colors.gameMain?.[9]}
       style={{ borderTopLeftRadius: 15, borderTopRightRadius: 15 }}
     >
       {children}

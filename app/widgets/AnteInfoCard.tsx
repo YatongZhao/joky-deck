@@ -14,7 +14,7 @@ export const AnteInfoCard = () => {
   return <Stack
     gap={6}
     align="center"
-    bg={theme.colors.gameMain[9]}
+    bg={theme.colors.gameMain?.[9]}
     style={{ borderRadius: 5, flexShrink: 1 }}
     py={10}
     px={10}
