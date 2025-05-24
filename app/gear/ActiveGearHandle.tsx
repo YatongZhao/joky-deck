@@ -12,20 +12,19 @@ import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
 import { pushUndo } from "./store/redux/slices/undoManagerSlice";
 import { selectAllGears, selectGearById, updateGear } from "./store/redux/slices/gearsSlice";
 
+// TODO: This is a mess
 export const ActiveGearHandle = () => {
   const dispatch = useAppDispatch();
   const gears = useAppSelector(selectAllGears);
   const gearProjectModule = useAppSelector((state) => state.module.value);
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
+
   const activeGear = useAppSelector((state) => selectGearById(state, activeGearId ?? ''));
   const parentGearId = activeGear?.parentId;
   const parentGear = useAppSelector((state) => selectGearById(state, parentGearId ?? ''));
   const [activeGearSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(
     getGearPosition(activeGear, gears, gsap.ticker.time, gearProjectModule)
-  ));
-  const [maybeParentGearSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(
-    getGearPosition(parentGear, gears, gsap.ticker.time, gearProjectModule)
   ));
   const [targetSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(vec2.create()));
   const [handleSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(vec2.create()));
@@ -60,21 +59,13 @@ export const ActiveGearHandle = () => {
   }, [activeGear, gears, gearProjectModule, activeGearSvgPosition$, handleSvgPosition$]);
 
   useEffect(() => {
-    const subscription = activeGearSvgPosition$.pipe(skip(1)).subscribe((position) => {
-      if (!isDragging) {
-        targetSvgPosition$.next(vec2.clone(position));
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [activeGearSvgPosition$, isDragging, targetSvgPosition$]);
-
-  useEffect(() => {
-    const subscription = combineLatest([targetSvgPosition$.pipe(skip(1)), maybeParentGearSvgPosition$]).subscribe(([position, maybeParentGearSvgPosition]) => {
+    const subscription = targetSvgPosition$.subscribe((position) => {
       if (!isDragging) return;
       if (!activeGearId) return;
       if (!activeGear) return;
 
       const isAbsoluteGear = activeGear.type === GearType.Absolute;
+      const maybeParentGearSvgPosition = getGearPosition(parentGear, gears, gsap.ticker.time, gearProjectModule);
 
       if (isCtrlPressed) {
         const parentGearSvgPosition = isAbsoluteGear ? activeGear.position : maybeParentGearSvgPosition;
@@ -106,7 +97,7 @@ export const ActiveGearHandle = () => {
     return () => subscription.unsubscribe();
   }, [
     targetSvgPosition$,
-    isDragging, maybeParentGearSvgPosition$, parentGear?.teeth, gearProjectModule,
+    isDragging, parentGear?.teeth, gearProjectModule,
     dispatch, activeGearId,
     isCtrlPressed, activeGear,
   ]);
@@ -139,7 +130,17 @@ export const ActiveGearHandle = () => {
     }
   }, [isDragging]);
 
+  const handlePositionChange = useCallback((pos: vec2) => {
+    targetSvgPosition$.next(pos);
+  }, [targetSvgPosition$]);
+
   return <>
-    <DragHandle targetSvgPosition$={targetSvgPosition$} handleSvgPosition$={handleSvgPosition$} onDragEnd={handleDragEnd} onDragStart={handleDragStart} shape="circle" />
+    <DragHandle
+      handleSvgPosition$={handleSvgPosition$}
+      onPositionChange={handlePositionChange}
+      onDragEnd={handleDragEnd}
+      onDragStart={handleDragStart}
+      shape="circle"
+    />
   </>
 }

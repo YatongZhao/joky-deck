@@ -1,5 +1,7 @@
 import { Action, configureStore, ThunkAction } from '@reduxjs/toolkit';
 import { useDispatch, useSelector } from 'react-redux';
+import { preloadedGearProjectData } from './preloadedGearProjectData';
+import { epicMiddleware } from './epicMiddleware';
 
 import gearsReducer from './slices/gearsSlice';
 import moduleReducer from './slices/moduleSlice';
@@ -8,11 +10,8 @@ import viewBoxReducer from './slices/viewBoxSlice';
 import undoManagerReducer from './slices/undoManagerSlice';
 import editorMachineReducer from './slices/editorMachineSlice';
 import { gearProjectDataToRootState, persistStore } from './persist';
-import { getGearProjectDataFromLocalStorage } from '../localStorage';
-import { initialGearProject } from '../../core/types';
 
-const gearProjectData = getGearProjectDataFromLocalStorage();
-const preloadedState = gearProjectDataToRootState(gearProjectData ?? initialGearProject) as unknown;
+const preloadedState = gearProjectDataToRootState(preloadedGearProjectData) as unknown;
 
 export const store = configureStore({
   reducer: {
@@ -24,6 +23,8 @@ export const store = configureStore({
     editorMachine: editorMachineReducer,
   },
   preloadedState,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(epicMiddleware),
 });
 persistStore(store);
 

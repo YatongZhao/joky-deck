@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState, useRef, useCallback } from "react";
-import { svgMatrix$, globalViewBox$, viewBoxA$, viewBoxB$, viewBoxC$, viewBoxD$ } from "./store";
+import { displayMatrix$, globalViewBox$, viewBoxA$, viewBoxB$, viewBoxC$, viewBoxD$, viewBoxNext } from "./store";
 import { ViewBox } from "./store";
 // import { GearProjectItem } from "./GearProjectItem";
 import { GearSettingPanel } from "./reactionLayer/GearSettingPanel";
@@ -69,7 +69,7 @@ const useZoom = () => {
     // Calculate the zoom speed based on the time since the last event
     // The trackpad has a much faster zoom speed than the mouse wheel
     const zoomSpeed = ZOOM_SPEED / timeSinceLastEvent;
-    const matrix = svgMatrix$.getValue();
+    const matrix = displayMatrix$.getValue();
 
     // Calculate new total scale with limits
     const scaleFactor = 1 - event.deltaY * zoomSpeed;
@@ -102,18 +102,18 @@ export const GearProject: React.FC = () => {
 
   useEffect(() => {
     const subscription = deltaMatrix$.subscribe((matrix) => {
-      const svgMatrix = svgMatrix$.getValue();
-      mat3.multiply(svgMatrix, matrix, svgMatrix);
-      svgMatrix$.next(svgMatrix);
+      const displayMatrix = displayMatrix$.getValue();
+      mat3.multiply(displayMatrix, matrix, displayMatrix);
+      displayMatrix$.next(displayMatrix);
     });
     return () => subscription.unsubscribe();
   }, [deltaMatrix$]);
 
   useEffect(() => {
     const subscription = dragHandleDeltaMatrix$.subscribe((matrix) => {
-      const svgMatrix = svgMatrix$.getValue();
-      mat3.multiply(svgMatrix, matrix, svgMatrix);
-      svgMatrix$.next(svgMatrix);
+      const displayMatrix = displayMatrix$.getValue();
+      mat3.multiply(displayMatrix, matrix, displayMatrix);
+      displayMatrix$.next(displayMatrix);
     });
     return () => subscription.unsubscribe();
   }, [dragHandleDeltaMatrix$]);
@@ -182,10 +182,10 @@ export const GearProject: React.FC = () => {
         {activeGear && <CrossHair radius={activeGear.teeth * gearProjectModule / 2} />}
         {state.matches('ViewportSetting') && <ExportViewBoxController key={__internal_view_box_controller_id__} id={__internal_view_box_controller_id__} />}
         {state.matches('ViewportSetting') && <>
-          <DragHandle targetSvgPosition$={viewBoxA$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
-          <DragHandle targetSvgPosition$={viewBoxB$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
-          <DragHandle targetSvgPosition$={viewBoxC$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
-          <DragHandle targetSvgPosition$={viewBoxD$} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+          <DragHandle handleSvgPosition$={viewBoxA$} onPositionChange={(pos) => viewBoxNext({ x1: pos[0], y1: pos[1] })} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+          <DragHandle handleSvgPosition$={viewBoxB$} onPositionChange={(pos) => viewBoxNext({ x2: pos[0], y2: pos[1] })} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+          <DragHandle handleSvgPosition$={viewBoxC$} onPositionChange={(pos) => viewBoxNext({ x1: pos[0], y2: pos[1] })} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
+          <DragHandle handleSvgPosition$={viewBoxD$} onPositionChange={(pos) => viewBoxNext({ x2: pos[0], y1: pos[1] })} onDragEnd={handleExportViewBoxDragHandleDragEnd} />
         </>}
         {activeGearId && <ActiveGearHandle />}
       </svg>

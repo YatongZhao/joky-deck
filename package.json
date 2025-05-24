@@ -35,6 +35,7 @@
     "react-hotkeys-hook": "^5.0.1",
     "react-redux": "^9.2.0",
     "react-use-gesture": "^9.1.3",
+    "redux-observable": "^3.0.0-rc.2",
     "rxjs": "^7.8.2",
     "sass": "^1.79.4",
     "uuid": "^11.1.0",

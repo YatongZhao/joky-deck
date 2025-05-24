@@ -1,6 +1,5 @@
 import { useCallback, useEffect } from "react";
-import { finalMatrix$, svgMatrix$, viewBoxA$, viewBoxB$ } from "./store";
-import { combineLatest } from "rxjs";
+import { finalMatrix$, displayMatrix$, viewBox$, viewBoxNext } from "./store";
 import { useSelector } from "@xstate/react";
 import { useDrag } from "./hooks/useDrag";
 import { vec2, mat3 } from "gl-matrix";
@@ -22,9 +21,9 @@ export const ExportViewBoxController = ({ id }: { id?: string }) => {
   const { ref, deltaMatrix$ } = useDrag<SVGPathElement>({ onDragEnd: handleDragEnd, disabled: !isViewportSetting });
   
   useEffect(() => {
-    const subscription = combineLatest([viewBoxA$, viewBoxB$]).subscribe(([a, b]) => {
+    const subscription = viewBox$.subscribe(({ x1, y1, x2, y2 }) => {
       if (ref.current) {
-        ref.current.setAttribute('d', `M ${a[0]} ${a[1]} L ${b[0]} ${a[1]} L ${b[0]} ${b[1]} L ${a[0]} ${b[1]} Z`);
+        ref.current.setAttribute('d', `M ${x1} ${y1} L ${x2} ${y1} L ${x2} ${y2} L ${x1} ${y2} Z`);
       }
     });
     return () => subscription.unsubscribe();
@@ -33,23 +32,23 @@ export const ExportViewBoxController = ({ id }: { id?: string }) => {
   useEffect(() => {
     if (!isViewportSetting) return;
     const subscription = deltaMatrix$.subscribe((deltaMatrix) => {
-      const screenPositionA = vec2.create();
-      vec2.transformMat3(screenPositionA, viewBoxA$.getValue(), finalMatrix$.getValue());
-      vec2.transformMat3(screenPositionA, screenPositionA, deltaMatrix);
-      vec2.transformMat3(viewBoxA$.getValue(), screenPositionA, mat3.invert(mat3.create(), finalMatrix$.getValue()));
-      viewBoxA$.next(viewBoxA$.getValue());
+      const { x1, y1, x2, y2 } = viewBox$.getValue();
+      const point = vec2.create();
+      vec2.transformMat3(point, vec2.fromValues(x1, y1), finalMatrix$.getValue());
+      vec2.transformMat3(point, point, deltaMatrix);
+      vec2.transformMat3(point, point, mat3.invert(mat3.create(), finalMatrix$.getValue()));
+      viewBoxNext({ x1: point[0], y1: point[1] });
       
-      const screenPositionB = vec2.create();
-      vec2.transformMat3(screenPositionB, viewBoxB$.getValue(), finalMatrix$.getValue());
-      vec2.transformMat3(screenPositionB, screenPositionB, deltaMatrix);
-      vec2.transformMat3(viewBoxB$.getValue(), screenPositionB, mat3.invert(mat3.create(), finalMatrix$.getValue()));
-      viewBoxB$.next(viewBoxB$.getValue());
+      vec2.transformMat3(point, vec2.fromValues(x2, y2), finalMatrix$.getValue());
+      vec2.transformMat3(point, point, deltaMatrix);
+      vec2.transformMat3(point, point, mat3.invert(mat3.create(), finalMatrix$.getValue()));
+      viewBoxNext({ x2: point[0], y2: point[1] });
     });
     return () => subscription.unsubscribe();
   }, [deltaMatrix$, isViewportSetting]);
 
   useEffect(() => {
-    const subscription = svgMatrix$.subscribe((matrix) => {
+    const subscription = displayMatrix$.subscribe((matrix) => {
       const scale = getScale(matrix);
       if (!ref.current) return;
       const target = ref.current;

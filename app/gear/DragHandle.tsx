@@ -1,8 +1,8 @@
 import { useDrag } from "./hooks/useDrag";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { mat3, vec2 } from "gl-matrix";
-import { finalMatrix$, svgMatrix$ } from "./store";
-import { BehaviorSubject } from "rxjs";
+import { finalMatrix$, displayMatrix$ } from "./store";
+import { BehaviorSubject, skip } from "rxjs";
 import { getScale } from "./core/coordinate";
 
 const BASE_RADIUS = 6;
@@ -10,17 +10,27 @@ const getRectPath = (radius: number) => `M ${radius} ${radius} L ${radius} -${ra
 const getCirclePath = (radius: number) => `M ${0}, ${radius} A ${radius} ${radius} 0 0 1 ${0} ${-radius} A ${radius} ${radius} 0 0 1 ${0} ${radius} Z`;
 
 export const DragHandle: React.FC<{
-  targetSvgPosition$: BehaviorSubject<vec2>;
-  handleSvgPosition$?: BehaviorSubject<vec2>;
+  handleSvgPosition$: Omit<BehaviorSubject<vec2>, 'next'>;
+  onPositionChange: (position: vec2) => void;
   onDragEnd?: () => void;
   onDragStart?: () => void;
   shape?: "circle" | "rect";
-}> = ({ targetSvgPosition$, handleSvgPosition$, onDragEnd, onDragStart, shape = "rect" }) => {
-  const finalSvgPosition$ = handleSvgPosition$ ?? targetSvgPosition$;
-  const { deltaMatrix$, ref } = useDrag<SVGPathElement>({ onDragEnd, onDragStart });
+}> = ({ handleSvgPosition$, onPositionChange, onDragEnd, onDragStart, shape = "rect" }) => {
+  const [targetSvgPosition$] = useState(new BehaviorSubject<vec2>(vec2.clone(handleSvgPosition$.getValue())));
+  const handleDragStart = useCallback(() => {
+    console.log('handleDragStart');
+    targetSvgPosition$.next(vec2.clone(handleSvgPosition$.getValue()));
+    onDragStart?.();
+  }, [onDragStart, handleSvgPosition$, targetSvgPosition$]);
+  const { deltaMatrix$, ref } = useDrag<SVGPathElement>({ onDragEnd, onDragStart: handleDragStart });
+  
+  useEffect(() => {
+    const subscription = targetSvgPosition$.pipe(skip(1)).subscribe(onPositionChange);
+    return () => subscription.unsubscribe();
+  }, [targetSvgPosition$, onPositionChange]);
 
   useEffect(() => {
-    const subscription = svgMatrix$.subscribe((matrix) => {
+    const subscription = displayMatrix$.subscribe((matrix) => {
       const scale = getScale(matrix);
       const radius = BASE_RADIUS / scale[0];
       if (!ref.current) return;
@@ -32,16 +42,16 @@ export const DragHandle: React.FC<{
   }, [shape, ref]);
 
   useEffect(() => {
-    const subscription = finalSvgPosition$.subscribe((position) => {
+    const subscription = handleSvgPosition$.subscribe((position) => {
       if (!ref.current) return;
       const target = ref.current;
       target.setAttribute('transform', `translate(${position[0]}, ${position[1]})`);
     });
     return () => subscription.unsubscribe();
-  }, [finalSvgPosition$, ref]);
+  }, [handleSvgPosition$, ref]);
   
   useEffect(() => {
-    const deltaSubscription = deltaMatrix$.subscribe((deltaMatrix) => {
+    const deltaSubscription = deltaMatrix$.pipe(skip(1)).subscribe((deltaMatrix) => {
       const screenPosition = vec2.create();
       vec2.transformMat3(screenPosition, targetSvgPosition$.getValue(), finalMatrix$.getValue());
       vec2.transformMat3(screenPosition, screenPosition, deltaMatrix);

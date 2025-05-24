@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { svgMatrix$, translateMatrix$ } from "../../store";
+import { displayMatrix$, translateMatrix$ } from "../../store";
 import { getScale, scaleAtPoint } from "../../core/coordinate";
 import { mat3, vec2 } from "gl-matrix";
 
@@ -7,22 +7,22 @@ export const MAX_SCALE = 30;
 export const MIN_SCALE = 0.1;
 
 export const scaleSvgAtGlobalPoint = (point: vec2, scale: number) => {
-  const svgMatrix = svgMatrix$.getValue();
+  const displayMatrix = displayMatrix$.getValue();
   const translateMatrix = translateMatrix$.getValue();
-  const oldScale = getScale(svgMatrix)[0];
+  const oldScale = getScale(displayMatrix)[0];
   const scaleMatrix = mat3.create();
 
   const svgPoint = vec2.transformMat3(vec2.create(), point, mat3.invert(mat3.create(), translateMatrix));
   
   scaleAtPoint(scaleMatrix, svgPoint, scale / oldScale);
-  mat3.multiply(svgMatrix, scaleMatrix, svgMatrix);
-  svgMatrix$.next(svgMatrix);
+  mat3.multiply(displayMatrix, scaleMatrix, displayMatrix);
+  displayMatrix$.next(displayMatrix);
 }
 
 export const useScaleController = () => {
-  const [scale, setScale] = useState(getScale(svgMatrix$.getValue())[0]);
+  const [scale, setScale] = useState(getScale(displayMatrix$.getValue())[0]);
   useEffect(() => {
-    svgMatrix$.subscribe((matrix) => {
+    displayMatrix$.subscribe((matrix) => {
       const scale = getScale(matrix)[0];
       setScale(scale);
     })

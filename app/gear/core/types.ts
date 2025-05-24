@@ -30,8 +30,12 @@ export type GearProjectData = {
   gears: GearData[];
   module: number;
   viewBox: {
-    a: Position;
-    b: Position;
+    // a: Position;
+    // b: Position;
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
   };
   editorMachineState: Snapshot<typeof editorMachine> | null;
 }
@@ -41,8 +45,10 @@ export const initialGearProject: GearProjectData = {
   displayMatrix: [1, 0, 0, 0, 1, 0, 0, 0, 1],
   module: 5,
   viewBox: {
-    a: [-480, -270],
-    b: [480, 270],
+    x1: -480,
+    y1: -270,
+    x2: 480,
+    y2: 270,
   },
   gears: [
     {
