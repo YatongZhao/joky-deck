@@ -9,7 +9,6 @@ import { initializeUndoManagerState, setUndoManager } from "./slices/undoManager
 import { setEditorMachine, editorMachineSelector, initializeEditorMachineState } from "./slices/editorMachineSlice";
 import { editorMachine } from "../../editorMachine";
 import { Snapshot } from "xstate";
-import { initializeVirtualGearState } from "./slices/virtualGear";
 
 export const loadGearProjectData = (gearProject: GearProjectData): AppThunk => (dispatch) => {
   dispatch(resetGears(gearProject.gears));

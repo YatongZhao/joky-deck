@@ -15,7 +15,7 @@ const gearsSlice = createSlice({
   initialState: initializeGearsState(initialGearProject),
   reducers: {
     resetGears: (state, action: PayloadAction<GearData[]>) => {
-      return gearsAdapter.getInitialState({}, action.payload);
+      return gearsAdapter.getInitialState({}, action.payload.concat(initializeVirtualGearState()));
     },
     addGear: gearsAdapter.addOne,
     addGears: gearsAdapter.addMany,

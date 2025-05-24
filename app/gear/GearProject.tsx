@@ -28,7 +28,7 @@ import { GearParser, GearToAdd } from "./GearParser";
 import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
 import { useAppDispatch, useAppSelector } from "./store/redux";
 import { pushUndo } from "./store/redux/slices/undoManagerSlice";
-import { selectAllGears, selectAllUserGears, selectGearById } from "./store/redux/slices/gearsSlice";
+import { selectAllUserGears, selectGearById } from "./store/redux/slices/gearsSlice";
 
 const useWheelDrag = () => {
   const ref = useRef<SVGSVGElement>(null);

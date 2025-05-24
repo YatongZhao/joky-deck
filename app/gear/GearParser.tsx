@@ -2,20 +2,17 @@ import { GearData } from "./core/types";
 import { useSelector } from "@xstate/react";
 import { GearEntity } from "./GearEntity";
 import { finalMatrix$, lastMousePosition$ } from "./store";
-import { useTheme } from "./theme";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 } from "uuid";
 import { mat3, vec2 } from "gl-matrix";
 import { getGearTransformVector } from "./core/gear";
-import { debounceTime, take, tap, throttleTime } from "rxjs/operators";
-import { fromEvent, BehaviorSubject, animationFrames, merge, timer } from "rxjs";
+import { fromEvent, animationFrames, merge, timer } from "rxjs";
 import { combineLatest } from "rxjs";
 import { gsap } from "gsap";
 import { store, useAppDispatch, useAppSelector } from "./store/redux";
-import { addGear, selectAllGears, selectAllUserGears, selectGearById, updateGear } from "./store/redux/slices/gearsSlice";
+import { addGear, selectAllGears, selectGearById, updateGear } from "./store/redux/slices/gearsSlice";
 import { editorMachineSelector, editorMachineSendSelector } from "./store/redux/slices/editorMachineSlice";
 import { pushUndo } from "./store/redux/slices/undoManagerSlice";
-// import virtualGear, { resetVirtualGear, setVirtualGear } from "./store/redux/slices/virtualGear";
 import { omit } from "ramda";
 import { initializeVirtualGearState } from "./store/redux/slices/virtualGear";
 
@@ -63,7 +60,7 @@ export const getGearAngle = (gear: GearData | null | undefined, gears: GearData[
   return { angle: angle % 360, direction };
 };
 
-const getGearSpeed = (gear: GearData | null | undefined, gears: GearData[]): number => {
+export const getGearSpeed = (gear: GearData | null | undefined, gears: GearData[]): number => {
   if (!gear) return 0;
   const parentGear = gears.find(g => g.id === gear.parentId);
   const parentGearSpeed = getGearSpeed(parentGear, gears);
@@ -80,13 +77,10 @@ export type GearParserProps = {
 
 export const GearParser = ({ gearId }: GearParserProps) => {
   const ref = useRef<SVGPathElement>(null);
-  const theme = useTheme();
   const gearData = useAppSelector((state) => selectGearById(state, gearId));
-  const gearProjectModule = useAppSelector((state) => state.module.value);
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const editorMachineSend = useAppSelector(editorMachineSendSelector);
-  const gears = useAppSelector(selectAllUserGears);
 
   const handleClick = useCallback(() => {
     editorMachineSend({
@@ -111,9 +105,7 @@ export const GearParser = ({ gearId }: GearParserProps) => {
 export const GearToAdd = () => {
   const dispatch = useAppDispatch();
   const ref = useRef<SVGPathElement>(null);
-  const theme = useTheme();
   const editorMachineSend = useAppSelector(editorMachineSendSelector);
-  const gearProjectModule = useAppSelector((state) => state.module.value);
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   // const virtualGear = useAppSelector((state) => state.virtualGear);
@@ -125,8 +117,6 @@ export const GearToAdd = () => {
   }, [activeGearId, dispatch]);
 
   const activeGear = useAppSelector((state) => selectGearById(state, activeGearId ?? ''));
-  const gears = useAppSelector(selectAllGears);
-  const speed = getGearSpeed(virtualGear, gears);
   const [virtualGearSetter$] = useState(combineLatest([
     merge(fromEvent<MouseEvent>(window, 'mousemove'), lastMousePosition$),
     animationFrames(),
