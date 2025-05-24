@@ -27,7 +27,6 @@ export const ActiveGearHandle = () => {
     getGearPosition(activeGear, gears, gsap.ticker.time, gearProjectModule)
   ));
   const [targetSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(vec2.create()));
-  const [handleSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(vec2.create()));
   const [isDragging, setIsDragging] = useState(false);
   const lastGearPositionInfoRef = useRef<{ teeth: number, positionAngle: number }>({ teeth: activeGear?.teeth ?? 0, positionAngle: activeGear?.positionAngle ?? 0 });
 
@@ -49,14 +48,13 @@ export const ActiveGearHandle = () => {
   }, []);
 
   useEffect(() => {
-    const tickerCallback = () => {
-      const activeGearSvgPosition = getGearPosition(activeGear, gears, gsap.ticker.time, gearProjectModule);
+    const tickerCallback = (time: number) => {
+      const activeGearSvgPosition = getGearPosition(activeGear, gears, time, gearProjectModule);
       activeGearSvgPosition$.next(vec2.clone(activeGearSvgPosition));
-      handleSvgPosition$.next(vec2.clone(activeGearSvgPosition));
     }
     gsap.ticker.add(tickerCallback);
     return () => gsap.ticker.remove(tickerCallback);
-  }, [activeGear, gears, gearProjectModule, activeGearSvgPosition$, handleSvgPosition$]);
+  }, [activeGear, gears, gearProjectModule, activeGearSvgPosition$]);
 
   useEffect(() => {
     const subscription = targetSvgPosition$.pipe(skip(1)).subscribe((position) => {
@@ -137,7 +135,7 @@ export const ActiveGearHandle = () => {
 
   return <>
     <DragHandle
-      handleSvgPosition$={handleSvgPosition$}
+      handleSvgPosition$={activeGearSvgPosition$}
       onPositionChange={handlePositionChange}
       onDragEnd={handleDragEnd}
       onDragStart={handleDragStart}

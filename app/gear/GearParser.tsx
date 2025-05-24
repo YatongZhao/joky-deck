@@ -1,22 +1,23 @@
 import { GearData } from "./core/types";
 import { useSelector } from "@xstate/react";
 import { GearEntity } from "./GearEntity";
-import { finalMatrix$ } from "./store";
+import { finalMatrix$, lastMousePosition$ } from "./store";
 import { useTheme } from "./theme";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 } from "uuid";
-import { GearType } from "./core/types";
 import { mat3, vec2 } from "gl-matrix";
 import { getGearTransformVector } from "./core/gear";
-import { debounceTime } from "rxjs/operators";
-import { fromEvent, BehaviorSubject } from "rxjs";
+import { debounceTime, take, tap, throttleTime } from "rxjs/operators";
+import { fromEvent, BehaviorSubject, animationFrames, merge, timer } from "rxjs";
 import { combineLatest } from "rxjs";
 import { gsap } from "gsap";
-import { useAppDispatch, useAppSelector } from "./store/redux";
-import { addGear, selectAllGears, selectGearById } from "./store/redux/slices/gearsSlice";
-import { vec2ToPosition } from "./utils";
+import { store, useAppDispatch, useAppSelector } from "./store/redux";
+import { addGear, selectAllGears, selectAllUserGears, selectGearById, updateGear } from "./store/redux/slices/gearsSlice";
 import { editorMachineSelector, editorMachineSendSelector } from "./store/redux/slices/editorMachineSlice";
 import { pushUndo } from "./store/redux/slices/undoManagerSlice";
+// import virtualGear, { resetVirtualGear, setVirtualGear } from "./store/redux/slices/virtualGear";
+import { omit } from "ramda";
+import { initializeVirtualGearState } from "./store/redux/slices/virtualGear";
 
 /**
  * 
@@ -85,9 +86,7 @@ export const GearParser = ({ gearId }: GearParserProps) => {
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const editorMachineSend = useAppSelector(editorMachineSendSelector);
-  const gears = useAppSelector(selectAllGears);
-  // const { angle } = getGearAngle(gearData, gears);
-  const speed = getGearSpeed(gearData, gears);
+  const gears = useAppSelector(selectAllUserGears);
 
   const handleClick = useCallback(() => {
     editorMachineSend({
@@ -96,28 +95,14 @@ export const GearParser = ({ gearId }: GearParserProps) => {
     });
   }, [gearId, editorMachineSend]);
 
-  useEffect(() => {
-    const tickerCallback = (time: number) => {
-      if (ref.current) {
-        const { angle } = getGearAngle(gearData, gears, time);
-        const position = getGearPosition(gearData, gears, time, gearProjectModule);
-        ref.current.setAttribute('transform', `translate(${position[0]}, ${position[1]}) rotate(${angle})`);
-      }
-    };
-    gsap.ticker.add(tickerCallback);
-    return () => gsap.ticker.remove(tickerCallback);
-  }, [speed, gearData, gears, gearProjectModule]);
-
   if (!gearData) {
     return null;
   }
 
   return <GearEntity
     ref={ref}
-    teeth={gearData.teeth}
-    module={gearProjectModule}
+    id={gearId}
     withHole
-    fillColor={gearData.color || theme.colors.gray[4]}
     active={activeGearId === gearId}
     onClick={handleClick}
   />
@@ -131,43 +116,35 @@ export const GearToAdd = () => {
   const gearProjectModule = useAppSelector((state) => state.module.value);
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
-  const [virtualGearChild, setVirtualGearChild] = useState<GearData>({
-    id: v4(),
-    type: GearType.Relative,
-    teeth: 3,
-    parentId: activeGearId,
-    positionAngle: 0,
-    position: vec2ToPosition(vec2.create()),
-    speed: 0,
-  });
+  // const virtualGear = useAppSelector((state) => state.virtualGear);
+  const virtualGear = useAppSelector((state) => selectGearById(state, '__internal_virtual_gear_id__')!);
+  useEffect(() => {
+    dispatch(updateGear('__internal_virtual_gear_id__', {
+      parentId: activeGearId,
+    }));
+  }, [activeGearId, dispatch]);
+
   const activeGear = useAppSelector((state) => selectGearById(state, activeGearId ?? ''));
   const gears = useAppSelector(selectAllGears);
-  // const { angle } = getGearAngle(virtualGearChild, gears);
-  const speed = getGearSpeed(virtualGearChild, gears);
-  const [activeGearSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(getGearPosition(activeGear, gears, gsap.ticker.time, gearProjectModule)));
+  const speed = getGearSpeed(virtualGear, gears);
+  const [virtualGearSetter$] = useState(combineLatest([
+    merge(fromEvent<MouseEvent>(window, 'mousemove'), lastMousePosition$),
+    animationFrames(),
+  ]));
+  const [started, setStarted] = useState(false);
 
   useEffect(() => {
-    const tickerCallback = () => {
-      activeGearSvgPosition$.next(getGearPosition(activeGear, gears, gsap.ticker.time, gearProjectModule));
-    }
-    gsap.ticker.add(tickerCallback);
-    return () => gsap.ticker.remove(tickerCallback);
-  }, [activeGear, gears, gearProjectModule, activeGearSvgPosition$]);
+    const subscription = timer(120).subscribe(() => setStarted(true));
+    return () => subscription.unsubscribe();
+  }, [virtualGearSetter$]);
 
   useEffect(() => {
-    const tickerCallback = (time: number) => {
-      if (ref.current) {
-        const { angle } = getGearAngle(virtualGearChild, gears, time);
-        const position = getGearPosition(virtualGearChild, gears, time, gearProjectModule);
-        ref.current.setAttribute('transform', `translate(${position[0]}, ${position[1]}) rotate(${angle})`);
-      }
-    };
-    gsap.ticker.add(tickerCallback);
-    return () => gsap.ticker.remove(tickerCallback);
-  }, [speed, virtualGearChild, gears, gearProjectModule]);
-
-  useEffect(() => {
-    const subscription = combineLatest([fromEvent<MouseEvent>(window, 'mousemove'), finalMatrix$, activeGearSvgPosition$]).pipe(debounceTime(5)).subscribe(([event, matrix, activeGearSvgPosition]) => {
+    const subscription = virtualGearSetter$.subscribe(([event]) => {
+      const storeState = store.getState();
+      const gears = selectAllGears(storeState);
+      const gearProjectModule = storeState.module.value;
+      const matrix = finalMatrix$.getValue();
+      const activeGearSvgPosition = getGearPosition(activeGear, gears, gsap.ticker.time, gearProjectModule);
       const mouseGlobalPosition = vec2.fromValues(event.clientX, event.clientY);
       const reverseMatrix = mat3.create();
       mat3.invert(reverseMatrix, matrix);
@@ -177,38 +154,35 @@ export const GearToAdd = () => {
       const angle = Math.atan2(mouseSvgPosition[1] - activeGearSvgPosition[1], mouseSvgPosition[0] - activeGearSvgPosition[0]);
       const virtualGearChildTeeth = Math.round(distance / gearProjectModule - (activeGear?.teeth ?? 0) / 2) * 2;
 
-      setVirtualGearChild(prev => ({
-        ...prev,
+      dispatch(updateGear('__internal_virtual_gear_id__', {
         teeth: virtualGearChildTeeth < 3 ? 3 : virtualGearChildTeeth,
         positionAngle: 360 * angle / (2 * Math.PI),
       }));
     });
 
     return () => subscription.unsubscribe();
-  }, [gearProjectModule, activeGear, gears, virtualGearChild, activeGearSvgPosition$]);
+  }, [activeGear, virtualGearSetter$, dispatch]);
 
   const handleClick = useCallback(() => {
-    dispatch(addGear(virtualGearChild));
-    setVirtualGearChild({
-      ...virtualGearChild,
-      id: v4(),
-    });
     if (activeGearId) {
       editorMachineSend({
         type: 'selectGear',
         gearId: activeGearId,
       });
     }
+    dispatch(addGear({
+      ...omit(['id', 'color'], virtualGear),
+      id: v4(),
+    }));
+    dispatch(updateGear('__internal_virtual_gear_id__', initializeVirtualGearState()));
     dispatch(pushUndo("Add Gear"));
-  }, [virtualGearChild, activeGearId, dispatch, editorMachineSend]);
+  }, [virtualGear, activeGearId, dispatch, editorMachineSend]);
 
-  return <GearEntity
+  return started ? <GearEntity
     ref={ref}
-    teeth={virtualGearChild.teeth}
-    module={gearProjectModule}
+    id={virtualGear.id}
     withHole={false}
-    fillColor={theme.colors.blue[4]}
     active
     onClick={handleClick}
-  />
+  /> : null;
 }

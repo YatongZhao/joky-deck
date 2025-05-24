@@ -28,7 +28,7 @@ import { GearParser, GearToAdd } from "./GearParser";
 import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
 import { useAppDispatch, useAppSelector } from "./store/redux";
 import { pushUndo } from "./store/redux/slices/undoManagerSlice";
-import { selectAllGears, selectGearById } from "./store/redux/slices/gearsSlice";
+import { selectAllGears, selectAllUserGears, selectGearById } from "./store/redux/slices/gearsSlice";
 
 const useWheelDrag = () => {
   const ref = useRef<SVGSVGElement>(null);
@@ -94,7 +94,7 @@ const useZoom = () => {
 
 export const GearProject: React.FC = () => {
   const gearProjectModule = useAppSelector((state) => state.module.value);
-  const gears = useAppSelector(selectAllGears);
+  const gears = useAppSelector(selectAllUserGears);
   const { ref: wheelDragRef, deltaMatrix$ } = useWheelDrag();
   const { ref: dragHandleRef, deltaMatrix$: dragHandleDeltaMatrix$, dragState } = useDrag({ middleButton: true });
   const svgRef = useRef<SVGSVGElement>(null);

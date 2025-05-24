@@ -1,4 +1,4 @@
-import { BehaviorSubject, combineLatest, distinctUntilChanged, fromEvent, map, merge, of } from "rxjs";
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, fromEvent, map, merge, of } from "rxjs";
 import { preloadedGearProjectData } from "./redux/preloadedGearProjectData";
 import { mat3, vec2 } from "gl-matrix";
 import { matrixToMat3 } from "../utils";
@@ -63,4 +63,9 @@ export type ViewBox = {
 export const globalViewBox$ = new BehaviorSubject<ViewBox>(calculateViewBox(finalMatrix$.getValue()));
 finalMatrix$.subscribe((finalMatrix) => {
   globalViewBox$.next(calculateViewBox(finalMatrix));
+});
+
+export const lastMousePosition$ = new BehaviorSubject({ clientX: 0, clientY: 0 });
+fromEvent<MouseEvent>(window, 'mousemove').pipe(debounceTime(100)).subscribe((event) => {
+  lastMousePosition$.next({ clientX: event.clientX, clientY: event.clientY });
 });

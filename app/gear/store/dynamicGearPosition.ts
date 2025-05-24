@@ -8,7 +8,6 @@ export const dynamicGearPositionMap = new Map<string, vec2>();
 export const dynamicGearAngleMap = new Map<string, number>();
 
 gsap.ticker.add(() => {
-    // TODO: Calculate the dynamic gear position
     const storeState = store.getState();
     const gearProjectModule = storeState.module.value;
     const gears = selectAllGears(storeState);

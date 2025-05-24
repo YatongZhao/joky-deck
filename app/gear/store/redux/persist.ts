@@ -9,6 +9,7 @@ import { initializeUndoManagerState, setUndoManager } from "./slices/undoManager
 import { setEditorMachine, editorMachineSelector, initializeEditorMachineState } from "./slices/editorMachineSlice";
 import { editorMachine } from "../../editorMachine";
 import { Snapshot } from "xstate";
+import { initializeVirtualGearState } from "./slices/virtualGear";
 
 export const loadGearProjectData = (gearProject: GearProjectData): AppThunk => (dispatch) => {
   dispatch(resetGears(gearProject.gears));
@@ -22,7 +23,7 @@ export const loadGearProjectData = (gearProject: GearProjectData): AppThunk => (
 export const rootStateToGearProjectData = (state: RootState): GearProjectData => {
   return {
     version: '1.0.0',
-    gears: selectAllGears(state),
+    gears: selectAllGears(state).filter((gear) => gear.id !== '__internal_virtual_gear_id__'),
     module: state.module.value,
     displayMatrix: state.displayMatrix,
     viewBox: state.viewBox,
@@ -52,7 +53,7 @@ export const persistStore = (targetStore: typeof store) => {
     const newGearProjectData = gearProjectDataSelector(targetStore.getState());
     if (newGearProjectData !== gearProjectData) {
       // setGearProjectDataToLocalStorage(newGearProjectData);
-      console.log(newGearProjectData);
+      // console.log(newGearProjectData);
       gearProjectData = newGearProjectData;
     } else {
       console.log('no change');

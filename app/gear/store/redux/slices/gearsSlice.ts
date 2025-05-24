@@ -1,12 +1,13 @@
-import { createEntityAdapter, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createEntityAdapter, createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { GearData, GearProjectData, initialGearProject, Position } from "../../../core/types";
 import { AppThunk, RootState } from "../index";
 import { pushUndo } from "./undoManagerSlice";
+import { initializeVirtualGearState } from "./virtualGear";
 
 const gearsAdapter = createEntityAdapter<GearData>();
 
 export const initializeGearsState = (gearProject: GearProjectData) => {
-  return gearsAdapter.getInitialState({}, gearProject.gears);
+  return gearsAdapter.getInitialState({}, gearProject.gears.concat(initializeVirtualGearState()));
 }
 
 const gearsSlice = createSlice({
@@ -25,6 +26,10 @@ const gearsSlice = createSlice({
 
 const gearsSelectors = gearsAdapter.getSelectors<RootState>(state => state.gears);
 export const selectAllGears = gearsSelectors.selectAll;
+export const selectAllUserGears = createSelector(
+  selectAllGears,
+  (gears) => gears.filter((gear) => gear.id !== '__internal_virtual_gear_id__'),
+);
 export const selectGearById = gearsSelectors.selectById;
 
 export const {
