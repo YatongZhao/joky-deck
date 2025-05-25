@@ -1,8 +1,7 @@
 import { GearProjectData, initialGearProject, Matrix } from "@/app/gear/core/types";
 import { matrixToMat3 } from "@/app/gear/utils";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { distinctUntilChanged, filter, map, Observable, tap } from "rxjs";
-import { equals } from "ramda";
+import { filter, map, Observable, tap } from "rxjs";
 import { combineEpics } from "redux-observable";
 import { displayMatrix$ } from "../..";
 
@@ -32,9 +31,7 @@ export default displayMatrixSlice.reducer;
 export const resetDisplayMatrixEpic = (action$: Observable<any>) => action$.pipe(
     filter(isResetDisplayMatrixAction),
     map(action => action.payload),
-    distinctUntilChanged<Matrix>(equals),
     tap(displayMatrix => displayMatrix$.next(matrixToMat3(displayMatrix))),
-    tap(() => console.log('resetDisplayMatrixEpic')),
     filter(() => false)
 );
 

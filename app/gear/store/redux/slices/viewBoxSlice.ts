@@ -1,8 +1,7 @@
 import { GearProjectData, initialGearProject } from "@/app/gear/core/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { distinctUntilChanged, filter, map, Observable, tap } from "rxjs";
+import { filter, map, Observable, tap } from "rxjs";
 import { viewBox$ } from "../..";
-import { equals } from "ramda";
 import { combineEpics } from "redux-observable";
 
 type ViewBoxState = {
@@ -36,7 +35,6 @@ export default viewBoxSlice.reducer;
 export const resetViewBoxEpic = (action$: Observable<any>) => action$.pipe(
     filter(isResetViewBoxAction),
     map(action => action.payload),
-    distinctUntilChanged<ViewBoxState>(equals),
     tap(viewBox => viewBox$.next(viewBox)),
     filter(() => false)
 );
