@@ -14,6 +14,7 @@ import { debounceTime, filter, Observable, tap } from "rxjs";
 import { ofType } from "redux-observable";
 import { undoableActionTypes } from "./undoableEpic";
 import { setGearProjectDataToLocalStorage } from "../localStorage";
+import { initializeHoverState, resetHover } from "./slices/hoverSlice";
 
 export const loadGearProjectData = (gearProject: GearProjectData): AppThunk => (dispatch) => {
   dispatch(resetGears(gearProject.gears));
@@ -21,6 +22,7 @@ export const loadGearProjectData = (gearProject: GearProjectData): AppThunk => (
   dispatch(resetDisplayMatrix(gearProject.displayMatrix));
   dispatch(resetViewBox(gearProject.viewBox));
   dispatch(setEditorMachine(gearProject.editorMachineState));
+  dispatch(resetHover());
 }
 
 export const rootStateToGearProjectData = (state: RootState): GearProjectData => {
@@ -42,6 +44,7 @@ export const gearProjectDataToRootState = (gearProject: GearProjectData): RootSt
     viewBox: initializeViewBoxState(gearProject),
     undoManager: initializeUndoManagerState(gearProject),
     editorMachine: initializeEditorMachineState(gearProject),
+    hover: initializeHoverState(),
   };
 }
 
