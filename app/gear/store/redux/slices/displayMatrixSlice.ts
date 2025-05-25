@@ -2,7 +2,7 @@ import { GearProjectData, initialGearProject, Matrix } from "@/app/gear/core/typ
 import { matrixToMat3 } from "@/app/gear/utils";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { filter, map, Observable, tap } from "rxjs";
-import { combineEpics, ofType } from "redux-observable";
+import { ofType } from "redux-observable";
 import { displayMatrix$ } from "../..";
 
 type DisplayMatrixState = Matrix;

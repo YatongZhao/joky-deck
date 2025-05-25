@@ -98,6 +98,7 @@ const useZoom = () => {
 };
 
 export const GearProject: React.FC = () => {
+  const dispatch = useAppDispatch();
   const gearProjectModule = useAppSelector((state) => state.module.value);
   const gears = useAppSelector(selectAllUserGears);
   const { ref: wheelDragRef, deltaMatrix$ } = useWheelDrag();
@@ -112,7 +113,7 @@ export const GearProject: React.FC = () => {
       dispatch(persistDisplayMatrix(mat3ToMatrix(displayMatrix)));
     });
     return () => subscription.unsubscribe();
-  }, [deltaMatrix$]);
+  }, [deltaMatrix$, dispatch]);
 
   useEffect(() => {
     const subscription = dragHandleDeltaMatrix$.subscribe((matrix) => {
@@ -121,7 +122,7 @@ export const GearProject: React.FC = () => {
       dispatch(persistDisplayMatrix(mat3ToMatrix(displayMatrix)));
     });
     return () => subscription.unsubscribe();
-  }, [dragHandleDeltaMatrix$]);
+  }, [dragHandleDeltaMatrix$, dispatch]);
 
   const updateViewBox = useCallback((viewBox: ViewBox) => {
     const svg = svgRef.current;
@@ -141,7 +142,6 @@ export const GearProject: React.FC = () => {
       handleZoomWheel(event);
     }
   }
-  const dispatch = useAppDispatch();
 
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
