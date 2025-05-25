@@ -15,10 +15,17 @@ export type GearEntityProps = {
   withHole: boolean;
   // fillColor: string;
   active: boolean;
+  isChild?: boolean;
   onClick: () => void;
 }
 
-export const GearEntity = forwardRef<SVGPathElement, GearEntityProps>(function GearEntity({ id, withHole, active, onClick }: GearEntityProps, ref) {
+export const GearEntity = forwardRef<SVGPathElement, GearEntityProps>(function GearEntity({ 
+  id, 
+  withHole, 
+  active, 
+  isChild = false,
+  onClick 
+}: GearEntityProps, ref) {
   const gearData = useAppSelector((state) => selectGearById(state, id));
   const gearProjectModule = useAppSelector((state) => state.module.value);
   const { teeth = 0, color } = gearData ?? {};
@@ -26,6 +33,10 @@ export const GearEntity = forwardRef<SVGPathElement, GearEntityProps>(function G
   const { hovered, ref: hoverRef } = useHover();
   const pathRef = useRef<SVGPathElement>(null);
   const mergedRef = useMergedRef(ref, hoverRef, pathRef);
+
+  // Create filter ID unique to this gear
+  const filterId = useMemo(() => `child-filter-${id}`, [id]);
+
   const d = useMemo(() => {
     return `${memorizedGearPath(calculateGearInfo(teeth, gearProjectModule))} ${withHole ? memorizedGearHolePath(teeth, gearProjectModule, 0.03) : ''}`;
   }, [teeth, gearProjectModule, withHole]);
@@ -43,13 +54,38 @@ export const GearEntity = forwardRef<SVGPathElement, GearEntityProps>(function G
     return () => removeTicker();
   }, [id, d]);
 
-  return <path
-    ref={mergedRef}
-    fill={color || theme.colors.gray[4]}
-    stroke={hovered || active ? theme.colors.dark[9] : 'none'}
-    strokeWidth={1}
-    style={{ cursor: 'pointer' }}
-    onClick={onClick}
-    fillRule="evenodd"
-  />
+  return (
+    <>
+      {isChild && (
+        <defs>
+          <filter id={filterId}>
+            <feColorMatrix
+              type="matrix"
+              values="1 0 0 0 0
+                      0 1 0 0 0
+                      0 0 1 0 0
+                      0 0 0 0.2 0"
+              result="semiTransparent"
+            />
+            <feComposite
+              in="semiTransparent"
+              in2="SourceGraphic"
+              operator="in"
+              result="final"
+            />
+          </filter>
+        </defs>
+      )}
+      <path
+        ref={mergedRef}
+        fill={color || theme.colors.gray[4]}
+        stroke={hovered || active ? theme.colors.dark[9] : 'none'}
+        strokeWidth={1}
+        style={{ cursor: 'pointer' }}
+        onClick={onClick}
+        fillRule="evenodd"
+        filter={isChild ? `url(#${filterId})` : undefined}
+      />
+    </>
+  );
 });
