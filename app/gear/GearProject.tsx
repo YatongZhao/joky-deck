@@ -34,6 +34,7 @@ import { selectAllUserGears, selectGearById } from "./store/redux/slices/gearsSl
 import { persistViewBox } from "./store/redux/slices/viewBoxSlice";
 import { persistDisplayMatrix } from "./store/redux/slices/displayMatrixSlice";
 import { mat3ToMatrix } from "./utils";
+import { useDeleteGear } from "./hooks/useDeleteGear";
 
 const useWheelDrag = () => {
   const ref = useRef<SVGSVGElement>(null);
@@ -153,6 +154,8 @@ export const GearProject: React.FC = () => {
   const handleExportViewBoxDragHandleDragEnd = useCallback(() => {
     dispatch(persistViewBox(viewBox$.getValue()));
   }, [dispatch]);
+
+  useDeleteGear();
 
   return (
     <>

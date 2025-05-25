@@ -3,7 +3,7 @@ import { persistViewBox } from "./slices/viewBoxSlice";
 import { debounceTime, map, Observable } from "rxjs";
 import { pushUndo } from "./slices/undoManagerSlice";
 import { setModule } from "./slices/moduleSlice";
-import { addGear, persistGear } from "./slices/gearsSlice";
+import { addGear, persistGear, removeGears } from "./slices/gearsSlice";
 import { persistEditorMachineSnapshot } from "./slices/editorMachineSlice";
 
 export const undoableActionTypes = [
@@ -11,6 +11,7 @@ export const undoableActionTypes = [
   setModule.type,
   addGear.type,
   persistGear.type,
+  removeGears.type,
   persistEditorMachineSnapshot.type,
 ] as const;
 

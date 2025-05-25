@@ -22,6 +22,11 @@ const gearsSlice = createSlice({
     updateGear: gearsAdapter.updateOne,
     persistGear: gearsAdapter.updateOne,
     removeGear: gearsAdapter.removeOne,
+    removeGears: (state, action: PayloadAction<string[]>) => {
+      action.payload.forEach(id => {
+        gearsAdapter.removeOne(state, id);
+      });
+    },
   },
 });
 
@@ -33,11 +38,31 @@ export const selectAllUserGears = createSelector(
 );
 export const selectGearById = gearsSelectors.selectById;
 
+// Helper function to find all descendant gear IDs
+export const findAllDescendantGearIds = (gearId: string, gears: GearData[]): string[] => {
+  const descendants: string[] = [];
+  
+  const findDescendants = (currentId: string) => {
+    // Find all direct children
+    const children = gears.filter(gear => gear.parentId === currentId);
+    
+    // Add each child and recursively find their descendants
+    children.forEach(child => {
+      descendants.push(child.id);
+      findDescendants(child.id);
+    });
+  };
+
+  findDescendants(gearId);
+  return descendants;
+};
+
 export const {
   resetGears,
   addGear,
   addGears,
   removeGear,
+  removeGears,
   updateGear,
   persistGear,
 } = gearsSlice.actions;
