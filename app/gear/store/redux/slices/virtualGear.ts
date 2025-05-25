@@ -1,7 +1,8 @@
+import { __internal_virtual_gear_id__ } from "@/app/gear/constant";
 import { GearData, GearType } from "@/app/gear/core/types";
 
 const initialVirtualGearState: GearData = {
-  id: '__internal_virtual_gear_id__',
+  id: __internal_virtual_gear_id__,
   type: GearType.Relative,
   parentId: null,
   positionAngle: 0,

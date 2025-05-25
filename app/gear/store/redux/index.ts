@@ -1,7 +1,7 @@
 import { Action, configureStore, ThunkAction } from '@reduxjs/toolkit';
 import { useDispatch, useSelector } from 'react-redux';
 import { preloadedGearProjectData } from './preloadedGearProjectData';
-import { epicMiddleware } from './epicMiddleware';
+import { epicMiddleware, rootEpic } from './epicMiddleware';
 
 import gearsReducer from './slices/gearsSlice';
 import moduleReducer from './slices/moduleSlice';
@@ -26,6 +26,9 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(epicMiddleware),
 });
+
+epicMiddleware.run(rootEpic);
+
 persistStore(store);
 
 export type RootState = ReturnType<typeof store.getState>;

@@ -3,7 +3,6 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Actor, createActor, Snapshot } from "xstate";
 import { AppThunk, RootState, store } from "..";
 import { GearProjectData, initialGearProject } from "@/app/gear/core/types";
-import { pushUndo } from "./undoManagerSlice";
 
 const editorMachineMap = new Map<string, Actor<typeof editorMachine>>();
 
@@ -17,10 +16,6 @@ const createEditorMachine = (currentId: string, snapshot?: Snapshot<typeof edito
     snapshot: snapshot ?? undefined,
   }).start();
   editorMachineMap.set(editorMachineActor.id, editorMachineActor);
-  editorMachineActor.subscribe(() => {
-    store.dispatch(editorMachineSlice.actions.setEditorMachineSnapshot(editorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>));
-    store.dispatch(pushUndo('editor state changed'));
-  });
   return editorMachineActor;
 }
 
@@ -47,7 +42,7 @@ const editorMachineSlice = createSlice({
     setEditorMachineId: (state, action: PayloadAction<string>) => {
       state.id = action.payload;
     },
-    setEditorMachineSnapshot: (state, action: PayloadAction<Snapshot<typeof editorMachine>>) => {
+    persistEditorMachineSnapshot: (state, action: PayloadAction<Snapshot<typeof editorMachine>>) => {
       return {
         ...state,
         snapshot: action.payload,
@@ -69,6 +64,12 @@ export const editorMachineSendSelector = createSelector(
       const snapshot = editorMachineActor.getSnapshot();
       if (snapshot.can(event)) {
         editorMachineActor.send(event);
+        switch (event.type) {
+          case 'enterAddingMode':
+            break;
+          default:
+            store.dispatch(persistEditorMachineSnapshot(editorMachineActor.getPersistedSnapshot() as Snapshot<typeof editorMachine>));
+        }
         return true;
       }
       return false;
@@ -83,5 +84,9 @@ export const setEditorMachine = (snapshot?: Snapshot<typeof editorMachine> | nul
   const editorMachineActor = createEditorMachine(currentEditorMachineId, snapshot);
   dispatch(editorMachineSlice.actions.setEditorMachineId(editorMachineActor.id));
 }
+
+export const {
+  persistEditorMachineSnapshot,
+} = editorMachineSlice.actions;
 
 export default editorMachineSlice.reducer;

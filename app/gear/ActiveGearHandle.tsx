@@ -9,8 +9,8 @@ import { gsap } from "gsap";
 import { vec2ToPosition } from "./utils";
 import { useAppDispatch, useAppSelector } from "./store/redux";
 import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
-import { pushUndo } from "./store/redux/slices/undoManagerSlice";
-import { selectAllGears, selectGearById, updateGear } from "./store/redux/slices/gearsSlice";
+import { persistGear, selectAllGears, selectGearById, updateGear } from "./store/redux/slices/gearsSlice";
+import { equals } from "ramda";
 
 // TODO: This is a mess
 export const ActiveGearHandle = () => {
@@ -77,18 +77,18 @@ export const ActiveGearHandle = () => {
           teeth = startTeethRef.current + teeth * (Math.cos(angle - activeGear?.positionAngle / 180 * Math.PI) > 0 ? 1 : -1);
         }
         teeth = Math.max(teeth, 3);
-        dispatch(updateGear(activeGearId, { teeth }));
+        dispatch(updateGear({ id: activeGearId, changes: { teeth } }));
         return;
       }
 
       if (isAbsoluteGear) {
-        dispatch(updateGear(activeGearId, { position: vec2ToPosition(position) }));
+        dispatch(updateGear({ id: activeGearId, changes: { position: vec2ToPosition(position) } }));
       } else {
         const angle = Math.atan2(position[1] - maybeParentGearSvgPosition[1], position[0] - maybeParentGearSvgPosition[0]);
         const distance = Math.hypot(position[0] - maybeParentGearSvgPosition[0], position[1] - maybeParentGearSvgPosition[1]);
         let teeth = Math.round(distance / gearProjectModule - (parentGear?.teeth ?? 0) / 2) * 2;
         teeth = Math.max(teeth, 3);
-        dispatch(updateGear(activeGearId, { teeth, positionAngle: 360 * angle / (2 * Math.PI) }));
+        dispatch(updateGear({ id: activeGearId, changes: { teeth, positionAngle: 360 * angle / (2 * Math.PI) } }));
       }
     });
 
@@ -103,10 +103,10 @@ export const ActiveGearHandle = () => {
 
   const handleDragEnd = useCallback(() => {
     setIsDragging(false);
-    if (activeGear?.teeth !== lastGearPositionInfoRef.current.teeth || activeGear?.positionAngle !== lastGearPositionInfoRef.current.positionAngle) {
-      dispatch(pushUndo(`Active Gear Handle Changed`));
+    if (activeGear && !equals(activeGear, lastGearPositionInfoRef.current)) {
+      dispatch(persistGear({ id: activeGear.id, changes: activeGear }));
     }
-  }, [activeGear?.teeth, activeGear?.positionAngle, dispatch]);
+  }, [activeGear, dispatch]);
 
   const handleDragStart = useCallback(() => {
     setIsDragging(true);

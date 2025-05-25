@@ -3,8 +3,7 @@ import { useSelector } from "@xstate/react";
 import { REACTION_LAYER_OFFSET } from "../constant";
 import { useAppDispatch, useAppSelector } from "../store/redux";
 import { editorMachineSelector } from "../store/redux/slices/editorMachineSlice";
-import { pushUndo } from "../store/redux/slices/undoManagerSlice";
-import { selectGearById, updateGearColor, updateGearPositionAngle, updateGearTeeth, updateGearSpeed } from "../store/redux/slices/gearsSlice";
+import { selectGearById, updateGear, persistGear } from "../store/redux/slices/gearsSlice";
 
 export const GearSettingPanel = () => {
   const dispatch = useAppDispatch();
@@ -14,25 +13,25 @@ export const GearSettingPanel = () => {
   
   const handlePositionAngleChange = (value: number) => {
     if (activeGearId) {
-      dispatch(updateGearPositionAngle(activeGearId, (value - 90 + 360) % 360));
+      dispatch(updateGear({ id: activeGearId, changes: { positionAngle: (value - 90 + 360) % 360 } }));
     }
   }
 
   const handleColorChange = (value: string) => {
     if (activeGearId) {
-      dispatch(updateGearColor(activeGearId, value));
+      dispatch(persistGear({ id: activeGearId, changes: { color: value } }));
     }
   }
 
   const handleTeethChange = (value: number | string) => {
     if (activeGearId) {
-      dispatch(updateGearTeeth(activeGearId, Number(value)));
+      dispatch(persistGear({ id: activeGearId, changes: { teeth: Number(value) } }));
     }
   }
 
   const handleSpeedChange = (value: number | string) => {
     if (activeGearId) {
-      dispatch(updateGearSpeed(activeGearId, Number(value)));
+      dispatch(persistGear({ id: activeGearId, changes: { speed: Number(value) } }));
     }
   }
 
@@ -49,7 +48,11 @@ export const GearSettingPanel = () => {
           thumbSize={8}
           value={positionAngle + 90}
           onChange={handlePositionAngleChange}
-          onChangeEnd={() => dispatch(pushUndo("Change Gear Position Angle"))}
+          onChangeEnd={(value) => {
+            if (activeGearId) {
+              dispatch(persistGear({ id: activeGearId, changes: { positionAngle: (value - 90 + 360) % 360 } }));
+            }
+          }}
           formatLabel={(value) => `${((value - 90 + 360) % 360).toFixed(0)}`}
         />
         <ColorInput

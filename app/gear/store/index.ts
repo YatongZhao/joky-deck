@@ -3,9 +3,10 @@ import { preloadedGearProjectData } from "./redux/preloadedGearProjectData";
 import { mat3, vec2 } from "gl-matrix";
 import { matrixToMat3 } from "../utils";
 
+// State synced with redux
 export const displayMatrix$ = new BehaviorSubject<mat3>(matrixToMat3(preloadedGearProjectData.displayMatrix));
-
 export const viewBox$ = new BehaviorSubject(preloadedGearProjectData.viewBox);
+
 export const viewBoxNext = (value: Partial<{ x1: number, y1: number, x2: number, y2: number }>) => viewBox$.next({ ...viewBox$.getValue(), ...value });
 
 export const viewBoxA$ = new BehaviorSubject<vec2>(vec2.fromValues(preloadedGearProjectData.viewBox.x1, preloadedGearProjectData.viewBox.y1));

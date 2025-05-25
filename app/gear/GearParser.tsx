@@ -12,9 +12,9 @@ import { gsap } from "gsap";
 import { store, useAppDispatch, useAppSelector } from "./store/redux";
 import { addGear, selectAllGears, selectGearById, updateGear } from "./store/redux/slices/gearsSlice";
 import { editorMachineSelector, editorMachineSendSelector } from "./store/redux/slices/editorMachineSlice";
-import { pushUndo } from "./store/redux/slices/undoManagerSlice";
 import { omit } from "ramda";
 import { initializeVirtualGearState } from "./store/redux/slices/virtualGear";
+import { __internal_virtual_gear_id__ } from "./constant";
 
 /**
  * 
@@ -109,10 +109,13 @@ export const GearToAdd = () => {
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   // const virtualGear = useAppSelector((state) => state.virtualGear);
-  const virtualGear = useAppSelector((state) => selectGearById(state, '__internal_virtual_gear_id__')!);
+  const virtualGear = useAppSelector((state) => selectGearById(state, __internal_virtual_gear_id__)!);
   useEffect(() => {
-    dispatch(updateGear('__internal_virtual_gear_id__', {
-      parentId: activeGearId,
+    dispatch(updateGear({
+      id: __internal_virtual_gear_id__,
+      changes: {
+        parentId: activeGearId,
+      }
     }));
   }, [activeGearId, dispatch]);
 
@@ -144,9 +147,12 @@ export const GearToAdd = () => {
       const angle = Math.atan2(mouseSvgPosition[1] - activeGearSvgPosition[1], mouseSvgPosition[0] - activeGearSvgPosition[0]);
       const virtualGearChildTeeth = Math.round(distance / gearProjectModule - (activeGear?.teeth ?? 0) / 2) * 2;
 
-      dispatch(updateGear('__internal_virtual_gear_id__', {
-        teeth: virtualGearChildTeeth < 3 ? 3 : virtualGearChildTeeth,
-        positionAngle: 360 * angle / (2 * Math.PI),
+      dispatch(updateGear({
+        id: __internal_virtual_gear_id__,
+        changes: {
+          teeth: virtualGearChildTeeth < 3 ? 3 : virtualGearChildTeeth,
+          positionAngle: 360 * angle / (2 * Math.PI),
+        }
       }));
     });
 
@@ -164,8 +170,10 @@ export const GearToAdd = () => {
       ...omit(['id', 'color'], virtualGear),
       id: v4(),
     }));
-    dispatch(updateGear('__internal_virtual_gear_id__', initializeVirtualGearState()));
-    dispatch(pushUndo("Add Gear"));
+    dispatch(updateGear({
+      id: __internal_virtual_gear_id__,
+      changes: initializeVirtualGearState(),
+    }));
   }, [virtualGear, activeGearId, dispatch, editorMachineSend]);
 
   return started ? <GearEntity

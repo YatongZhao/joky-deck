@@ -7,3 +7,5 @@ export const __internal_view_box_controller_id__ = uuidV4();
 
 export const __internal_export_view_box_filter_filter_id__ = uuidV4();
 export const __internal_export_view_box_filter_mask_id__ = uuidV4();
+
+export const __internal_virtual_gear_id__ = '__internal_virtual_gear_id__';

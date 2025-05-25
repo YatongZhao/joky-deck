@@ -7,7 +7,7 @@ import { useMantineTheme } from "@mantine/core";
 import { getScale } from "./core/coordinate";
 import { useAppSelector, useAppDispatch } from "./store/redux";
 import { editorMachineSelector, editorMachineSendSelector } from "./store/redux/slices/editorMachineSlice";
-import { pushUndo } from "./store/redux/slices/undoManagerSlice";
+import { persistViewBox } from "./store/redux/slices/viewBoxSlice";
 
 export const ExportViewBoxController = ({ id }: { id?: string }) => {
   const theme = useMantineTheme();
@@ -16,7 +16,7 @@ export const ExportViewBoxController = ({ id }: { id?: string }) => {
   const isViewportSetting = useSelector(editorMachineActor, (state) => state.matches("ViewportSetting"));
   const dispatch = useAppDispatch();
   const handleDragEnd = useCallback(() => {
-    dispatch(pushUndo("Export ViewBox Change"));
+    dispatch(persistViewBox(viewBox$.getValue()));
   }, [dispatch]);
   const { ref, deltaMatrix$ } = useDrag<SVGPathElement>({ onDragEnd: handleDragEnd, disabled: !isViewportSetting });
   

@@ -1,8 +1,7 @@
 "use client"
 import { useEffect, useState, useRef, useCallback } from "react";
-import { displayMatrix$, globalViewBox$, viewBoxA$, viewBoxB$, viewBoxC$, viewBoxD$, viewBoxNext } from "./store";
+import { displayMatrix$, globalViewBox$, viewBox$, viewBoxA$, viewBoxB$, viewBoxC$, viewBoxD$, viewBoxNext } from "./store";
 import { ViewBox } from "./store";
-// import { GearProjectItem } from "./GearProjectItem";
 import { GearSettingPanel } from "./reactionLayer/GearSettingPanel";
 import { useModeHotKeys } from "./hooks/useMode";
 import { CrossHair } from "./CrossHair";
@@ -14,7 +13,6 @@ import { DragHandle } from "./DragHandle";
 import { BehaviorSubject } from "rxjs";
 import { useDrag } from "./hooks/useDrag";
 import { useMergedRef } from "@mantine/hooks";
-// import { useTheme } from "./theme";
 import { useSelector } from "@xstate/react";
 import { ActiveGearHandle } from "./ActiveGearHandle";
 import { GearProjectMenu } from "./reactionLayer/GearProjectMenu";
@@ -23,12 +21,17 @@ import { MAX_SCALE, scaleSvgAtGlobalPoint } from "./reactionLayer/hooks/useScale
 import { MIN_SCALE } from "./reactionLayer/hooks/useScaleController";
 import { ExportViewBoxFilter } from "./ExportViewBoxFilter";
 import { GlobalViewBoxBackground } from "./GlobalViewBoxBackground";
-import { __internal_gear_project_id__, __internal_view_box_controller_id__, __internal_export_view_box_filter_filter_id__, __internal_export_view_box_filter_mask_id__ } from "./constant";
+import {
+  __internal_gear_project_id__,
+  __internal_view_box_controller_id__,
+  __internal_export_view_box_filter_filter_id__,
+  __internal_export_view_box_filter_mask_id__,
+} from "./constant";
 import { GearParser, GearToAdd } from "./GearParser";
 import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
 import { useAppDispatch, useAppSelector } from "./store/redux";
-import { pushUndo } from "./store/redux/slices/undoManagerSlice";
 import { selectAllUserGears, selectGearById } from "./store/redux/slices/gearsSlice";
+import { persistViewBox } from "./store/redux/slices/viewBoxSlice";
 
 const useWheelDrag = () => {
   const ref = useRef<SVGSVGElement>(null);
@@ -142,12 +145,11 @@ export const GearProject: React.FC = () => {
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const state = useSelector(editorMachineActor, (state) => state);
 
-  // const activeGear = useGear(activeGearId);
   const activeGear = useAppSelector((state) => activeGearId ? selectGearById(state, activeGearId) : null);
   useModeHotKeys();
 
   const handleExportViewBoxDragHandleDragEnd = useCallback(() => {
-    dispatch(pushUndo('Export View Box Changed'));
+    dispatch(persistViewBox(viewBox$.getValue()));
   }, [dispatch]);
 
   return (

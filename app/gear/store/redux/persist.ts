@@ -2,27 +2,27 @@ import { createSelector } from "@reduxjs/toolkit";
 import { AppThunk, RootState, store } from ".";
 import { GearProjectData } from "../../core/types";
 import { initializeGearsState, resetGears, selectAllGears } from "./slices/gearsSlice";
-import { initializeModuleState, setModule } from "./slices/moduleSlice";
+import { initializeModuleState, resetModule } from "./slices/moduleSlice";
 import { initializeDisplayMatrixState, resetDisplayMatrix } from "./slices/displayMatrixSlice";
 import { initializeViewBoxState, resetViewBox } from "./slices/viewBoxSlice";
-import { initializeUndoManagerState, setUndoManager } from "./slices/undoManagerSlice";
+import { initializeUndoManagerState } from "./slices/undoManagerSlice";
 import { setEditorMachine, editorMachineSelector, initializeEditorMachineState } from "./slices/editorMachineSlice";
 import { editorMachine } from "../../editorMachine";
 import { Snapshot } from "xstate";
+import { __internal_virtual_gear_id__ } from "../../constant";
 
 export const loadGearProjectData = (gearProject: GearProjectData): AppThunk => (dispatch) => {
   dispatch(resetGears(gearProject.gears));
-  dispatch(setModule(gearProject.module));
+  dispatch(resetModule(gearProject.module));
   dispatch(resetDisplayMatrix(gearProject.displayMatrix));
   dispatch(resetViewBox(gearProject.viewBox));
   dispatch(setEditorMachine(gearProject.editorMachineState));
-  dispatch(setUndoManager(gearProject));
 }
 
 export const rootStateToGearProjectData = (state: RootState): GearProjectData => {
   return {
     version: '1.0.0',
-    gears: selectAllGears(state).filter((gear) => gear.id !== '__internal_virtual_gear_id__'),
+    gears: selectAllGears(state).filter((gear) => gear.id !== __internal_virtual_gear_id__),
     module: state.module.value,
     displayMatrix: state.displayMatrix,
     viewBox: state.viewBox,

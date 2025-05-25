@@ -5,12 +5,14 @@ import { Suspense, useCallback } from "react";
 import { loadGearProjectData } from "./store/redux/persist";
 import { GearProjectData } from "./core/types";
 import { DropZoneContainer } from "./DropZoneContainer";
+import { setUndoManager } from "./store/redux/slices/undoManagerSlice";
 
 const PersistenceManager = () => {
   const dispatch = useAppDispatch();
 
   const handleLoadProject = useCallback((gearProject: GearProjectData) => {
     dispatch(loadGearProjectData(gearProject));
+    dispatch(setUndoManager(gearProject));
   }, [dispatch]);
 
   return <DropZoneContainer<GearProjectData> onJsonLoad={handleLoadProject}>

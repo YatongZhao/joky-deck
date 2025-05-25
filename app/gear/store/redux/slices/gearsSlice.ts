@@ -1,8 +1,8 @@
 import { createEntityAdapter, createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { GearData, GearProjectData, initialGearProject, Position } from "../../../core/types";
-import { AppThunk, RootState } from "../index";
-import { pushUndo } from "./undoManagerSlice";
+import { GearData, GearProjectData, initialGearProject } from "../../../core/types";
+import { RootState } from "../index";
 import { initializeVirtualGearState } from "./virtualGear";
+import { __internal_virtual_gear_id__ } from "@/app/gear/constant";
 
 const gearsAdapter = createEntityAdapter<GearData>();
 
@@ -19,7 +19,8 @@ const gearsSlice = createSlice({
     },
     addGear: gearsAdapter.addOne,
     addGears: gearsAdapter.addMany,
-    _updateGear: gearsAdapter.updateOne,
+    updateGear: gearsAdapter.updateOne,
+    persistGear: gearsAdapter.updateOne,
     removeGear: gearsAdapter.removeOne,
   },
 });
@@ -28,7 +29,7 @@ const gearsSelectors = gearsAdapter.getSelectors<RootState>(state => state.gears
 export const selectAllGears = gearsSelectors.selectAll;
 export const selectAllUserGears = createSelector(
   selectAllGears,
-  (gears) => gears.filter((gear) => gear.id !== '__internal_virtual_gear_id__'),
+  (gears) => gears.filter((gear) => gear.id !== __internal_virtual_gear_id__),
 );
 export const selectGearById = gearsSelectors.selectById;
 
@@ -37,56 +38,8 @@ export const {
   addGear,
   addGears,
   removeGear,
+  updateGear,
+  persistGear,
 } = gearsSlice.actions;
-
-const { _updateGear } = gearsSlice.actions;
-
-export const updateGear = (id: string, changes: Partial<GearData>): AppThunk => (dispatch, getState) => {
-  const gear = selectGearById(getState(), id);
-  if (gear) {
-    dispatch(_updateGear({ id, changes }));
-    dispatch(pushUndo(`Change Gear ${id}`));
-  }
-}
-
-export const updateGearPositionAngle = (id: string, positionAngle: number): AppThunk => (dispatch, getState) => {
-  const gear = selectGearById(getState(), id);
-  if (gear && gear.positionAngle !== positionAngle) {
-    dispatch(_updateGear({ id, changes: { positionAngle } }));
-    dispatch(pushUndo(`Change Gear Position Angle ${id}`));
-  }
-}
-
-export const updateGearColor = (id: string, color: string): AppThunk => (dispatch, getState) => {
-  const gear = selectGearById(getState(), id);
-  if (gear && gear.color !== color) {
-    dispatch(_updateGear({ id, changes: { color } }));
-    dispatch(pushUndo(`Change Gear Color ${id}`));
-  }
-}
-
-export const updateGearTeeth = (id: string, teeth: number): AppThunk => (dispatch, getState) => {
-  const gear = selectGearById(getState(), id);
-  if (gear && gear.teeth !== teeth) {
-    dispatch(_updateGear({ id, changes: { teeth } }));
-    dispatch(pushUndo(`Change Gear Teeth ${id}`));
-  }
-}
-
-export const updateGearSpeed = (id: string, speed: number): AppThunk => (dispatch, getState) => {
-  const gear = selectGearById(getState(), id);
-  if (gear && gear.speed !== speed) {
-    dispatch(_updateGear({ id, changes: { speed } }));
-    dispatch(pushUndo(`Change Gear Speed ${id}`));
-  }
-}
-
-export const updateGearPosition = (id: string, position: Position): AppThunk => (dispatch, getState) => {
-  const gear = selectGearById(getState(), id);
-  if (gear && gear.position !== position) {
-    dispatch(_updateGear({ id, changes: { position } }));
-    dispatch(pushUndo(`Change Gear Position ${id}`));
-  }
-}
 
 export default gearsSlice.reducer;
