@@ -15,16 +15,20 @@ export type GearEntityProps = {
   withHole: boolean;
   // fillColor: string;
   active: boolean;
-  isChild?: boolean;
+  dimmed?: boolean;
   onClick: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }
 
 export const GearEntity = forwardRef<SVGPathElement, GearEntityProps>(function GearEntity({ 
   id, 
   withHole, 
   active, 
-  isChild = false,
-  onClick 
+  dimmed = false,
+  onClick,
+  onMouseEnter,
+  onMouseLeave,
 }: GearEntityProps, ref) {
   const gearData = useAppSelector((state) => selectGearById(state, id));
   const gearProjectModule = useAppSelector((state) => state.module.value);
@@ -35,7 +39,7 @@ export const GearEntity = forwardRef<SVGPathElement, GearEntityProps>(function G
   const mergedRef = useMergedRef(ref, hoverRef, pathRef);
 
   // Create filter ID unique to this gear
-  const filterId = useMemo(() => `child-filter-${id}`, [id]);
+  const filterId = useMemo(() => `dimmed-filter-${id}`, [id]);
 
   const d = useMemo(() => {
     return `${memorizedGearPath(calculateGearInfo(teeth, gearProjectModule))} ${withHole ? memorizedGearHolePath(teeth, gearProjectModule, 0.03) : ''}`;
@@ -56,7 +60,7 @@ export const GearEntity = forwardRef<SVGPathElement, GearEntityProps>(function G
 
   return (
     <>
-      {isChild && (
+      {dimmed && (
         <defs>
           <filter id={filterId}>
             <feColorMatrix
@@ -83,8 +87,10 @@ export const GearEntity = forwardRef<SVGPathElement, GearEntityProps>(function G
         strokeWidth={1}
         style={{ cursor: 'pointer' }}
         onClick={onClick}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
         fillRule="evenodd"
-        filter={isChild ? `url(#${filterId})` : undefined}
+        filter={dimmed ? `url(#${filterId})` : undefined}
       />
     </>
   );

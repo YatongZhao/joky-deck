@@ -2,7 +2,7 @@ import { GearData } from "./core/types";
 import { useSelector } from "@xstate/react";
 import { GearEntity } from "./GearEntity";
 import { finalMatrix$, lastMousePosition$ } from "./store";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { v4 } from "uuid";
 import { mat3, vec2 } from "gl-matrix";
 import { getGearTransformVector } from "./core/gear";
@@ -15,6 +15,7 @@ import { editorMachineSelector, editorMachineSendSelector } from "./store/redux/
 import { omit } from "ramda";
 import { initializeVirtualGearState } from "./store/redux/slices/virtualGear";
 import { __internal_virtual_gear_id__ } from "./constant";
+import { setHoveredGearId } from "./store/redux/slices/hoverSlice";
 
 /**
  * 
@@ -75,12 +76,67 @@ export type GearParserProps = {
   gearId: string;
 }
 
+// Helper function to recursively find all descendant gear IDs
+const findAllDescendantGearIds = (gearId: string, gears: GearData[]): Set<string> => {
+  const descendants = new Set<string>();
+  
+  const findDescendants = (currentId: string) => {
+    // Find all direct children
+    const children = gears.filter(gear => gear.parentId === currentId);
+    
+    // Add each child and recursively find their descendants
+    children.forEach(child => {
+      descendants.add(child.id);
+      findDescendants(child.id);
+    });
+  };
+
+  findDescendants(gearId);
+  return descendants;
+};
+
 export const GearParser = ({ gearId }: GearParserProps) => {
   const ref = useRef<SVGPathElement>(null);
   const gearData = useAppSelector((state) => selectGearById(state, gearId));
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const editorMachineSend = useAppSelector(editorMachineSendSelector);
+  const allGears = useAppSelector(selectAllGears);
+  const dispatch = useAppDispatch();
+  const hoveredGearId = useAppSelector((state) => state.hover.hoveredGearId);
+
+  // Memoize the descendant gears calculation
+  const activeGearDescendants = useMemo(() => 
+    activeGearId && gearData ? findAllDescendantGearIds(activeGearId, allGears) : new Set<string>(),
+    [activeGearId, allGears, gearData]
+  );
+  
+  const hoveredGearDescendants = useMemo(() => 
+    hoveredGearId && gearData ? findAllDescendantGearIds(hoveredGearId, allGears) : new Set<string>(),
+    [hoveredGearId, allGears, gearData]
+  );
+
+  // Memoize the relevant gears set
+  const relevantGearIds = useMemo(() => {
+    const ids = new Set<string>();
+    if (activeGearId) ids.add(activeGearId);
+    if (hoveredGearId) ids.add(hoveredGearId);
+    activeGearDescendants.forEach(id => ids.add(id));
+    hoveredGearDescendants.forEach(id => ids.add(id));
+    return ids;
+  }, [activeGearId, hoveredGearId, activeGearDescendants, hoveredGearDescendants]);
+
+  // Memoize the dimmed state
+  const dimmed = useMemo(() => 
+    relevantGearIds.size > 0 && !relevantGearIds.has(gearId),
+    [relevantGearIds, gearId]
+  );
+
+  // Memoize the active state
+  const isActive = useMemo(() => 
+    activeGearId === gearId,
+    [activeGearId, gearId]
+  );
 
   const handleClick = useCallback(() => {
     editorMachineSend({
@@ -88,6 +144,14 @@ export const GearParser = ({ gearId }: GearParserProps) => {
       gearId,
     });
   }, [gearId, editorMachineSend]);
+
+  const handleMouseEnter = useCallback(() => {
+    dispatch(setHoveredGearId(gearId));
+  }, [gearId, dispatch]);
+
+  const handleMouseLeave = useCallback(() => {
+    dispatch(setHoveredGearId(null));
+  }, [dispatch]);
 
   if (!gearData) {
     return null;
@@ -97,8 +161,11 @@ export const GearParser = ({ gearId }: GearParserProps) => {
     ref={ref}
     id={gearId}
     withHole
-    active={activeGearId === gearId}
+    active={isActive}
+    dimmed={dimmed}
     onClick={handleClick}
+    onMouseEnter={handleMouseEnter}
+    onMouseLeave={handleMouseLeave}
   />
 }
 

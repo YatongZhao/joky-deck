@@ -9,6 +9,7 @@ import displayMatrixReducer from './slices/displayMatrixSlice';
 import viewBoxReducer from './slices/viewBoxSlice';
 import undoManagerReducer from './slices/undoManagerSlice';
 import editorMachineReducer from './slices/editorMachineSlice';
+import hoverReducer from './slices/hoverSlice';
 import { gearProjectDataToRootState } from './persist';
 
 const preloadedState = gearProjectDataToRootState(preloadedGearProjectData) as unknown;
@@ -21,6 +22,7 @@ export const store = configureStore({
     viewBox: viewBoxReducer,
     undoManager: undoManagerReducer,
     editorMachine: editorMachineReducer,
+    hover: hoverReducer,
   },
   preloadedState,
   middleware: (getDefaultMiddleware) =>
