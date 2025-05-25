@@ -1,10 +1,11 @@
 import { ActionIcon, Button, Group, NumberFormatter } from "@mantine/core"
-import { Minus, Pause, Play, Plus, Redo, Undo } from "lucide-react"
+import { HelpCircle, Minus, Pause, Play, Plus, Redo, Undo } from "lucide-react"
 import classes from "./Controller.module.scss";
 import { useScaleController } from "./hooks/useScaleController";
 import { REACTION_LAYER_OFFSET } from "../constant";
 import { useUndoController } from "./hooks/useUndoController";
 import { useTimelineController } from "./hooks/useTimelineController";
+import { HelpShortcuts } from "./HelpShortcuts";
 
 export const Controller = () => {
   const { undo, redo, canUndo, canRedo } = useUndoController();
@@ -44,6 +45,10 @@ export const Controller = () => {
         >
           {isPlaying ? <Pause size={16} fill="black" /> : <Play size={16} fill="black" />}
         </ActionIcon>
+      </Group>
+      {/* Shortcuts */}
+      <Group pos="fixed" bottom={REACTION_LAYER_OFFSET} right={REACTION_LAYER_OFFSET}>
+        <HelpShortcuts />
       </Group>
     </>
   )

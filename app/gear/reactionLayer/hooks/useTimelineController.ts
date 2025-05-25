@@ -41,4 +41,4 @@ export function useTimelineController() {
     isPlaying,
     togglePlay,
   };
-} 
+}

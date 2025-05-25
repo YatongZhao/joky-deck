@@ -56,6 +56,24 @@ export const editorMachineSelector = createSelector(
   (id) => getEditorMachine(id),
 );
 
+export const canAddGearSelector = createSelector(
+  (state: RootState) => state.editorMachine.snapshot,
+  () => {
+    return getEditorMachine(store.getState().editorMachine.id)
+      .getSnapshot()
+      .can({ type: 'enterAddingMode' });
+  },
+);
+
+export const canEscSelector = createSelector(
+  (state: RootState) => state.editorMachine.snapshot,
+  () => {
+    return getEditorMachine(store.getState().editorMachine.id)
+      .getSnapshot()
+      .can({ type: 'esc' });
+  },
+);
+
 export const editorMachineSendSelector = createSelector(
   (state: RootState) => state.editorMachine.id,
   (id) => {
