@@ -6,6 +6,7 @@ import { selectGearById } from "./store/redux/slices/gearsSlice";
 import { useAppSelector } from "./store/redux";
 import { addTicker, dynamicGearAngleMap } from "./store/dynamicGearPosition";
 import { dynamicGearPositionMap } from "./store/dynamicGearPosition";
+import { gsap } from "gsap";
 
 export type GearEntityProps = {
   id: string;
@@ -37,6 +38,8 @@ export const GearEntity = forwardRef<SVGPathElement, GearEntityProps>(function G
   const { hovered, ref: hoverRef } = useHover();
   const pathRef = useRef<SVGPathElement>(null);
   const mergedRef = useMergedRef(ref, hoverRef, pathRef);
+  const filterRef = useRef<SVGFilterElement>(null);
+  const colorMatrixRef = useRef<SVGFEColorMatrixElement>(null);
 
   // Create filter ID unique to this gear
   const filterId = useMemo(() => `dimmed-filter-${id}`, [id]);
@@ -44,6 +47,23 @@ export const GearEntity = forwardRef<SVGPathElement, GearEntityProps>(function G
   const d = useMemo(() => {
     return `${memorizedGearPath(calculateGearInfo(teeth, gearProjectModule))} ${withHole ? memorizedGearHolePath(teeth, gearProjectModule, 0.03) : ''}`;
   }, [teeth, gearProjectModule, withHole]);
+
+  // Handle dimmed state changes with GSAP
+  useEffect(() => {
+    if (!colorMatrixRef.current) return;
+
+    const targetOpacity = dimmed ? 0.2 : 1;
+    gsap.to(colorMatrixRef.current, {
+      attr: {
+        values: `1 0 0 0 0
+                 0 1 0 0 0
+                 0 0 1 0 0
+                 0 0 0 ${targetOpacity} 0`
+      },
+      duration: 0.3,
+      ease: "power2.inOut"
+    });
+  }, [dimmed]);
 
   useEffect(() => {
     const tickerCallback = () => {
@@ -60,37 +80,39 @@ export const GearEntity = forwardRef<SVGPathElement, GearEntityProps>(function G
 
   return (
     <>
-      {dimmed && (
-        <defs>
-          <filter id={filterId}>
-            <feColorMatrix
-              type="matrix"
-              values="1 0 0 0 0
-                      0 1 0 0 0
-                      0 0 1 0 0
-                      0 0 0 0.2 0"
-              result="semiTransparent"
-            />
-            <feComposite
-              in="semiTransparent"
-              in2="SourceGraphic"
-              operator="in"
-              result="final"
-            />
-          </filter>
-        </defs>
-      )}
+      <defs>
+        <filter id={filterId} ref={filterRef}>
+          <feColorMatrix
+            ref={colorMatrixRef}
+            type="matrix"
+            values="1 0 0 0 0
+                    0 1 0 0 0
+                    0 0 1 0 0
+                    0 0 0 1 0"
+            result="semiTransparent"
+          />
+          <feComposite
+            in="semiTransparent"
+            in2="SourceGraphic"
+            operator="in"
+            result="final"
+          />
+        </filter>
+      </defs>
       <path
         ref={mergedRef}
         fill={color || theme.colors.gray[4]}
         stroke={hovered || active ? theme.colors.dark[9] : 'none'}
         strokeWidth={1}
-        style={{ cursor: 'pointer' }}
+        style={{ 
+          cursor: 'pointer',
+          transition: 'stroke 0.2s ease-in-out',
+        }}
         onClick={onClick}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         fillRule="evenodd"
-        filter={dimmed ? `url(#${filterId})` : undefined}
+        filter={`url(#${filterId})`}
       />
     </>
   );

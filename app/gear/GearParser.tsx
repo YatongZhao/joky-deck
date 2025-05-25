@@ -103,28 +103,20 @@ export const GearParser = ({ gearId }: GearParserProps) => {
   const editorMachineSend = useAppSelector(editorMachineSendSelector);
   const allGears = useAppSelector(selectAllGears);
   const dispatch = useAppDispatch();
-  const hoveredGearId = useAppSelector((state) => state.hover.hoveredGearId);
 
   // Memoize the descendant gears calculation
   const activeGearDescendants = useMemo(() => 
     activeGearId && gearData ? findAllDescendantGearIds(activeGearId, allGears) : new Set<string>(),
     [activeGearId, allGears, gearData]
   );
-  
-  const hoveredGearDescendants = useMemo(() => 
-    hoveredGearId && gearData ? findAllDescendantGearIds(hoveredGearId, allGears) : new Set<string>(),
-    [hoveredGearId, allGears, gearData]
-  );
 
   // Memoize the relevant gears set
   const relevantGearIds = useMemo(() => {
     const ids = new Set<string>();
     if (activeGearId) ids.add(activeGearId);
-    if (hoveredGearId) ids.add(hoveredGearId);
     activeGearDescendants.forEach(id => ids.add(id));
-    hoveredGearDescendants.forEach(id => ids.add(id));
     return ids;
-  }, [activeGearId, hoveredGearId, activeGearDescendants, hoveredGearDescendants]);
+  }, [activeGearId, activeGearDescendants]);
 
   // Memoize the dimmed state
   const dimmed = useMemo(() => 
