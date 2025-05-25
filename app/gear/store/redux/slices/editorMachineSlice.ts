@@ -86,6 +86,7 @@ export const setEditorMachine = (snapshot?: Snapshot<typeof editorMachine> | nul
 }
 
 export const {
+  setEditorMachineId,
   persistEditorMachineSnapshot,
 } = editorMachineSlice.actions;
 

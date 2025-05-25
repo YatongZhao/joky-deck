@@ -6,14 +6,16 @@ import { setModule } from "./slices/moduleSlice";
 import { addGear, persistGear } from "./slices/gearsSlice";
 import { persistEditorMachineSnapshot } from "./slices/editorMachineSlice";
 
+export const undoableActionTypes = [
+  persistViewBox.type,
+  setModule.type,
+  addGear.type,
+  persistGear.type,
+  persistEditorMachineSnapshot.type,
+] as const;
+
 export const undoableEpic: Epic<any, any, any, any> = (action$: Observable<any>) => action$.pipe(
-  ofType(
-    persistViewBox.type,
-    setModule.type,
-    addGear.type,
-    persistGear.type,
-    persistEditorMachineSnapshot.type,
-  ),
+  ofType(...undoableActionTypes),
   debounceTime(10),
   map((action) => pushUndo(action.type))
 );

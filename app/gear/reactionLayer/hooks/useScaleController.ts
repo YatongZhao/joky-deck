@@ -2,6 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { displayMatrix$, translateMatrix$ } from "../../store";
 import { getScale, scaleAtPoint } from "../../core/coordinate";
 import { mat3, vec2 } from "gl-matrix";
+import { mat3ToMatrix } from "../../utils";
+import { persistDisplayMatrix } from "../../store/redux/slices/displayMatrixSlice";
+import { store } from "../../store/redux";
 
 export const MAX_SCALE = 30;
 export const MIN_SCALE = 0.1;
@@ -16,7 +19,7 @@ export const scaleSvgAtGlobalPoint = (point: vec2, scale: number) => {
   
   scaleAtPoint(scaleMatrix, svgPoint, scale / oldScale);
   mat3.multiply(displayMatrix, scaleMatrix, displayMatrix);
-  displayMatrix$.next(displayMatrix);
+  store.dispatch(persistDisplayMatrix(mat3ToMatrix(displayMatrix)));
 }
 
 export const useScaleController = () => {

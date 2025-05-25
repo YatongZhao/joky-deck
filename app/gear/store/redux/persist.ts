@@ -3,13 +3,17 @@ import { AppThunk, RootState, store } from ".";
 import { GearProjectData } from "../../core/types";
 import { initializeGearsState, resetGears, selectAllGears } from "./slices/gearsSlice";
 import { initializeModuleState, resetModule } from "./slices/moduleSlice";
-import { initializeDisplayMatrixState, resetDisplayMatrix } from "./slices/displayMatrixSlice";
+import { initializeDisplayMatrixState, persistDisplayMatrix, resetDisplayMatrix } from "./slices/displayMatrixSlice";
 import { initializeViewBoxState, resetViewBox } from "./slices/viewBoxSlice";
 import { initializeUndoManagerState } from "./slices/undoManagerSlice";
-import { setEditorMachine, editorMachineSelector, initializeEditorMachineState } from "./slices/editorMachineSlice";
+import { setEditorMachine, editorMachineSelector, initializeEditorMachineState, setEditorMachineId } from "./slices/editorMachineSlice";
 import { editorMachine } from "../../editorMachine";
 import { Snapshot } from "xstate";
 import { __internal_virtual_gear_id__ } from "../../constant";
+import { debounceTime, filter, Observable, tap } from "rxjs";
+import { ofType } from "redux-observable";
+import { undoableActionTypes } from "./undoableEpic";
+import { setGearProjectDataToLocalStorage } from "../localStorage";
 
 export const loadGearProjectData = (gearProject: GearProjectData): AppThunk => (dispatch) => {
   dispatch(resetGears(gearProject.gears));
@@ -46,16 +50,17 @@ export const gearProjectDataSelector = createSelector(
   (state): GearProjectData => rootStateToGearProjectData(state),
 );
 
-export const persistStore = (targetStore: typeof store) => {
-  let gearProjectData = gearProjectDataSelector(targetStore.getState());
-  targetStore.subscribe(() => {
-    const newGearProjectData = gearProjectDataSelector(targetStore.getState());
-    if (newGearProjectData !== gearProjectData) {
-      // setGearProjectDataToLocalStorage(newGearProjectData);
-      // console.log(newGearProjectData);
-      gearProjectData = newGearProjectData;
-    } else {
-      console.log('no change');
-    }
-  });
-}
+export const persistEpic = (action$: Observable<any>) => action$.pipe(
+  ofType(
+    ...undoableActionTypes,
+    persistDisplayMatrix.type,
+    setEditorMachineId.type,
+    resetViewBox.type,
+    resetGears.type,
+    resetModule.type,
+    resetDisplayMatrix.type,
+  ),
+  debounceTime(100),
+  tap(() => setGearProjectDataToLocalStorage(gearProjectDataSelector(store.getState()))),
+  filter(() => false)
+);

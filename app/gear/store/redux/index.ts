@@ -9,7 +9,7 @@ import displayMatrixReducer from './slices/displayMatrixSlice';
 import viewBoxReducer from './slices/viewBoxSlice';
 import undoManagerReducer from './slices/undoManagerSlice';
 import editorMachineReducer from './slices/editorMachineSlice';
-import { gearProjectDataToRootState, persistStore } from './persist';
+import { gearProjectDataToRootState } from './persist';
 
 const preloadedState = gearProjectDataToRootState(preloadedGearProjectData) as unknown;
 
@@ -28,8 +28,6 @@ export const store = configureStore({
 });
 
 epicMiddleware.run(rootEpic);
-
-persistStore(store);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

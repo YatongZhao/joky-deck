@@ -32,6 +32,8 @@ import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
 import { useAppDispatch, useAppSelector } from "./store/redux";
 import { selectAllUserGears, selectGearById } from "./store/redux/slices/gearsSlice";
 import { persistViewBox } from "./store/redux/slices/viewBoxSlice";
+import { persistDisplayMatrix } from "./store/redux/slices/displayMatrixSlice";
+import { mat3ToMatrix } from "./utils";
 
 const useWheelDrag = () => {
   const ref = useRef<SVGSVGElement>(null);
@@ -107,7 +109,7 @@ export const GearProject: React.FC = () => {
     const subscription = deltaMatrix$.subscribe((matrix) => {
       const displayMatrix = displayMatrix$.getValue();
       mat3.multiply(displayMatrix, matrix, displayMatrix);
-      displayMatrix$.next(displayMatrix);
+      dispatch(persistDisplayMatrix(mat3ToMatrix(displayMatrix)));
     });
     return () => subscription.unsubscribe();
   }, [deltaMatrix$]);
@@ -116,7 +118,7 @@ export const GearProject: React.FC = () => {
     const subscription = dragHandleDeltaMatrix$.subscribe((matrix) => {
       const displayMatrix = displayMatrix$.getValue();
       mat3.multiply(displayMatrix, matrix, displayMatrix);
-      displayMatrix$.next(displayMatrix);
+      dispatch(persistDisplayMatrix(mat3ToMatrix(displayMatrix)));
     });
     return () => subscription.unsubscribe();
   }, [dragHandleDeltaMatrix$]);
