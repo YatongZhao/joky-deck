@@ -4,9 +4,8 @@ import { useTheme } from "../theme";
 import { useHover, useMergedRef } from "@mantine/hooks";
 import { selectGearById } from "./store/redux/slices/gearsSlice";
 import { useAppSelector } from "./store/redux";
-import { dynamicGearAngleMap } from "./store/dynamicGearPosition";
+import { addTicker, dynamicGearAngleMap } from "./store/dynamicGearPosition";
 import { dynamicGearPositionMap } from "./store/dynamicGearPosition";
-import { gsap } from "gsap";
 
 export type GearEntityProps = {
   id: string;
@@ -40,8 +39,8 @@ export const GearEntity = forwardRef<SVGPathElement, GearEntityProps>(function G
       pathRef.current.setAttribute('transform', `translate(${position[0]}, ${position[1]}) rotate(${angle})`);
       pathRef.current.setAttribute('d', d);
     }
-    gsap.ticker.add(tickerCallback);
-    return () => gsap.ticker.remove(tickerCallback);
+    const removeTicker = addTicker(tickerCallback);
+    return () => removeTicker();
   }, [id, d]);
 
   return <path

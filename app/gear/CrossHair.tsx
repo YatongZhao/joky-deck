@@ -2,10 +2,10 @@ import { useEffect, useRef } from "react";
 import { rotatePoint } from "./core/gear";
 import { useSelector } from "@xstate/react";
 import { getGearPosition } from "./GearParser";
-import { gsap } from "gsap";
 import { useAppSelector } from "./store/redux";
 import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
 import { selectAllGears, selectGearById } from "./store/redux/slices/gearsSlice";
+import { addTicker } from "./store/dynamicGearPosition";
 
 const drawCrossHair = (radius: number) => {
   let path = '';
@@ -33,13 +33,13 @@ export const CrossHair: React.FC<{ radius: number }> = ({ radius }) => {
   const gears = useAppSelector(selectAllGears);
 
   useEffect(() => {
-    const tickerCallback = () => {
+    const tickerCallback = (time: number) => {
       if (!gRef.current) return;
-      const position = getGearPosition(activeGear, gears, gsap.ticker.time, gearProjectModule);
+      const position = getGearPosition(activeGear, gears, time, gearProjectModule);
       gRef.current.setAttribute('transform', `translate(${position[0]}, ${position[1]})`);
     }
-    gsap.ticker.add(tickerCallback);
-    return () => gsap.ticker.remove(tickerCallback);
+    const removeTicker = addTicker(tickerCallback);
+    return () => removeTicker();
   }, [activeGear, gears, gearProjectModule]);
   return (
     <g ref={gRef}>

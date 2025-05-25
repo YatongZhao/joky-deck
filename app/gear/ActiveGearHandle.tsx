@@ -11,6 +11,7 @@ import { useAppDispatch, useAppSelector } from "./store/redux";
 import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
 import { persistGear, selectAllGears, selectGearById, updateGear } from "./store/redux/slices/gearsSlice";
 import { equals } from "ramda";
+import { addTicker } from "./store/dynamicGearPosition";
 
 // TODO: This is a mess
 export const ActiveGearHandle = () => {
@@ -52,8 +53,8 @@ export const ActiveGearHandle = () => {
       const activeGearSvgPosition = getGearPosition(activeGear, gears, time, gearProjectModule);
       activeGearSvgPosition$.next(vec2.clone(activeGearSvgPosition));
     }
-    gsap.ticker.add(tickerCallback);
-    return () => gsap.ticker.remove(tickerCallback);
+    const removeTicker = addTicker(tickerCallback);
+    return () => removeTicker();
   }, [activeGear, gears, gearProjectModule, activeGearSvgPosition$]);
 
   useEffect(() => {
