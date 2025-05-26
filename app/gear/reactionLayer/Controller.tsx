@@ -1,5 +1,5 @@
 import { ActionIcon, Button, Group, NumberFormatter } from "@mantine/core"
-import { HelpCircle, Minus, Pause, Play, Plus, Redo, Undo } from "lucide-react"
+import { Minus, Pause, Play, Plus, Redo, Undo } from "lucide-react"
 import classes from "./Controller.module.scss";
 import { useScaleController } from "./hooks/useScaleController";
 import { REACTION_LAYER_OFFSET } from "../constant";
