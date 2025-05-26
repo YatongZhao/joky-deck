@@ -8,7 +8,6 @@ import { mat3, vec2 } from "gl-matrix";
 import { getGearTransformVector } from "./core/gear";
 import { fromEvent, animationFrames, merge, timer } from "rxjs";
 import { combineLatest } from "rxjs";
-import { gsap } from "gsap";
 import { store, useAppDispatch, useAppSelector } from "./store/redux";
 import { addGear, selectAllGears, selectGearById, updateGear } from "./store/redux/slices/gearsSlice";
 import { editorMachineSelector, editorMachineSendSelector } from "./store/redux/slices/editorMachineSlice";
@@ -16,6 +15,7 @@ import { omit } from "ramda";
 import { initializeVirtualGearState } from "./store/redux/slices/virtualGear";
 import { __internal_virtual_gear_id__ } from "./constant";
 import { setHoveredGearId } from "./store/redux/slices/hoverSlice";
+import { timelineManager } from "./store/dynamicGearPosition";
 
 /**
  * 
@@ -196,7 +196,7 @@ export const GearToAdd = () => {
       const gears = selectAllGears(storeState);
       const gearProjectModule = storeState.module.value;
       const matrix = finalMatrix$.getValue();
-      const activeGearSvgPosition = getGearPosition(activeGear, gears, gsap.ticker.time, gearProjectModule);
+      const activeGearSvgPosition = getGearPosition(activeGear, gears, timelineManager.getTime(), gearProjectModule);
       const mouseGlobalPosition = vec2.fromValues(event.clientX, event.clientY);
       const reverseMatrix = mat3.create();
       mat3.invert(reverseMatrix, matrix);

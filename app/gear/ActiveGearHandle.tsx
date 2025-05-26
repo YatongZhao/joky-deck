@@ -5,13 +5,12 @@ import { BehaviorSubject, fromEvent, skip } from "rxjs";
 import { DragHandle } from "./DragHandle";
 import { GearType } from "./core/types";
 import { getGearPosition } from "./GearParser";
-import { gsap } from "gsap";
 import { vec2ToPosition } from "./utils";
 import { useAppDispatch, useAppSelector } from "./store/redux";
 import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
 import { persistGear, selectAllGears, selectGearById, updateGear } from "./store/redux/slices/gearsSlice";
 import { equals } from "ramda";
-import { addTicker } from "./store/dynamicGearPosition";
+import { addTicker, timelineManager } from "./store/dynamicGearPosition";
 
 // TODO: This is a mess
 export const ActiveGearHandle = () => {
@@ -25,7 +24,7 @@ export const ActiveGearHandle = () => {
   const parentGearId = activeGear?.parentId;
   const parentGear = useAppSelector((state) => selectGearById(state, parentGearId ?? ''));
   const [activeGearSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(
-    getGearPosition(activeGear, gears, gsap.ticker.time, gearProjectModule)
+    getGearPosition(activeGear, gears, timelineManager.getTime(), gearProjectModule)
   ));
   const [targetSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(vec2.create()));
   const [isDragging, setIsDragging] = useState(false);
@@ -64,7 +63,7 @@ export const ActiveGearHandle = () => {
       if (!activeGear) return;
 
       const isAbsoluteGear = activeGear.type === GearType.Absolute;
-      const maybeParentGearSvgPosition = getGearPosition(parentGear, gears, gsap.ticker.time, gearProjectModule);
+      const maybeParentGearSvgPosition = getGearPosition(parentGear, gears, timelineManager.getTime(), gearProjectModule);
 
       if (isCtrlPressed) {
         const parentGearSvgPosition = isAbsoluteGear ? activeGear.position : maybeParentGearSvgPosition;
