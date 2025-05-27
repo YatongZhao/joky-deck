@@ -1,4 +1,4 @@
-import { GearData } from "./core/types";
+import { GearData, GearType } from "./core/types";
 import { useSelector } from "@xstate/react";
 import { GearEntity } from "./GearEntity";
 import { finalMatrix$, lastMousePosition$ } from "./store";
@@ -161,7 +161,7 @@ export const GearParser = ({ gearId }: GearParserProps) => {
   />
 }
 
-export const GearToAdd = () => {
+export const RelativeGearToAdd = () => {
   const dispatch = useAppDispatch();
   const ref = useRef<SVGPathElement>(null);
   const editorMachineSend = useAppSelector(editorMachineSendSelector);
@@ -219,12 +219,7 @@ export const GearToAdd = () => {
   }, [activeGear, virtualGearSetter$, dispatch]);
 
   const handleClick = useCallback(() => {
-    if (activeGearId) {
-      editorMachineSend({
-        type: 'selectGear',
-        gearId: activeGearId,
-      });
-    }
+    editorMachineSend({ type: 'exitAddingMode' });
     dispatch(addGear({
       ...omit(['id', 'color'], virtualGear),
       id: v4(),
@@ -233,7 +228,91 @@ export const GearToAdd = () => {
       id: __internal_virtual_gear_id__,
       changes: initializeVirtualGearState(),
     }));
-  }, [virtualGear, activeGearId, dispatch, editorMachineSend]);
+  }, [virtualGear, dispatch, editorMachineSend]);
+
+  return started ? <GearEntity
+    ref={ref}
+    id={virtualGear.id}
+    withHole={false}
+    active
+    onClick={handleClick}
+  /> : null;
+}
+
+export const AbsoluteGearToAdd = () => {
+  const dispatch = useAppDispatch();
+  const ref = useRef<SVGPathElement>(null);
+  const editorMachineSend = useAppSelector(editorMachineSendSelector);
+  const virtualGear = useAppSelector((state) => selectGearById(state, __internal_virtual_gear_id__)!);
+  const [started, setStarted] = useState(false);
+
+  useEffect(() => {
+    dispatch(updateGear({
+      id: __internal_virtual_gear_id__,
+      changes: {
+        type: GearType.Absolute,
+        parentId: null,
+        speed: 1,
+        teeth: 10,
+      },
+    }));
+  }, [dispatch]);
+
+  // Mouse move: update virtual gear position
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      const matrix = finalMatrix$.getValue();
+      const mouseGlobalPosition = vec2.fromValues(event.clientX, event.clientY);
+      const reverseMatrix = mat3.create();
+      mat3.invert(reverseMatrix, matrix);
+      const mouseSvgPosition = vec2.transformMat3(vec2.create(), mouseGlobalPosition, reverseMatrix);
+      dispatch(updateGear({
+        id: __internal_virtual_gear_id__,
+        changes: {
+          position: [mouseSvgPosition[0], mouseSvgPosition[1]],
+        }
+      }));
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    const timerId = setTimeout(() => setStarted(true), 120);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      clearTimeout(timerId);
+    };
+  }, [dispatch]);
+
+  // Keyboard: up/down to change teeth
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowUp') {
+        dispatch(updateGear({
+          id: __internal_virtual_gear_id__,
+          changes: { teeth: Math.max(3, (virtualGear.teeth ?? 0) + 1) }
+        }));
+      } else if (event.key === 'ArrowDown') {
+        dispatch(updateGear({
+          id: __internal_virtual_gear_id__,
+          changes: { teeth: Math.max(3, (virtualGear.teeth ?? 0) - 1) }
+        }));
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [dispatch, virtualGear.teeth]);
+
+  const handleClick = useCallback(() => {
+    editorMachineSend({ type: 'exitAddingMode' });
+    dispatch(addGear({
+      ...omit(['id', 'color'], virtualGear),
+      id: v4(),
+    }));
+    dispatch(updateGear({
+      id: __internal_virtual_gear_id__,
+      changes: initializeVirtualGearState(),
+    }));
+  }, [virtualGear, dispatch, editorMachineSend]);
 
   return started ? <GearEntity
     ref={ref}

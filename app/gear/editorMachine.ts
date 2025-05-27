@@ -40,6 +40,7 @@ export const editorMachine = setup({
       },
       states: {
         NoGearSelected: {
+          initial: "Default",
           on: {
             selectGear: [
               {
@@ -50,6 +51,26 @@ export const editorMachine = setup({
                 },
               }
             ],
+          },
+          states: {
+            Default: {
+              on: {
+                enterAddingMode: {
+                  target: "AddingGear",
+                },
+              },
+            },
+            AddingGear: {
+              on: {
+                exitAddingMode: {
+                  target: "Default",
+                },
+                esc: {
+                  target: "Default",
+                },
+              },
+              tags: ["AddingMode", "CanEscape"],
+            },
           },
         },
         GearSelected: {

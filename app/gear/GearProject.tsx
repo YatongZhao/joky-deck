@@ -27,7 +27,7 @@ import {
   __internal_export_view_box_filter_filter_id__,
   __internal_export_view_box_filter_mask_id__,
 } from "./constant";
-import { GearParser, GearToAdd } from "./GearParser";
+import { AbsoluteGearToAdd, GearParser, RelativeGearToAdd } from "./GearParser";
 import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
 import { useAppDispatch, useAppSelector } from "./store/redux";
 import { selectAllUserGears, selectGearById } from "./store/redux/slices/gearsSlice";
@@ -184,7 +184,8 @@ export const GearProject: React.FC = () => {
           {/* <GearProjectItem gearId={gearProject.rootGearId} rootPosition={gearProject.rootGearPosition} /> */}
           {/* {gearProject.gears.map(gear => <GearParser key={gear.id} gearId={gear.id} />)} */}
           {gears.map(gear => <GearParser key={gear.id} gearId={gear.id} />)}
-          {state.matches({ Selecting: { GearSelected: "AddingGear" } }) && <GearToAdd />}
+          {state.matches({ Selecting: { GearSelected: "AddingGear" } }) && <RelativeGearToAdd />}
+          {state.matches({ Selecting: { NoGearSelected: "AddingGear" } }) && <AbsoluteGearToAdd />}
         </g>
         {activeGear && <CrossHair radius={activeGear.teeth * gearProjectModule / 2} />}
         {state.matches('ViewportSetting') && <ExportViewBoxController key={__internal_view_box_controller_id__} id={__internal_view_box_controller_id__} />}
