@@ -15,7 +15,7 @@ import { omit } from "ramda";
 import { initializeVirtualGearState } from "./store/redux/slices/virtualGear";
 import { __internal_virtual_gear_id__ } from "./constant";
 import { setHoveredGearId } from "./store/redux/slices/hoverSlice";
-import { timelineManager } from "./store/dynamicGearPosition";
+import { dynamicGearPositionMap } from "./store/dynamicGearPosition";
 
 /**
  * 
@@ -193,10 +193,9 @@ export const RelativeGearToAdd = () => {
   useEffect(() => {
     const subscription = virtualGearSetter$.subscribe(([event]) => {
       const storeState = store.getState();
-      const gears = selectAllGears(storeState);
       const gearProjectModule = storeState.module.value;
       const matrix = finalMatrix$.getValue();
-      const activeGearSvgPosition = getGearPosition(activeGear, gears, timelineManager.getTime(), gearProjectModule);
+      const activeGearSvgPosition = activeGearId ? dynamicGearPositionMap.get(activeGearId) ?? vec2.create() : vec2.create();
       const mouseGlobalPosition = vec2.fromValues(event.clientX, event.clientY);
       const reverseMatrix = mat3.create();
       mat3.invert(reverseMatrix, matrix);
@@ -216,7 +215,7 @@ export const RelativeGearToAdd = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [activeGear, virtualGearSetter$, dispatch]);
+  }, [activeGearId, activeGear, virtualGearSetter$, dispatch]);
 
   const handleClick = useCallback(() => {
     editorMachineSend({ type: 'exitAddingMode' });

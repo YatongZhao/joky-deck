@@ -58,7 +58,7 @@ class TimelineManager {
   }
 }
 
-export const timelineManager = new TimelineManager();
+const timelineManager = new TimelineManager();
 
 // React hook for subscribing to timeline state
 export function useTimeline() {
@@ -80,7 +80,7 @@ export const setSpeed = (speed: number | ((speed: number) => number)) => {
   timelineManager.setSpeed(speed);
 }
 
-export const addTicker = (callback: (time: number, deltaTime: number) => void) => {
+const addTicker = (callback: (time: number, deltaTime: number) => void) => {
   const tickerCallback = (time: number, deltaTime: number) => {
     timelineManager.updateTime(deltaTime);
     callback(timelineManager.getTime(), deltaTime);

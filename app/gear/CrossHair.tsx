@@ -1,11 +1,11 @@
 import { useEffect, useRef } from "react";
 import { rotatePoint } from "./core/gear";
 import { useSelector } from "@xstate/react";
-import { getGearPosition } from "./GearParser";
 import { useAppSelector } from "./store/redux";
 import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
-import { selectAllGears, selectGearById } from "./store/redux/slices/gearsSlice";
-import { addTicker } from "./store/dynamicGearPosition";
+import { gsap } from "gsap";
+import { dynamicGearPositionMap } from "./store/dynamicGearPosition";
+import { vec2 } from "gl-matrix";
 
 const drawCrossHair = (radius: number) => {
   let path = '';
@@ -28,19 +28,16 @@ export const CrossHair: React.FC<{ radius: number }> = ({ radius }) => {
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
   const gRef = useRef<SVGGElement>(null);
-  const activeGear = useAppSelector((state) => selectGearById(state, activeGearId ?? ''));
-  const gearProjectModule = useAppSelector((state) => state.module.value);
-  const gears = useAppSelector(selectAllGears);
 
   useEffect(() => {
-    const tickerCallback = (time: number) => {
+    const tickerHandler = () => {
       if (!gRef.current) return;
-      const position = getGearPosition(activeGear, gears, time, gearProjectModule);
+      const position = activeGearId ? dynamicGearPositionMap.get(activeGearId) ?? vec2.create() : vec2.create();
       gRef.current.setAttribute('transform', `translate(${position[0]}, ${position[1]})`);
     }
-    const removeTicker = addTicker(tickerCallback);
-    return () => removeTicker();
-  }, [activeGear, gears, gearProjectModule]);
+    gsap.ticker.add(tickerHandler);
+    return () => gsap.ticker.remove(tickerHandler);
+  }, [activeGearId]);
   return (
     <g ref={gRef}>
       <path d={drawCrossHair(radius)}>

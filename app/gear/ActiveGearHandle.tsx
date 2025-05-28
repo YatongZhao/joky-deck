@@ -4,18 +4,17 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { BehaviorSubject, fromEvent, skip } from "rxjs";
 import { DragHandle } from "./DragHandle";
 import { GearType } from "./core/types";
-import { getGearPosition } from "./GearParser";
 import { vec2ToPosition } from "./utils";
 import { useAppDispatch, useAppSelector } from "./store/redux";
 import { editorMachineSelector } from "./store/redux/slices/editorMachineSlice";
-import { persistGear, selectAllGears, selectGearById, updateGear } from "./store/redux/slices/gearsSlice";
+import { persistGear, selectGearById, updateGear } from "./store/redux/slices/gearsSlice";
 import { equals } from "ramda";
-import { addTicker, timelineManager } from "./store/dynamicGearPosition";
+import { dynamicGearPositionMap } from "./store/dynamicGearPosition";
+import { gsap } from "gsap";
 
 // TODO: This is a mess
 export const ActiveGearHandle = () => {
   const dispatch = useAppDispatch();
-  const gears = useAppSelector(selectAllGears);
   const gearProjectModule = useAppSelector((state) => state.module.value);
   const editorMachineActor = useAppSelector(editorMachineSelector);
   const activeGearId = useSelector(editorMachineActor, (state) => state.context.selectedGearId);
@@ -24,7 +23,7 @@ export const ActiveGearHandle = () => {
   const parentGearId = activeGear?.parentId;
   const parentGear = useAppSelector((state) => selectGearById(state, parentGearId ?? ''));
   const [activeGearSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(
-    getGearPosition(activeGear, gears, timelineManager.getTime(), gearProjectModule)
+    activeGearId ? dynamicGearPositionMap.get(activeGearId) ?? vec2.create() : vec2.create()
   ));
   const [targetSvgPosition$] = useState<BehaviorSubject<vec2>>(new BehaviorSubject(vec2.create()));
   const [isDragging, setIsDragging] = useState(false);
@@ -48,13 +47,15 @@ export const ActiveGearHandle = () => {
   }, []);
 
   useEffect(() => {
-    const tickerCallback = (time: number) => {
-      const activeGearSvgPosition = getGearPosition(activeGear, gears, time, gearProjectModule);
+    const tickerHandler = () => {
+      if (!activeGearId) return;
+      const activeGearSvgPosition = dynamicGearPositionMap.get(activeGearId);
+      if (!activeGearSvgPosition) return;
       activeGearSvgPosition$.next(vec2.clone(activeGearSvgPosition));
     }
-    const removeTicker = addTicker(tickerCallback);
-    return () => removeTicker();
-  }, [activeGear, gears, gearProjectModule, activeGearSvgPosition$]);
+    gsap.ticker.add(tickerHandler);
+    return () => gsap.ticker.remove(tickerHandler);
+  }, [activeGearId, activeGearSvgPosition$]);
 
   useEffect(() => {
     const subscription = targetSvgPosition$.pipe(skip(1)).subscribe((position) => {
@@ -63,7 +64,7 @@ export const ActiveGearHandle = () => {
       if (!activeGear) return;
 
       const isAbsoluteGear = activeGear.type === GearType.Absolute;
-      const maybeParentGearSvgPosition = getGearPosition(parentGear, gears, timelineManager.getTime(), gearProjectModule);
+      const maybeParentGearSvgPosition = parentGearId ? dynamicGearPositionMap.get(parentGearId) ?? vec2.create() : vec2.create();
 
       if (isCtrlPressed) {
         const parentGearSvgPosition = isAbsoluteGear ? activeGear.position : maybeParentGearSvgPosition;
@@ -95,10 +96,14 @@ export const ActiveGearHandle = () => {
     return () => subscription.unsubscribe();
   }, [
     targetSvgPosition$,
-    isDragging, parentGear?.teeth, gearProjectModule,
-    dispatch, activeGearId,
-    isCtrlPressed, activeGear,
-    gears, parentGear,
+    isDragging,
+    dispatch,
+    activeGearId,
+    isCtrlPressed,
+    parentGearId,
+    activeGear,
+    gearProjectModule,
+    parentGear,
   ]);
 
   const handleDragEnd = useCallback(() => {
